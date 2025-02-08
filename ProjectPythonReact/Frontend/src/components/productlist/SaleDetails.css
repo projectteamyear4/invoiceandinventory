@@ -1,0 +1,169 @@
+/* Sale Details Container */
+.sale-details-container {
+  flex: 1;
+  padding-top: 2.5rem;
+  border-left: 1px solid #e2e8f0;
+  height: calc(200vh - 400px); /* Account for header height */
+  overflow-y: auto;
+  position: sticky;
+  top: 2rem;
+}
+
+.sale-details-card {
+  border-radius: 12px;
+  padding: 1rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.sale-title {
+  color: #1e293b;
+  font-size: 1.5rem;
+  margin-bottom: 1.5rem;
+  border-bottom: 2px solid #e2e8f0;
+  padding-bottom: 0.75rem;
+}
+
+/* Billed To Section */
+.billed-to-section {
+  margin-bottom: 1.5rem;
+}
+
+.client-details {
+  margin-bottom: 1.5rem;
+}
+
+.client-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  padding: 0.75rem;
+  background: #f8fafc;
+  border-radius: 8px;
+}
+
+.item-image-container {
+  width: 60px;
+  height: 60px;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.item-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.item-info {
+  flex: 1;
+}
+
+.item-name {
+  display: block;
+  font-weight: 500;
+  color: #1e293b;
+}
+
+.item-price {
+  display: block;
+  font-size: 1.1rem;
+  color: #2563eb;
+  margin: 0.25rem 0;
+}
+
+.tax-detail {
+  font-size: 0.875rem;
+  color: #64748b;
+}
+
+/* Calculation Section */
+.calculation-section {
+  margin-top: 1.5rem;
+}
+
+.subtotal {
+  margin-bottom: 1.5rem;
+}
+
+.tax-breakdown {
+  margin-top: 0.5rem;
+}
+
+.tax-item {
+  display: flex;
+  justify-content: space-between;
+  margin: 0.5rem 0;
+  color: #475569;
+}
+
+.total-section {
+  margin-top: 1.5rem;
+  padding-top: 1rem;
+  border-top: 2px solid #e2e8f0;
+}
+
+.total-amount {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 1rem 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.add-discount-btn {
+  width: 100%;
+  padding: 0.75rem;
+  background: #2563eb;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.add-discount-btn:hover {
+  background: #1d4ed8;
+}
+
+.item-count {
+  text-align: center;
+  color: #64748b;
+  font-size: 0.875rem;
+  margin-top: 1rem;
+}
+.item-actions {
+  display: flex;
+  gap: 10px;
+  margin-left: auto; /* Push actions to the right */
+}
+
+.icon-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.icon-btn:hover {
+  opacity: 0.7;
+}
+
+.delete-btn {
+  color: #ff4d4f; /* Red color for delete */
+}
+/* Responsive Design */
+@media (max-width: 768px) {
+  .sale-details-container {
+    max-width: 100%;
+    border-left: none;
+    border-top: 1px solid #e2e8f0;
+    height: auto;
+    position: static;
+  }
+}

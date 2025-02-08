@@ -1,0 +1,24 @@
+.MainDash{
+    /* padding-top: 1rem; */
+    display: flex;
+    height: 100vh;
+    flex-direction: column;
+    padding-top: 2.5rem;
+    gap: 1rem; /* Adds consistent spacing between children */
+    width: 97%; /* Ensures it takes full width */
+
+}
+
+@media screen and (max-width: 1200px) {
+    .MainDash{
+        justify-content:flex-start;
+        margin-top: 2rem;
+    }
+}
+
+@media screen and (max-width: 768px)
+{
+    .MainDash{
+        align-items: center;
+    }
+}

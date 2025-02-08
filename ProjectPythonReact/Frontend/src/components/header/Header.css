@@ -1,0 +1,90 @@
+.header {
+    display: flex;
+  
+    justify-content: space-evenly;
+    align-items: center;
+  
+    padding: 1rem 2rem;
+    background: rgb(255, 255, 255);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    position: fixed;
+    top: 0;
+    left:0;
+    width: 100%;
+    z-index: 1000;
+  }
+  
+
+  
+  .nav-icons {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+  }
+  
+  .icon-container {
+    position: relative;
+  }
+  
+  .icon-container .icon {
+    font-size: 20px;
+    cursor: pointer;
+    color: #555;
+  }
+  
+  .icon-container .badge {
+    position: absolute;
+    top: -5px;
+    right: -10px;
+    background: red;
+    color: white;
+    font-size: 10px;
+    border-radius: 50%;
+    width: 15px;
+    height: 15px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  
+  .create-button {
+    background: #6f52ed;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    padding: 0.5rem 1rem;
+    cursor: pointer;
+    font-size: 14px;
+  }
+  
+  .create-button:hover {
+    background: #563dcc;
+  }
+  
+  .profile {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  
+  .language {
+    background: #f5f5f5;
+    padding: 0.3rem 0.8rem;
+    border-radius: 5px;
+    font-size: 14px;
+    cursor: pointer;
+  }
+  
+  .profile-image {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+  }
+  
+  .profile-name {
+    font-size: 14px;
+    font-weight: bold;
+    color: #333;
+  }
+  

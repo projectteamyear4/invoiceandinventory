@@ -1,0 +1,80 @@
+:root {
+  --yellow: linear-gradient(180deg, #1f1f1f -146.42%, #181818 -46.42%);
+  --orange: #fca61f;
+  --black: #242d49;
+  --gray: #788097;
+  --purple: linear-gradient(180deg, #bb67ff 0%, #c484f3 100%);
+  --pink: #d6727e;
+  --glass: rgba(255, 255, 255, 0.54);
+  --boxShadow: 0px 19px 60px rgb(0 0 0 / 8%);
+  --smboxShadow: -79px 51px 60px rgba(0, 0, 0, 0.08);
+  --activeItem: #f799a354;
+}
+
+.App {
+  color: var(--black);
+  background-color: white;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: "Inter", sans-serif;
+}
+
+.Header {
+  position: fixed; /* Fix header to the top */
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 60px; /* Adjust based on your design */
+  background-color: white; /* Add a background color */
+  z-index: 1000; /* Ensure header stays on top */
+  box-shadow: var(--boxShadow); /* Optional shadow for separation */
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 1rem; /* Add horizontal padding */
+}
+
+.AppGlass {
+  display: grid;
+  height: 100%;
+  width: 100%;
+  background: var(--glass);
+  border-radius: 2rem;
+  gap: 16px;
+  grid-template-columns: 11rem auto 30rem;
+  overflow: hidden;
+  margin-top: 60px; /* Push content below the fixed header */
+}
+
+@media screen and (max-width: 1200px) {
+  .AppGlass {
+    grid-template-columns: 10% 50% auto;
+    overflow-y: scroll;
+  }
+}
+
+@media screen and (max-width: 768px) {
+  .AppGlass {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto 1fr; /* Added row definition */
+  }
+
+  .MainDash {
+    order: 1; /* Move to the first position */
+  }
+
+  .RightSide {
+    order: 2; /* Move to the second position */
+  }
+
+  .Sidebar {
+    order: 3; /* Move to the bottom */
+    position: sticky;
+    bottom: 0;
+    background: var(--activeItem);
+    border-radius: 2rem 2rem 0 0;
+    padding: 1rem;
+  }
+}
