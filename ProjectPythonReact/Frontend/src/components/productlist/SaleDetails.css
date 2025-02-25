@@ -3,7 +3,7 @@
   flex: 1;
   padding-top: 2.5rem;
   border-left: 1px solid #e2e8f0;
-  height: calc(200vh - 400px); /* Account for header height */
+  height: calc(150vh - 500px); /* Account for header height */
   overflow-y: auto;
   position: sticky;
   top: 2rem;
