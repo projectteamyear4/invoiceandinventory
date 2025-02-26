@@ -1,0 +1,157 @@
+/* InvoiceList.css */
+.invoice-list-container {
+    padding: 24px;
+    background: linear-gradient(to bottom right, #f9fafb, #e5e7eb);
+    min-height: 100vh;
+  }
+  
+  .invoice-list-title {
+    font-size: 2.25rem; /* 36px */
+    font-weight: 800;
+    margin-bottom: 24px;
+    letter-spacing: -0.025em;
+    color: #1f2937;
+  }
+  
+  .title-highlight {
+    background-color: #dbeafe;
+    color: #2563eb;
+    padding: 4px 8px;
+    border-radius: 4px;
+  }
+  
+  .invoice-table-card {
+    background-color: #ffffff;
+    padding: 32px;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    border-radius: 12px;
+    border: 1px solid #f3f4f6;
+    transition: box-shadow 0.3s ease;
+  }
+  
+  .invoice-table-card:hover {
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  }
+  
+  .search-container {
+    margin-bottom: 16px;
+  }
+  
+  .search-input {
+    padding: 10px;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    background-color: #f9fafb;
+    width: 100%;
+    max-width: 300px;
+    font-size: 1rem;
+    color: #374151;
+    transition: all 0.2s ease;
+  }
+  
+  .search-input:focus {
+    outline: none;
+    border-color: #93c5fd;
+    box-shadow: 0 0 0 2px rgba(147, 197, 253, 0.5);
+  }
+  
+  .search-input::placeholder {
+    color: #9ca3af;
+  }
+  
+  .invoice-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 24px;
+  }
+  
+  .table-header {
+    padding: 12px;
+    text-align: left;
+    font-weight: 600;
+    color: #374151;
+    background-color: #f3f4f6;
+    border-bottom: 1px solid #e5e7eb;
+    cursor: pointer;
+  }
+  
+  .table-header:hover {
+    background-color: #e5e7eb;
+  }
+  
+  .table-cell {
+    padding: 12px;
+    border-bottom: 1px solid #e5e7eb;
+    color: #1f2937;
+  }
+  
+  .action-button {
+    padding: 6px 12px;
+    margin-right: 8px;
+    border: none;
+    border-radius: 6px;
+    font-size: 0.875rem; /* 14px */
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+  }
+  
+  .action-button.edit {
+    background-color: #2563eb;
+    color: #ffffff;
+  }
+  
+  .action-button.edit:hover {
+    background-color: #1d4ed8;
+  }
+  
+  .action-button.download {
+    background-color: #10b981;
+    color: #ffffff;
+  }
+  
+  .action-button.download:hover {
+    background-color: #059669;
+  }
+  
+  .action-button.delete {
+    background-color: #ef4444;
+    color: #ffffff;
+  }
+  
+  .action-button.delete:hover {
+    background-color: #dc2626;
+  }
+  
+  .pagination {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 16px;
+  }
+  
+  .pagination-button {
+    padding: 8px 16px;
+    background-color: #2563eb;
+    color: #ffffff;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+  }
+  
+  .pagination-button:hover {
+    background-color: #1d4ed8;
+  }
+  
+  .pagination-button:disabled {
+    background-color: #9ca3af;
+    cursor: not-allowed;
+  }
+  
+  .pagination-info {
+    font-size: 1rem;
+    color: #374151;
+  }

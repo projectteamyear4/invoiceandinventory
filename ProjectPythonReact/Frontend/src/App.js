@@ -4,6 +4,8 @@ import CategoryList from './components/category/categorylist.jsx';
 import { AddCustomer } from './components/CustomerReview/Addcustomer.jsx';
 import CustomerList from './components/CustomerReview/CustomerList.jsx';
 import Header from "./components/header/header";
+import InvoiceForm from './components/invoice/invoice.jsx';
+import InvoiceList from './components/invoice/invoicelist.jsx';
 import MainDash from './components/MainDash/MainDash';
 import Orders from './components/Orderlist/Orders.jsx';
 import AddProduct from './components/productlist/addproduct.jsx';
@@ -30,6 +32,8 @@ function App() {
             <Route path="/CategoryList" element={<CategoryList />} /> {/* Orders route */}
             <Route path="/add-product" element={<AddProduct />} />{/*AddProduct */}
             <Route path="/productlist" element={<ProductList />} />{/*AddProduct */}
+            <Route path="/invoice" element={< InvoiceForm />} />{/*AddProduct */}
+            <Route path="/invoicelist" element={<  InvoiceList/>} />{/*AddProduct */}
           </Routes>
         </div>
       </div>

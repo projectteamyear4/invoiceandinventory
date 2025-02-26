@@ -23,6 +23,8 @@ export const SidebarData = [
   { icon: UilPackage, heading: "Products", path: "/products" },
   { icon: UilChart, heading: "CategoryList", path: "/CategoryList" },
   { icon: UilChart, heading: "productlist", path: "/productlist" },
+  { icon: UilChart, heading: "invoice", path: "/invoice" },
+  { icon: UilChart, heading: "invoicelist", path: "/invoicelist" },
 ];
 
 // Analytics Cards Data
