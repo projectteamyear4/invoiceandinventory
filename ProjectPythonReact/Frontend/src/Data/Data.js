@@ -1,14 +1,12 @@
 // Sidebar imports
 import {
   UilChart,
-  UilChartPie,
   UilClipboardAlt,
   UilEstate,
   UilMoneyWithdrawal,
   UilPackage,
   UilShoppingCart,
-  UilUsdSquare,
-  UilUsersAlt
+  UilUsersAlt,
 } from "@iconscout/react-unicons";
 
 // Recent Card Imports
@@ -16,100 +14,64 @@ import img1 from "../imgs/img1.png";
 import img2 from "../imgs/img2.png";
 import img3 from "../imgs/img3.png";
 
+// Original Sidebar Data with Khmer Translations
 export const SidebarData = [
-  { icon: UilEstate, heading: "Dashboard", path: "/" },
-  { icon: UilClipboardAlt, heading: "Orders", path: "/orders" }, // Add path for Orders
-  { icon: UilUsersAlt, heading: "customers", path: "/customers" },
-  { icon: UilPackage, heading: "Products", path: "/products" },
-  { icon: UilChart, heading: "CategoryList", path: "/CategoryList" },
-  { icon: UilChart, heading: "productlist", path: "/productlist" },
-  { icon: UilChart, heading: "invoice", path: "/invoice" },
-  { icon: UilChart, heading: "invoicelist", path: "/invoicelist" },
+  { icon: UilEstate, heading: "ផ្ទាំងគ្រប់គ្រង", path: "/" }, // Dashboard
+  { icon: UilClipboardAlt, heading: "ការកម្ម៉ង់", path: "/orders" }, // Orders
+  { icon: UilUsersAlt, heading: "អតិថិជន", path: "/customers" }, // Customers
+  { icon: UilPackage, heading: "ផលិតផល", path: "/products" }, // Products
+  { icon: UilChart, heading: "បញ្ជីប្រភេទ", path: "/CategoryList" }, // CategoryList
+  { icon: UilChart, heading: "បញ្ជីផលិតផល", path: "/productlist" }, // ProductList
+  { icon: UilChart, heading: "វិក្កយបត្រ", path: "/invoice" }, // Invoice
+  { icon: UilChart, heading: "បញ្ជីវិក្កយបត្រ", path: "/invoicelist" }, // InvoiceList
 ];
 
-// Analytics Cards Data
+// Simplified and Cool Analytics Cards Data (already in Khmer)
 export const cardsData = [
   {
-    title: "Sales",
-    color: {
-      backGround: "#ffffff",
-      border: "1px solid #110D14FF",
-      boxShadow: "0px 3px 5px 0px #6314BDFF",
-    },
-    barValue: 70,
-    value: "25,970",
-    png: UilUsdSquare,
-    series: [{ name: "Sales", data: [31, 40, 28, 51, 42, 109, 100] }],
-  },
-  {
-    title: "Cost",
-    color: {
-      backGround: "#ffffff",
-      border: "1px solid #4B4848FF",
-      boxShadow: "0px 3px 5px 0px #8D4242FF",
-    },
-    barValue: 80,
-    value: "14,270",
-    png: UilMoneyWithdrawal,
-    series: [{ name: "Cost", data: [10, 100, 50, 70, 80, 30, 40] }],
-  },
-  {
-    title: "Revenue",
-    color: {
-      backGround: "#ffffff",
-      border: "1px solid #FAD0C4",
-      boxShadow: "0px 3px 5px 0px #28AF65FF",
-    },
-    barValue: 60,
-    value: "4,270",
-    png: UilClipboardAlt,
-    series: [{ name: "Revenue", data: [10, 25, 15, 30, 12, 15, 20] }],
-  },
-  {
-    title: "Profit",
-    color: {
-      backGround: "#ffffff",
-      border: "1px solid #6DD5FA",
-      boxShadow: "0px 3px 5px 0px #1678A5FF",
-    },
-    barValue: 45,
-    value: "8,420",
-    png: UilChartPie,
-    series: [{ name: "Profit", data: [15, 30, 22, 38, 25, 50, 35] }],
-  },
-  {
-    title: "Transactions",
-    color: {
-      backGround: "#ffffff",
-      border: "1px solid #84FAB0",
-      boxShadow: "0px 3px 5px 0px #EC0303FF",
-    },
-    barValue: 90,
-    value: "1,230",
+    title: "លក់", // Sales
+    color: { backGround: "#e3f2fd", border: "1px solid #1976d2", boxShadow: "0 4px 10px rgba(25, 118, 210, 0.3)" },
+    barValue: 75,
+    value: "២៥,៩៧០", // 25,970 in Khmer numerals
     png: UilShoppingCart,
-    series: [{ name: "Transactions", data: [50, 70, 65, 90, 80, 95, 85] }],
+    series: [{ name: "លក់", data: [30, 45, 60, 80, 100] }],
+  },
+  {
+    title: "ចំណាយ", // Cost
+    color: { backGround: "#fce4ec", border: "1px solid #2F95DAFF", boxShadow: "0 4px 10px rgba(216, 27, 96, 0.3)" },
+    barValue: 60,
+    value: "១៤,២៧៦", // 14,270 in Khmer numerals
+    png: UilMoneyWithdrawal,
+    series: [{ name: "ចំណាយ", data: [20, 50, 70, 30, 40] }],
+  },
+  {
+    title: "ប្រាក់ចំណូល", // Revenue
+    color: { backGround: "#e8f5e9", border: "1px solid #2e7d32", boxShadow: "0 4px 10px rgba(46, 125, 50, 0.3)" },
+    barValue: 85,
+    value: "៤,២៧៦", // 4,270 in Khmer numerals
+    png: UilClipboardAlt,
+    series: [{ name: "ប្រាក់ចំណូល", data: [10, 20, 30, 40, 50] }],
   },
 ];
 
-// Recent Update Card Data
+// Simplified and Cool Recent Update Card Data (already in Khmer)
 export const UpdatesData = [
   {
     img: img1,
-    name: "Andrew Thomas",
-    noti: "has ordered Apple smart watch 2500mh battery.",
-    time: "25 seconds ago",
+    name: "សុខ វិបុល", // Sok Vibol
+    noti: "បានកម្ម៉ង់នាឡិកាឆ្លាត Apple ។", // Ordered an Apple smartwatch
+    time: "១៦ វិនាទីមុន", // 10 seconds ago
   },
   {
     img: img2,
-    name: "James Bond",
-    noti: "has received Samsung gadget for charging battery.",
-    time: "30 minutes ago",
+    name: "គឹម សុភា", // Kim Sophea
+    noti: "បានទទួលឧបករណ៍ Samsung ។", // Received a Samsung gadget
+    time: "១៥ នាទីមុន", // 15 minutes ago
   },
   {
     img: img3,
-    name: "Iron Man",
-    noti: "has ordered Apple smart watch, samsung Gear 2500mh battery.",
-    time: "2 hours ago",
+    name: "ម៉ី សុជាតិ", // Mey Socheat
+    noti: "បានកម្ម៉ង់នាឡិកា និងឧបករណ៍ ។", // Ordered a watch and gadget
+    time: "១ ម៉ោងមុន", // 1 hour ago
   },
 ];
-

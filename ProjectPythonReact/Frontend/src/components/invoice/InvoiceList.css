@@ -1,17 +1,17 @@
 /* InvoiceList.css */
 .invoice-list-container {
-  padding: 3rem; /* Increased from 2rem */
-  max-width: 1400px; /* Increased from 1200px */
+  padding: 3rem;
+  max-width: 1400px;
   margin: 0 auto;
-  min-height: 80vh;
-  border-radius: 12px; /* Increased from 8px */
-  font-family: 'Inter', 'Noto Sans Khmer', sans-serif; /* Updated font stack */
+  min-height: 90vh;
+  border-radius: 12px;
+  font-family: 'Inter', 'Noto Sans Khmer', sans-serif;
 }
 
 .invoice-list-title {
   color: #333;
-  margin-bottom: 2rem; /* Increased from 1.5rem */
-  font-size: 2.5rem; /* Added larger font size */
+  margin-bottom: 2rem;
+  font-size: 2.5rem;
 }
 
 .title-highlight {
@@ -22,8 +22,8 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 1.5rem; /* Increased from 1rem */
-  gap: 1.5rem; /* Increased from 1rem */
+  margin-bottom: 1.5rem;
+  gap: 1.5rem;
 }
 
 .search-container {
@@ -32,32 +32,32 @@
 
 .search-input {
   width: 100%;
-  padding: 1rem; /* Increased from 0.75rem */
-  border: 2px solid #ddd; /* Increased border thickness */
-  border-radius: 6px; /* Increased from 4px */
-  font-size: 1.25rem; /* Added larger font size */
+  padding: 1rem;
+  border: 2px solid #ddd;
+  border-radius: 6px;
+  font-size: 1.25rem;
 }
 
 .search-input:focus {
   outline: none;
   border-color: #007bff;
-  box-shadow: 0 0 8px rgba(0, 123, 255, 0.3); /* Increased shadow */
+  box-shadow: 0 0 8px rgba(0, 123, 255, 0.3);
 }
 
 .sort-buttons {
   display: flex;
-  gap: 0.75rem; /* Increased from 0.5rem */
+  gap: 0.75rem;
 }
 
 .sort-btn {
-  padding: 0.75rem 1.5rem; /* Increased from 0.5rem 1rem */
-  border: 2px solid #007bff; /* Increased border thickness */
-  border-radius: 6px; /* Increased from 4px */
+  padding: 0.75rem 1.5rem;
+  border: 2px solid #007bff;
+  border-radius: 6px;
   background-color: #fff;
   color: #007bff;
   cursor: pointer;
   transition: all 0.2s ease;
-  font-size: 1.1rem; /* Added larger font size */
+  font-size: 1.1rem;
 }
 
 .sort-btn:hover {
@@ -67,8 +67,8 @@
 
 .invoice-table-card {
   background: #fff;
-  border-radius: 12px; /* Increased from 8px */
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Increased shadow */
+  border-radius: 12px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   overflow-x: auto;
 }
 
@@ -78,48 +78,38 @@
 }
 
 .table-header {
-  padding: 1.5rem; /* Increased from 1rem */
+  padding: 1.5rem;
   background-color: #f1f3f5;
   color: #333;
   text-align: left;
   font-weight: 600;
-  font-size: 1.2rem; /* Added larger font size */
+  font-size: 1.2rem;
 }
 
 .table-cell {
-  padding: 1.5rem; /* Increased from 1rem */
-  border-bottom: 2px solid #eee; /* Increased border thickness */
+  padding: 1.5rem;
+  border-bottom: 2px solid #eee;
   color: #555;
-  font-size: 1.1rem; /* Added larger font size */
+  font-size: 1.1rem;
 }
 
 .table-row-hover:hover {
   background-color: #f8f9fa;
 }
 
-.status-open {
-  color: #28a745;
-  font-weight: 500;
-}
-
-.status-closed {
-  color: #dc3545;
-  font-weight: 500;
-}
-
 .actions-cell {
   display: flex;
-  gap: 0.75rem; /* Increased from 0.5rem */
+  gap: 0.75rem;
 }
 
 .action-button {
-  padding: 0.6rem 1.2rem; /* Increased from 0.4rem 0.8rem */
+  padding: 0.6rem 1.2rem;
   border: none;
-  border-radius: 6px; /* Increased from 4px */
+  border-radius: 6px;
   cursor: pointer;
   color: #fff;
   transition: opacity 0.2s ease;
-  font-size: 1rem; /* Added larger font size */
+  font-size: 1rem;
 }
 
 .action-button:hover {
@@ -138,22 +128,45 @@
   background-color: #dc3545;
 }
 
+.status-button {
+  padding: 0.6rem 1.2rem;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  color: #fff;
+  transition: background-color 0.3s ease;
+  font-size: 1rem;
+  width: 100%; /* Ensure it fits the cell */
+}
+
+.status-button.status-open {
+  background-color: #28a745; /* Green for Open */
+}
+
+.status-button.status-closed {
+  background-color: #dc3545; /* Red for Closed */
+}
+
+.status-button:hover {
+  opacity: 0.9;
+}
+
 .pagination {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 1.5rem; /* Increased from 1rem */
+  padding: 1.5rem;
 }
 
 .pagination-button {
-  padding: 0.75rem 1.5rem; /* Increased from 0.5rem 1rem */
-  border: 2px solid #ddd; /* Increased border thickness */
-  border-radius: 6px; /* Increased from 4px */
+  padding: 0.75rem 1.5rem;
+  border: 2px solid #ddd;
+  border-radius: 6px;
   background-color: #fff;
   color: #333;
   cursor: pointer;
   transition: all 0.2s ease;
-  font-size: 1.1rem; /* Added larger font size */
+  font-size: 1.1rem;
 }
 
 .pagination-button:hover:not(:disabled) {
@@ -167,5 +180,32 @@
 
 .pagination-info {
   color: #666;
-  font-size: 1.1rem; /* Added larger font size */
+  font-size: 1.1rem;
+}
+.section-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.section-title {
+  font-size: 1.5rem;
+  color: #2c3e50;
+  margin: 0; /* Reset margin for alignment */
+}
+
+.select-customer-link {
+  font-size: 1rem;
+  color: #3498db;
+  text-decoration: none;
+  padding: 0.5rem 1rem;
+  border: 1px solid #3498db;
+  border-radius: 5px;
+  transition: all 0.3s ease;
+}
+
+.select-customer-link:hover {
+  background-color: #3498db;
+  color: #fff;
 }

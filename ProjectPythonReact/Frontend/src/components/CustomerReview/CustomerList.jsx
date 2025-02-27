@@ -1,12 +1,12 @@
 import React, { useState } from "react";
-import { FaEdit, FaPlus, FaTrash } from "react-icons/fa"; // Added FaEdit and FaTrash
+import { FaEdit, FaPlus, FaTrash } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import "./Customers.css";
 
 const CustomerList = () => {
   const [customers, setCustomers] = useState([
-    { customer_id: 1, name: "ចន ដូ", phone1: "៥៥៥-១២៣៤", phone2: "៥៥៥៣២៣២៣-១២៣៤", address: "ផ្លូវលេខ ១២៣" }, // John Doe
-    { customer_id: 2, name: "ទូទៅ", phone1: "ទូទៅ", phone2: "ទូទៅ", address: "ទូទៅ" }, // General
+    { customer_id: 1, name: "ចន ដូ", phone1: "៥៥៥-១២៣៤", phone2: "៥៥៥៣២៣២៣-១២៣៤", bookinghistory: "៥", address: "ផ្លូវលេខ ១២៣", status: "សកម្ម" }, // John Doe - Active
+    { customer_id: 2, name: "ទូទៅ", phone1: "ទូទៅ", phone2: "ទូទៅ", bookinghistory: "៥", address: "ទូទៅ", status: "អសកម្ម" }, // General - Inactive
   ]);
   const [searchQuery, setSearchQuery] = useState("");
   const navigate = useNavigate();
@@ -53,7 +53,9 @@ const CustomerList = () => {
             <th>ឈ្មោះ</th> {/* Name */}
             <th>ទូរស័ព្ទ ១</th> {/* Phone1 */}
             <th>ទូរស័ព្ទ ២</th> {/* Phone2 */}
+            <th>ប្រវត្តិកក់</th> {/* Booking History */}
             <th>អាសយដ្ឋាន</th> {/* Address */}
+            <th>ស្ថានភាព</th> {/* Status */}
             <th>សកម្មភាព</th> {/* Action */}
           </tr>
         </thead>
@@ -63,7 +65,11 @@ const CustomerList = () => {
               <td>{customer.name}</td>
               <td>{customer.phone1}</td>
               <td>{customer.phone2}</td>
+              <td>{customer.bookinghistory}</td>
               <td>{customer.address}</td>
+              <td className={`status-${customer.status === "សកម្ម" ? "active" : "inactive"}`}>
+                {customer.status}
+              </td>
               <td className="action-cell">
                 <button 
                   className="action-button edit" 

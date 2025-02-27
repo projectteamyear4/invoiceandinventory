@@ -5,7 +5,7 @@ const InvoiceList = () => {
   const initialInvoices = [
     {
       id: "INV001",
-      customerName: "សុខ សុភ័ក្ត្រ", // Sok Sophak (Khmer: "Happiness" + "Wisdom")
+      customerName: "សុខ សុភ័ក្ត្រ", // Sok Sophak
       date: "2025-02-01",
       dueDate: "2025-03-01",
       type: "Invoice",
@@ -13,7 +13,7 @@ const InvoiceList = () => {
     },
     {
       id: "INV002",
-      customerName: "គឹម សុជាតិ", // Kim Socheat (Khmer: "Gold" + "Good Birth")
+      customerName: "គឹម សុជាតិ", // Kim Socheat
       date: "2025-02-10",
       dueDate: "2025-03-10",
       type: "Quote",
@@ -21,7 +21,7 @@ const InvoiceList = () => {
     },
     {
       id: "INV003",
-      customerName: "ម៉ី នា", // Mey Na (Khmer: "Mother" + "Lady")
+      customerName: "ម៉ី នា", // Mey Na
       date: "2025-02-15",
       dueDate: "2025-03-15",
       type: "Invoice",
@@ -55,6 +55,15 @@ const InvoiceList = () => {
       }
     });
     setInvoices(sortedInvoices);
+  };
+
+  // Handle status toggle
+  const handleStatusToggle = (id) => {
+    setInvoices(invoices.map(invoice => 
+      invoice.id === id 
+        ? { ...invoice, status: invoice.status === "Open" ? "Closed" : "Open" }
+        : invoice
+    ));
   };
 
   const filteredInvoices = invoices.filter((invoice) =>
@@ -136,8 +145,13 @@ const InvoiceList = () => {
                 <td className="table-cell">{invoice.date}</td>
                 <td className="table-cell">{invoice.dueDate}</td>
                 <td className="table-cell">{invoice.type}</td>
-                <td className={`table-cell status-${invoice.status.toLowerCase()}`}>
-                  {invoice.status === "Open" ? "បើក" : "បិទ"}
+                <td className="table-cell">
+                  <button
+                    className={`status-button status-${invoice.status.toLowerCase()}`}
+                    onClick={() => handleStatusToggle(invoice.id)}
+                  >
+                    {invoice.status === "Open" ? "បើក" : "បិទ"}
+                  </button>
                 </td>
                 <td className="table-cell actions-cell">
                   <button className="action-button edit">កែ</button>
