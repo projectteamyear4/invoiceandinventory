@@ -1,157 +1,171 @@
 /* InvoiceList.css */
 .invoice-list-container {
-    padding: 24px;
-    background: linear-gradient(to bottom right, #f9fafb, #e5e7eb);
-    min-height: 100vh;
-  }
-  
-  .invoice-list-title {
-    font-size: 2.25rem; /* 36px */
-    font-weight: 800;
-    margin-bottom: 24px;
-    letter-spacing: -0.025em;
-    color: #1f2937;
-  }
-  
-  .title-highlight {
-    background-color: #dbeafe;
-    color: #2563eb;
-    padding: 4px 8px;
-    border-radius: 4px;
-  }
-  
-  .invoice-table-card {
-    background-color: #ffffff;
-    padding: 32px;
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-    border-radius: 12px;
-    border: 1px solid #f3f4f6;
-    transition: box-shadow 0.3s ease;
-  }
-  
-  .invoice-table-card:hover {
-    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-  }
-  
-  .search-container {
-    margin-bottom: 16px;
-  }
-  
-  .search-input {
-    padding: 10px;
-    border: 1px solid #e5e7eb;
-    border-radius: 8px;
-    background-color: #f9fafb;
-    width: 100%;
-    max-width: 300px;
-    font-size: 1rem;
-    color: #374151;
-    transition: all 0.2s ease;
-  }
-  
-  .search-input:focus {
-    outline: none;
-    border-color: #93c5fd;
-    box-shadow: 0 0 0 2px rgba(147, 197, 253, 0.5);
-  }
-  
-  .search-input::placeholder {
-    color: #9ca3af;
-  }
-  
-  .invoice-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-bottom: 24px;
-  }
-  
-  .table-header {
-    padding: 12px;
-    text-align: left;
-    font-weight: 600;
-    color: #374151;
-    background-color: #f3f4f6;
-    border-bottom: 1px solid #e5e7eb;
-    cursor: pointer;
-  }
-  
-  .table-header:hover {
-    background-color: #e5e7eb;
-  }
-  
-  .table-cell {
-    padding: 12px;
-    border-bottom: 1px solid #e5e7eb;
-    color: #1f2937;
-  }
-  
-  .action-button {
-    padding: 6px 12px;
-    margin-right: 8px;
-    border: none;
-    border-radius: 6px;
-    font-size: 0.875rem; /* 14px */
-    font-weight: 500;
-    cursor: pointer;
-    transition: background-color 0.2s ease;
-  }
-  
-  .action-button.edit {
-    background-color: #2563eb;
-    color: #ffffff;
-  }
-  
-  .action-button.edit:hover {
-    background-color: #1d4ed8;
-  }
-  
-  .action-button.download {
-    background-color: #10b981;
-    color: #ffffff;
-  }
-  
-  .action-button.download:hover {
-    background-color: #059669;
-  }
-  
-  .action-button.delete {
-    background-color: #ef4444;
-    color: #ffffff;
-  }
-  
-  .action-button.delete:hover {
-    background-color: #dc2626;
-  }
-  
-  .pagination {
-    display: flex;
-    justify-content: flex-end;
-    align-items: center;
-    gap: 16px;
-  }
-  
-  .pagination-button {
-    padding: 8px 16px;
-    background-color: #2563eb;
-    color: #ffffff;
-    border: none;
-    border-radius: 8px;
-    font-size: 1rem;
-    font-weight: 500;
-    cursor: pointer;
-    transition: background-color 0.2s ease;
-  }
-  
-  .pagination-button:hover {
-    background-color: #1d4ed8;
-  }
-  
-  .pagination-button:disabled {
-    background-color: #9ca3af;
-    cursor: not-allowed;
-  }
-  
-  .pagination-info {
-    font-size: 1rem;
-    color: #374151;
-  }
+  padding: 3rem; /* Increased from 2rem */
+  max-width: 1400px; /* Increased from 1200px */
+  margin: 0 auto;
+  min-height: 80vh;
+  border-radius: 12px; /* Increased from 8px */
+  font-family: 'Inter', 'Noto Sans Khmer', sans-serif; /* Updated font stack */
+}
+
+.invoice-list-title {
+  color: #333;
+  margin-bottom: 2rem; /* Increased from 1.5rem */
+  font-size: 2.5rem; /* Added larger font size */
+}
+
+.title-highlight {
+  color: #007bff;
+}
+
+.controls-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem; /* Increased from 1rem */
+  gap: 1.5rem; /* Increased from 1rem */
+}
+
+.search-container {
+  flex: 1;
+}
+
+.search-input {
+  width: 100%;
+  padding: 1rem; /* Increased from 0.75rem */
+  border: 2px solid #ddd; /* Increased border thickness */
+  border-radius: 6px; /* Increased from 4px */
+  font-size: 1.25rem; /* Added larger font size */
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 8px rgba(0, 123, 255, 0.3); /* Increased shadow */
+}
+
+.sort-buttons {
+  display: flex;
+  gap: 0.75rem; /* Increased from 0.5rem */
+}
+
+.sort-btn {
+  padding: 0.75rem 1.5rem; /* Increased from 0.5rem 1rem */
+  border: 2px solid #007bff; /* Increased border thickness */
+  border-radius: 6px; /* Increased from 4px */
+  background-color: #fff;
+  color: #007bff;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 1.1rem; /* Added larger font size */
+}
+
+.sort-btn:hover {
+  background-color: #007bff;
+  color: #fff;
+}
+
+.invoice-table-card {
+  background: #fff;
+  border-radius: 12px; /* Increased from 8px */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Increased shadow */
+  overflow-x: auto;
+}
+
+.invoice-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.table-header {
+  padding: 1.5rem; /* Increased from 1rem */
+  background-color: #f1f3f5;
+  color: #333;
+  text-align: left;
+  font-weight: 600;
+  font-size: 1.2rem; /* Added larger font size */
+}
+
+.table-cell {
+  padding: 1.5rem; /* Increased from 1rem */
+  border-bottom: 2px solid #eee; /* Increased border thickness */
+  color: #555;
+  font-size: 1.1rem; /* Added larger font size */
+}
+
+.table-row-hover:hover {
+  background-color: #f8f9fa;
+}
+
+.status-open {
+  color: #28a745;
+  font-weight: 500;
+}
+
+.status-closed {
+  color: #dc3545;
+  font-weight: 500;
+}
+
+.actions-cell {
+  display: flex;
+  gap: 0.75rem; /* Increased from 0.5rem */
+}
+
+.action-button {
+  padding: 0.6rem 1.2rem; /* Increased from 0.4rem 0.8rem */
+  border: none;
+  border-radius: 6px; /* Increased from 4px */
+  cursor: pointer;
+  color: #fff;
+  transition: opacity 0.2s ease;
+  font-size: 1rem; /* Added larger font size */
+}
+
+.action-button:hover {
+  opacity: 0.9;
+}
+
+.action-button.edit {
+  background-color: #007bff;
+}
+
+.action-button.download {
+  background-color: #17a2b8;
+}
+
+.action-button.delete {
+  background-color: #dc3545;
+}
+
+.pagination {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.5rem; /* Increased from 1rem */
+}
+
+.pagination-button {
+  padding: 0.75rem 1.5rem; /* Increased from 0.5rem 1rem */
+  border: 2px solid #ddd; /* Increased border thickness */
+  border-radius: 6px; /* Increased from 4px */
+  background-color: #fff;
+  color: #333;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 1.1rem; /* Added larger font size */
+}
+
+.pagination-button:hover:not(:disabled) {
+  background-color: #f1f3f5;
+}
+
+.pagination-button:disabled {
+  color: #999;
+  cursor: not-allowed;
+}
+
+.pagination-info {
+  color: #666;
+  font-size: 1.1rem; /* Added larger font size */
+}

@@ -1,7 +1,7 @@
 /* InvoiceForm.css */
 .invoice-container {
     padding: 24px;
-   
+    font-family: 'Inter', 'Noto Sans Khmer', sans-serif; /* Support both fonts */
     min-height: 100vh;
   }
   

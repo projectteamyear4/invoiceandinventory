@@ -1,37 +1,48 @@
 import React, { useState } from "react";
-import { FaPlus } from "react-icons/fa";
+import { FaEdit, FaPlus, FaTrash } from "react-icons/fa"; // Added FaEdit and FaTrash
 import { useNavigate } from "react-router-dom";
 import "./Customers.css";
 
 const CustomerList = () => {
-  const [customers] = useState([
-    { customer_id: 1, name: "John Doe", email: "john@example.com", phone: "555-1234", address: "123 Main St" },
-    { customer_id: 2, name: "General", email: "General", phone: "general", address: "general" },
+  const [customers, setCustomers] = useState([
+    { customer_id: 1, name: "ចន ដូ", phone1: "៥៥៥-១២៣៤", phone2: "៥៥៥៣២៣២៣-១២៣៤", address: "ផ្លូវលេខ ១២៣" }, // John Doe
+    { customer_id: 2, name: "ទូទៅ", phone1: "ទូទៅ", phone2: "ទូទៅ", address: "ទូទៅ" }, // General
   ]);
   const [searchQuery, setSearchQuery] = useState("");
   const navigate = useNavigate();
 
   const filteredCustomers = customers.filter(customer =>
-    customer.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    customer.email.toLowerCase().includes(searchQuery.toLowerCase())
+    customer.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+  // Handle Delete action
+  const handleDelete = (customer_id) => {
+    if (window.confirm("តើអ្នកប្រាកដជាចង់លុបអតិថិជននេះមែនទេ?")) { // Are you sure you want to delete this customer?
+      setCustomers(customers.filter(customer => customer.customer_id !== customer_id));
+      alert("អតិថិជនត្រូវបានលុបដោយជោគជ័យ!"); // Customer deleted successfully!
+    }
+  };
+
+  // Handle Edit action (navigate to edit page)
+  const handleEdit = (customer_id) => {
+    navigate(`/edit-customer/${customer_id}`);
+  };
 
   return (
     <div className="customer-container">
       <header className="customer-header">
-        <h1>Customer Management</h1>
+        <h1>ការគ្រប់គ្រងអតិថិជន</h1> {/* Customer Management */}
         <div className="controls">
           <div className="search-box">
-           
             <input
               type="text"
-              placeholder="Search customers..."
+              placeholder="ស្វែងរកអតិថិជន..." // Search customers...
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
           <button className="add-button" onClick={() => navigate('/add-customer')}>
-            <FaPlus /> Add Customer
+            <FaPlus /> បន្ថែមអតិថិជន {/* Add Customer */}
           </button>
         </div>
       </header>
@@ -39,21 +50,36 @@ const CustomerList = () => {
       <table className="customer-table">
         <thead>
           <tr>
-            <th>Name</th>
-            <th>Email</th>
-            <th>Phone</th>
-            <th>Address</th>
-            <th>Action</th>
+            <th>ឈ្មោះ</th> {/* Name */}
+            <th>ទូរស័ព្ទ ១</th> {/* Phone1 */}
+            <th>ទូរស័ព្ទ ២</th> {/* Phone2 */}
+            <th>អាសយដ្ឋាន</th> {/* Address */}
+            <th>សកម្មភាព</th> {/* Action */}
           </tr>
         </thead>
         <tbody>
           {filteredCustomers.map(customer => (
             <tr key={customer.customer_id}>
               <td>{customer.name}</td>
-              <td>{customer.email}</td>
-              <td>{customer.phone}</td>
+              <td>{customer.phone1}</td>
+              <td>{customer.phone2}</td>
               <td>{customer.address}</td>
-              <td>d</td>
+              <td className="action-cell">
+                <button 
+                  className="action-button edit" 
+                  onClick={() => handleEdit(customer.customer_id)}
+                  title="កែ" // Edit
+                >
+                  <FaEdit />
+                </button>
+                <button 
+                  className="action-button delete" 
+                  onClick={() => handleDelete(customer.customer_id)}
+                  title="លុប" // Delete
+                >
+                  <FaTrash />
+                </button>
+              </td>
             </tr>
           ))}
         </tbody>
@@ -61,8 +87,5 @@ const CustomerList = () => {
     </div>
   );
 };
-
-
-
 
 export default CustomerList;

@@ -2,11 +2,10 @@ import React, { useState } from "react";
 import "./InvoiceList.css";
 
 const InvoiceList = () => {
-  // Sample data
   const initialInvoices = [
     {
       id: "INV001",
-      customerName: "John Doe",
+      customerName: "សុខ សុភ័ក្ត្រ", // Sok Sophak (Khmer: "Happiness" + "Wisdom")
       date: "2025-02-01",
       dueDate: "2025-03-01",
       type: "Invoice",
@@ -14,7 +13,7 @@ const InvoiceList = () => {
     },
     {
       id: "INV002",
-      customerName: "Jane Smith",
+      customerName: "គឹម សុជាតិ", // Kim Socheat (Khmer: "Gold" + "Good Birth")
       date: "2025-02-10",
       dueDate: "2025-03-10",
       type: "Quote",
@@ -22,7 +21,7 @@ const InvoiceList = () => {
     },
     {
       id: "INV003",
-      customerName: "Alice Johnson",
+      customerName: "ម៉ី នា", // Mey Na (Khmer: "Mother" + "Lady")
       date: "2025-02-15",
       dueDate: "2025-03-15",
       type: "Invoice",
@@ -35,7 +34,6 @@ const InvoiceList = () => {
   const [sortDirection, setSortDirection] = useState("asc");
   const [searchTerm, setSearchTerm] = useState("");
 
-  // Sort function
   const handleSort = (field) => {
     const direction =
       sortField === field && sortDirection === "asc" ? "desc" : "asc";
@@ -43,14 +41,15 @@ const InvoiceList = () => {
     setSortDirection(direction);
 
     const sortedInvoices = [...invoices].sort((a, b) => {
-      const aValue = a[field];
-      const bValue = b[field];
+      const aValue = field === "date" || field === "dueDate" ? new Date(a[field]) : a[field];
+      const bValue = field === "date" || field === "dueDate" ? new Date(b[field]) : b[field];
+      
       if (direction === "asc") {
-        return aValue.localeCompare
+        return typeof aValue === "string" 
           ? aValue.localeCompare(bValue)
           : aValue - bValue;
       } else {
-        return bValue.localeCompare
+        return typeof bValue === "string"
           ? bValue.localeCompare(aValue)
           : bValue - aValue;
       }
@@ -58,7 +57,6 @@ const InvoiceList = () => {
     setInvoices(sortedInvoices);
   };
 
-  // Filter function
   const filteredInvoices = invoices.filter((invoice) =>
     Object.values(invoice)
       .join(" ")
@@ -69,79 +67,96 @@ const InvoiceList = () => {
   return (
     <div className="invoice-list-container">
       <h1 className="invoice-list-title">
-        <span className="title-highlight">Invoice</span> List
+        <span className="title-highlight">វិក្កយបត្រ</span> បញ្ជី
       </h1>
-      <div className="invoice-table-card">
-        {/* Search Input */}
+      
+      <div className="controls-container">
         <div className="search-container">
           <input
             type="text"
             className="search-input"
-            placeholder="Search invoices..."
+            placeholder="ស្វែងរកវិក្កយបត្រ..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
+        
+        <div className="sort-buttons">
+          <button 
+            className="sort-btn" 
+            onClick={() => handleSort("customerName")}
+          >
+            តម្រៀបតាមឈ្មោះ {sortField === "customerName" && (sortDirection === "asc" ? "↑" : "↓")}
+          </button>
+          <button 
+            className="sort-btn" 
+            onClick={() => handleSort("date")}
+          >
+            តម្រៀបតាមកាលបរិច្ឆេទ {sortField === "date" && (sortDirection === "asc" ? "↑" : "↓")}
+          </button>
+          <button 
+            className="sort-btn" 
+            onClick={() => handleSort("status")}
+          >
+            តម្រៀបតាមស្ថានភាព {sortField === "status" && (sortDirection === "asc" ? "↑" : "↓")}
+          </button>
+        </div>
+      </div>
 
+      <div className="invoice-table-card">
         <table className="invoice-table">
           <thead>
             <tr>
               <th className="table-header" onClick={() => handleSort("id")}>
-                Invoice ID {sortField === "id" && (sortDirection === "asc" ? "↑" : "↓")}
+                លេខសម្គាល់ {sortField === "id" && (sortDirection === "asc" ? "↑" : "↓")}
               </th>
-              <th
-                className="table-header"
-                onClick={() => handleSort("customerName")}
-              >
-                Customer Name{" "}
-                {sortField === "customerName" && (sortDirection === "asc" ? "↑" : "↓")}
+              <th className="table-header" onClick={() => handleSort("customerName")}>
+                អតិថិជន {sortField === "customerName" && (sortDirection === "asc" ? "↑" : "↓")}
               </th>
               <th className="table-header" onClick={() => handleSort("date")}>
-                Date {sortField === "date" && (sortDirection === "asc" ? "↑" : "↓")}
+                កាលបរិច្ឆេទ {sortField === "date" && (sortDirection === "asc" ? "↑" : "↓")}
               </th>
-              <th
-                className="table-header"
-                onClick={() => handleSort("dueDate")}
-              >
-                Due Date{" "}
-                {sortField === "dueDate" && (sortDirection === "asc" ? "↑" : "↓")}
+              <th className="table-header" onClick={() => handleSort("dueDate")}>
+                កាលបរិច្ឆេទកំណត់ {sortField === "dueDate" && (sortDirection === "asc" ? "↑" : "↓")}
               </th>
               <th className="table-header" onClick={() => handleSort("type")}>
-                Type {sortField === "type" && (sortDirection === "asc" ? "↑" : "↓")}
+                ប្រភេទ {sortField === "type" && (sortDirection === "asc" ? "↑" : "↓")}
               </th>
               <th className="table-header" onClick={() => handleSort("status")}>
-                Status{" "}
-                {sortField === "status" && (sortDirection === "asc" ? "↑" : "↓")}
+                ស្ថានភាព {sortField === "status" && (sortDirection === "asc" ? "↑" : "↓")}
               </th>
-              <th className="table-header">Actions</th>
+              <th className="table-header">សកម្មភាព</th>
             </tr>
           </thead>
           <tbody>
             {filteredInvoices.map((invoice) => (
-              <tr key={invoice.id}>
+              <tr key={invoice.id} className="table-row-hover">
                 <td className="table-cell">{invoice.id}</td>
                 <td className="table-cell">{invoice.customerName}</td>
                 <td className="table-cell">{invoice.date}</td>
                 <td className="table-cell">{invoice.dueDate}</td>
                 <td className="table-cell">{invoice.type}</td>
-                <td className="table-cell">{invoice.status}</td>
-                <td className="table-cell">
-                  <button className="action-button edit">Edit</button>
-                  <button className="action-button download">Download PDF</button>
-                  <button className="action-button delete">Delete</button>
+                <td className={`table-cell status-${invoice.status.toLowerCase()}`}>
+                  {invoice.status === "Open" ? "បើក" : "បិទ"}
+                </td>
+                <td className="table-cell actions-cell">
+                  <button className="action-button edit">កែ</button>
+                  <button className="action-button download">ទាញយក PDF</button>
+                  <button className="action-button delete">លុប</button>
                 </td>
               </tr>
             ))}
           </tbody>
         </table>
 
-        {/* Pagination */}
         <div className="pagination">
           <button className="pagination-button" disabled>
-            Previous
+            មុន
           </button>
-          <span className="pagination-info">Page 1 of 3</span>
-          <button className="pagination-button">Next</button>
+          <span className="pagination-info">ទំព័រ ១ នៃ ៣</span>
+          <button className="pagination-button">
+            បន្ទាប់
+          </button>
         </div>
       </div>
     </div>
