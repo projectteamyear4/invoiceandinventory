@@ -4,7 +4,7 @@
   position: sticky;
   padding-top: 4rem;
   transition: all 300ms ease;
- 
+  font-family: 'Noto Sans Khmer', sans-serif; /* Apply Khmer font */
 }
 /* logo */
 .bars{
@@ -105,7 +105,7 @@
   .bars{
     display: flex;
     position: fixed;
-    top: 2rem;
+    top: 5rem;
     left:60%;
     background:#ffe0e0;
     padding:10px;
