@@ -1,22 +1,26 @@
+/* Table.css */
+
 .MuiTableRow-root > * {
-  padding: 12px;
-  font-family: 'Arial', sans-serif;
-  font-size: 14px;
+  padding: 16px; /* Increased from 12px for more spacing */
+  font-family: 'Inter', 'Noto Sans Khmer', sans-serif !important;
+  font-size: 1rem; /* Increased from 15px (0.9375rem) to 1.25rem */
 }
 
 .MuiTableRow-root.MuiTableRow-head > * {
-  font-weight: bold !important;
+  font-weight: 700 !important; /* Bolder weight */
   background-color: #f8f9fa;
   color: #333;
   text-transform: uppercase;
   letter-spacing: 0.5px;
   border-bottom: 2px solid #ddd !important;
+  font-size: 1.5rem; /* Increased from implicit 15px to 1.5rem */
 }
 
 .Table td,
 th {
   border: none !important;
-  font-size: 13px;
+  font-size: 1.25rem; /* Increased from 15px to 1.25rem */
+ 
   color: #555;
 }
 
@@ -25,11 +29,12 @@ th {
 }
 
 .status {
-  padding: 8px 12px;
+  padding: 10px 14px; /* Increased from 8px 12px */
   border-radius: 12px;
   font-weight: bold;
   text-align: center;
   transition: all 0.3s ease;
+  font-size: 1.1rem; /* Increased from implicit smaller size to 1.1rem */
 }
 
 .status:hover {
@@ -43,6 +48,7 @@ th {
   font-weight: bold;
   text-decoration: underline;
   transition: color 0.3s ease;
+  font-size: 1.25rem; /* Match body text size */
 }
 
 .Details:hover {
@@ -77,6 +83,18 @@ th {
     flex-direction: column;
     align-items: center;
     width: 100%;
+  }
+  .MuiTableRow-root > * {
+    font-size: 1rem; /* Slightly smaller on mobile but still larger than original */
+  }
+  .MuiTableRow-root.MuiTableRow-head > * {
+    font-size: 1.25rem; /* Adjusted for mobile */
+  }
+  .status {
+    font-size: 0.9rem; /* Adjusted for mobile */
+  }
+  .Details {
+    font-size: 1rem; /* Adjusted for mobile */
   }
 }
 

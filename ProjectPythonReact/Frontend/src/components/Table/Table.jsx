@@ -9,49 +9,44 @@ import TableRow from "@mui/material/TableRow";
 import React, { useState } from "react";
 import "./Table.css";
 
-function createData(name, trackingId, date, status) {
-  return { name, trackingId, date, status };
-}
-
 const rows = [
-  createData("Lasania Chiken Fri", 18908424, "2 March 2022", "Approved"),
-  createData("Big Baza Bang", 18908425, "2 March 2022", "Pending"),
-  createData("Mouth Freshner", 18908426, "2 March 2022", "Approved"),
-  createData("Cupcake", 18908427, "2 March 2022", "Delivered"),
-  createData("Sandwich", 18908428, "3 March 2022", "Pending"),
-  createData("Pizza", 18908429, "3 March 2022", "Approved"),
-  createData("Burger", 18908430, "4 March 2022", "Delivered"),
-  createData("Pasta", 18908431, "4 March 2022", "Pending"),
-  createData("Fries", 18908432, "5 March 2022", "Approved"),
-  createData("Ice Cream", 18908433, "5 March 2022", "Delivered"),
+  { name: "ភីហ្សា", trackingId: "KH001", date: "2/02/2025", status: "បានអនុម័ត" }, // Pizza - Approved
+  { name: "ប៊ឺហ្គឺ", trackingId: "KH002", date: "2/02/2025", status: "រង់ចាំ" }, // Burger - Pending
+  { name: "សាំងវិច", trackingId: "KH003", date: "2/02/2025", status: "បានដឹកជញ្ជូន" }, // Sandwich - Delivered
+  { name: "បាយឆា", trackingId: "KH004", date: "2/02/2025", status: "បានអនុម័ត" }, // Fried Rice - Approved
+  { name: "មីកញ្ចប់", trackingId: "KH005", date: "2/02/2025", status: "រង់ចាំ" }, // Instant Noodles - Pending
+  { name: "អន្សម", trackingId: "KH006", date: "2/02/2025", status: "បានដឹកជញ្ជូន" }, // Sticky Rice - Delivered
+  { name: "កាហ្វេ", trackingId: "KH007", date: "2/02/2025", status: "បានអនុម័ត" }, // Coffee - Approved
+  { name: "តែ", trackingId: "KH008", date: "2/02/2025", status: "រង់ចាំ" }, // Tea - Pending
+  { name: "ភីហ្សា", trackingId: "KH001", date: "2/02/2025", status: "បានអនុម័ត" }, // Pizza - Approved
+  { name: "ប៊ឺហ្គឺ", trackingId: "KH002", date: "2/02/2025", status: "រង់ចាំ" }, // Burger - Pending
+  { name: "សាំងវិច", trackingId: "KH003", date: "2/02/2025", status: "បានដឹកជញ្ជូន" }, // Sandwich - Delivered
+  { name: "បាយឆា", trackingId: "KH004", date: "2/02/2025", status: "បានអនុម័ត" }, // Fried Rice - Approved
+  { name: "មីកញ្ចប់", trackingId: "KH005", date: "2/02/2025", status: "រង់ចាំ" }, // Instant Noodles - Pending
+  { name: "អន្សម", trackingId: "KH006", date: "2/02/2025", status: "បានដឹកជញ្ជូន" }, // Sticky Rice - Delivered
+  { name: "កាហ្វេ", trackingId: "KH007", date: "2/02/2025", status: "បានអនុម័ត" }, // Coffee - Approved
+  { name: "តែ", trackingId: "KH008", date: "2/02/2025", status: "រង់ចាំ" }, // Tea - Pending
+  { name: "នំបញ្ចុក", trackingId: "KH009", date: "2/02/2025", status: "បានដឹកជញ្ជូន" }, // Num Banh Chok - Delivered
+  { name: "បាយសី", trackingId: "KH010", date: "2/02/2025", status: "បានអនុម័ត" }, // Sticky Rice Cake - Approved
+  { name: "នំបញ្ចុក", trackingId: "KH009", date: "2/02/2025", status: "បានដឹកជញ្ជូន" }, // Num Banh Chok - Delivered
+  { name: "បាយសី", trackingId: "KH010", date: "2/02/2025", status: "បានអនុម័ត" }, // Sticky Rice Cake - Approved
 ];
 
 const makeStyle = (status) => {
-  if (status === "Approved") {
-    return {
-      background: "rgb(145 254 159 / 47%)",
-      color: "green",
-    };
-  } else if (status === "Pending") {
-    return {
-      background: "#ffadad8f",
-      color: "red",
-    };
-  } else {
-    return {
-      background: "#59bfff",
-      color: "white",
-    };
+  if (status === "បានអនុម័ត") { // Approved
+    return { background: "#e8f5e9", color: "#2e7d32" }; // Light green
+  } else if (status === "រង់ចាំ") { // Pending
+    return { background: "#ffebee", color: "#c62828" }; // Light red
+  } else { // Delivered
+    return { background: "#e3f2fd", color: "#1976d2" }; // Light blue
   }
 };
 
 export default function PaginatedTable() {
   const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(5);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
 
-  const handleChangePage = (event, newPage) => {
-    setPage(newPage);
-  };
+  const handleChangePage = (event, newPage) => setPage(newPage);
 
   const handleChangeRowsPerPage = (event) => {
     setRowsPerPage(parseInt(event.target.value, 10));
@@ -60,38 +55,26 @@ export default function PaginatedTable() {
 
   return (
     <div className="Table">
-      <h3>Recent Orders</h3>
+      <h2>ការកម្ម៉ង់ថ្មីៗ</h2> {/* Recent Orders */}
       <TableContainer
         component={Paper}
-        style={{
-          boxShadow: "0px 13px 20px 0px #80808029",
-          maxHeight: "400px",
-          overflow: "auto",
-        }}
+        className="table-container"
       >
-        <Table sx={{ minWidth: 650 }} aria-label="simple table" stickyHeader>
+        <Table stickyHeader>
           <TableHead>
-            <TableRow>
-              <TableCell>Product</TableCell>
-              <TableCell align="left">Tracking ID</TableCell>
-              <TableCell align="left">Date</TableCell>
-              <TableCell align="left">Status</TableCell>
+          <TableRow>
+              <TableCell sx={{ fontFamily: "'Inter', 'Noto Sans Khmer', sans-serif" }}>ផលិតផល</TableCell> {/* Product */}
+              <TableCell sx={{ fontFamily: "'Inter', 'Noto Sans Khmer', sans-serif" }} align="left">លេខតាមដាន</TableCell> {/* Tracking ID */}
+              <TableCell sx={{ fontFamily: "'Inter', 'Noto Sans Khmer', sans-serif" }} align="left">កាលបរិច្ឆេទ</TableCell> {/* Date */}
+              <TableCell sx={{ fontFamily: "'Inter', 'Noto Sans Khmer', sans-serif" }} align="left">ស្ថានភាព</TableCell> {/* Status */}
             </TableRow>
           </TableHead>
           <TableBody>
             {rows
               .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
               .map((row) => (
-                <TableRow
-                  key={row.trackingId}
-                  sx={{
-                    "&:last-child td, &:last-child th": { border: 0 },
-                    "&:hover": { backgroundColor: "#f5f5f5", cursor: "pointer" },
-                  }}
-                >
-                  <TableCell component="th" scope="row">
-                    {row.name}
-                  </TableCell>
+                <TableRow key={row.trackingId} className="table-row">
+                  <TableCell>{row.name}</TableCell>
                   <TableCell align="left">{row.trackingId}</TableCell>
                   <TableCell align="left">{row.date}</TableCell>
                   <TableCell align="left">
@@ -104,7 +87,7 @@ export default function PaginatedTable() {
           </TableBody>
         </Table>
         <TablePagination
-          rowsPerPageOptions={[5, 10, 15]}
+          rowsPerPageOptions={[10, 15]}
           component="div"
           count={rows.length}
           rowsPerPage={rowsPerPage}

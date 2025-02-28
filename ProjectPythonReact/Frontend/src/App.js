@@ -11,8 +11,6 @@ import Orders from './components/Orderlist/Orders.jsx';
 import AddProduct from './components/productlist/addproduct.jsx';
 import ProductList from './components/productlist/productlist.jsx';
 import Products from './components/productlist/products.jsx'; // Ensure this file exists
-import SaleDetails from './components/productlist/SaleDetails.jsx';
-import RightSide from './components/RigtSide/RightSide';
 import Sidebar from './components/Sidebar';
 
 function App() {
@@ -24,11 +22,11 @@ function App() {
           <Sidebar />
          
           <Routes> {/* Define routes */}
-            <Route path="/" element={<><MainDash /><RightSide /></>} /> {/* Default route */}
+            <Route path="/" element={<><MainDash /></>} /> {/* Default route */}
             <Route path="/orders" element={<Orders />} /> {/* Orders route */}
             <Route path="/customers" element={<CustomerList />} />
             <Route path="/add-customer" element={<AddCustomer />} />
-            <Route path="/products" element={<><Products /><SaleDetails /></>} /> {/* Orders route */}
+            <Route path="/products" element={<><Products /></>} /> {/* Orders route */}
             <Route path="/CategoryList" element={<CategoryList />} /> {/* Orders route */}
             <Route path="/add-product" element={<AddProduct />} />{/*AddProduct */}
             <Route path="/productlist" element={<ProductList />} />{/*AddProduct */}

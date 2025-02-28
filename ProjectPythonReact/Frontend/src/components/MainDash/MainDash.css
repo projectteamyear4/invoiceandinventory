@@ -4,6 +4,7 @@
     height: 100vh;
     flex-direction: column;
     padding-top: 2.5rem;
+    font-family: 'Inter', 'Noto Sans Khmer', sans-serif;
     gap: 1rem; /* Adds consistent spacing between children */
     width: 97%; /* Ensures it takes full width */
 

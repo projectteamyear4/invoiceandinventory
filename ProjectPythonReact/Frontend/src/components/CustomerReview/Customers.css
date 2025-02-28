@@ -123,15 +123,16 @@
 .action-button.delete {
   background-color: #dc3545;
 }
+
 /* Customers.css */
 .add-customer-container {
-  max-width: 1400px;
+  max-width: 1200px; /* Wider to accommodate table */
   margin: 3rem auto;
   padding: 3rem;
-  background: #fff;
+ 
   border-radius: 15px;
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
-  font-family: 'Inter', 'Noto Sans Khmer', sans-serif; /* Support Khmer */
+
+  font-family: 'Inter', 'Noto Sans Khmer', sans-serif;
 }
 
 .add-customer-container h2 {
@@ -148,52 +149,67 @@ form {
   gap: 2rem;
 }
 
-.form-group {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
+.customer-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: #f9f9f9;
+  border-radius: 8px;
 }
 
-.form-group label {
-  font-size: 1.25rem;
+.customer-table th {
+  padding: 1.5rem;
+  background: #f1f3f5;
   color: #333;
-  font-weight: 500;
+  text-align: left;
+  font-size: 1.2rem;
+  font-weight: 600;
 }
 
-.form-group input,
-.form-group textarea {
+.customer-table td {
   padding: 1rem;
+  border-bottom: 2px solid #eee;
+  vertical-align: top; /* Align inputs at the top */
+}
+
+.customer-table input,
+.customer-table textarea {
+  width: 100%;
+  padding: 0.75rem;
   border: 2px solid #ddd;
   border-radius: 8px;
-  font-size: 1.25rem;
-  transition: border-color 0.3s ease;
-  width: 100%;
+  font-size: 1rem;
   box-sizing: border-box;
+  transition: border-color 0.3s ease;
 }
 
-.form-group input:focus,
-.form-group textarea:focus {
+.customer-table input:focus,
+.customer-table textarea:focus {
   outline: none;
   border-color: #3498db;
   box-shadow: 0 0 8px rgba(52, 152, 219, 0.3);
 }
 
-.form-group textarea {
-  min-height: 150px;
+.customer-table textarea {
+  min-height: 100px;
   resize: vertical;
 }
 
 .error {
   color: #e74c3c;
-  font-size: 1rem;
+  font-size: 0.9rem;
+  display: block; /* Ensure errors appear below inputs */
+  margin-top: 0.25rem;
 }
 
 .button-group {
   display: flex;
   gap: 1.5rem;
   justify-content: flex-end;
+  margin-top: 2rem;
 }
 
+.add-more-btn,
+.remove-btn,
 .cancel-btn,
 .submit-btn {
   padding: 1rem 2rem;
@@ -204,8 +220,26 @@ form {
   transition: background 0.3s ease;
 }
 
+.add-more-btn {
+  background: #28a745; /* Green for adding */
+  color: #fff;
+}
+
+.add-more-btn:hover {
+  background: #218838;
+}
+
+.remove-btn {
+  background: #dc3545; /* Red for removing */
+  color: #fff;
+}
+
+.remove-btn:hover {
+  background: #c82333;
+}
+
 .cancel-btn {
-  background: #6c757d;
+  background: #6c757d; /* Gray for cancel */
   color: #fff;
 }
 
@@ -214,10 +248,10 @@ form {
 }
 
 .submit-btn {
-  background: #3498db;
+  background: #3498db; /* Blue for submit */
   color: #fff;
 }
 
 .submit-btn:hover {
   background: #2980b9;
-}
+} 

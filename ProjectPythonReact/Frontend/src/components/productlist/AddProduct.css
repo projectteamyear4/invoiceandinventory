@@ -1,86 +1,115 @@
 .add-product-container {
-  max-width: 1000px; /* Increased from 800px */
-  margin: 3rem auto; /* Increased from 2rem */
-  padding: 3rem; /* Increased from 2rem */
+  max-width: 1400px;
+  margin: 3rem auto;
+  padding: 3rem;
   background: #fff;
-  border-radius: 15px; /* Increased from 10px */
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1); /* Increased shadow */
-  font-family: 'Inter', 'Noto Sans Khmer', sans-serif; /* Support Khmer */
+  border-radius: 15px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+  font-family: 'Inter', 'Noto Sans Khmer', sans-serif !important;
 }
 
 .title {
   text-align: center;
   color: #2c3e50;
-  margin-bottom: 3rem; /* Increased from 2rem */
-  font-size: 2.5rem; /* Increased from 2rem */
+  margin-bottom: 3rem;
+  font-size: 2.5rem;
   font-weight: 600;
 }
 
 .product-form {
   display: flex;
   flex-direction: column;
-  gap: 2rem; /* Increased from 1.5rem */
+  gap: 2rem;
 }
 
-.form-row {
-  display: flex;
-  gap: 1.5rem; /* Increased from 1rem */
-  flex-wrap: wrap;
-}
-
-.form-group {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem; /* Increased from 0.5rem */
-  min-width: 0;
-}
-
-.form-group.full-width {
-  flex: 2 1 100%;
-}
-
-.form-group.empty {
-  flex: 1;
-}
-
-.form-group input,
-.form-group textarea {
-  padding: 1rem; /* Increased from 0.75rem */
-  border: 2px solid #ddd; /* Increased border thickness */
-  border-radius: 8px; /* Increased from 5px */
-  font-size: 1.25rem; /* Increased from 1rem */
-  transition: border-color 0.3s ease;
+.product-table {
   width: 100%;
-  box-sizing: border-box;
+  border-collapse: collapse;
+  background: #f9f9f9;
+  border-radius: 8px;
 }
 
-.form-group input:focus,
-.form-group textarea:focus {
+.product-table th {
+  padding: 1.5rem;
+  background: #2c3e50;
+  color: #ecf0f1;
+  text-align: left;
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+
+.product-table td {
+  padding: 1rem;
+  border-bottom: 2px solid #eee;
+  vertical-align: top;
+}
+
+.product-table input,
+.product-table textarea,
+.product-table select {
+  width: 100%;
+  padding: 0.75rem;
+  border: 2px solid #ddd;
+  border-radius: 8px;
+  font-size: 1rem;
+  box-sizing: border-box;
+  transition: border-color 0.3s ease;
+}
+
+.product-table input:focus,
+.product-table textarea:focus,
+.product-table select:focus {
   outline: none;
   border-color: #3498db;
-  box-shadow: 0 0 8px rgba(52, 152, 219, 0.3); /* Increased shadow */
+  box-shadow: 0 0 8px rgba(52, 152, 219, 0.3);
 }
 
-.form-group textarea {
-  min-height: 150px; /* Increased from 100px */
+.product-table textarea {
+  min-height: 100px;
   resize: vertical;
 }
 
 .error {
   color: #e74c3c;
-  font-size: 1rem; /* Increased from 0.9rem */
+  font-size: 0.9rem;
+  display: block;
+  margin-top: 0.25rem;
+}
+
+.add-more-button,
+.remove-button,
+.submit-button {
+  padding: 1rem 2rem;
+  border: none;
+  border-radius: 8px;
+  font-size: 1.25rem;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.add-more-button {
+  background: #28a745;
+  color: #fff;
+  margin-top: 1rem;
+}
+
+.add-more-button:hover {
+  background: #218838;
+}
+
+.remove-button {
+  background: #dc3545 !important;
+  color: #fff;
+}
+
+.remove-button:hover {
+  background: #c82333;
 }
 
 .submit-button {
-  padding: 1.25rem; /* Increased from 1rem */
   background: #3498db;
   color: #fff;
-  border: none;
-  border-radius: 8px; /* Increased from 5px */
-  font-size: 1.25rem; /* Increased from 1.1rem */
-  cursor: pointer;
-  transition: background 0.3s ease;
+  margin-top: 2rem;
 }
 
 .submit-button:hover {
