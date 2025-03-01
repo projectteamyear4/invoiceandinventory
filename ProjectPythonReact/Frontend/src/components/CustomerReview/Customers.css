@@ -1,11 +1,11 @@
 /* Customers.css */
 .customer-container {
-  max-width: 1200px;
+  max-width: 1400px;
   margin: 3rem auto;
   padding: 3rem;
-  min-height: 80vh;
+  min-height: 90vh;
   border-radius: 12px;
-  font-family: 'Inter', 'Noto Sans Khmer', sans-serif; /* Support Khmer */
+  font-family: 'Inter', 'Noto Sans Khmer', sans-serif;
 }
 
 .customer-header {
@@ -48,6 +48,23 @@
   box-shadow: 0 0 8px rgba(52, 152, 219, 0.3);
 }
 
+.sort-select {
+  padding: 1rem;
+  border: 2px solid #ddd;
+  border-radius: 8px;
+  font-size: 1.25rem;
+  background: #fff;
+  min-width: 200px;
+  cursor: pointer;
+  transition: border-color 0.3s ease;
+}
+
+.sort-select:focus {
+  outline: none;
+  border-color: #3498db;
+  box-shadow: 0 0 8px rgba(52, 152, 219, 0.3);
+}
+
 .add-button {
   display: flex;
   align-items: center;
@@ -76,8 +93,8 @@
 
 .customer-table th {
   padding: 1.5rem;
-  background: #f1f3f5;
-  color: #333;
+  background: #0081ff!important;
+  color: #ecf0f1 !important;
   text-align: left;
   font-size: 1.2rem;
   font-weight: 600;
@@ -124,6 +141,64 @@
   background-color: #dc3545;
 }
 
+.status-active {
+  color: #28a745;
+  font-weight: 500;
+}
+
+.status-inactive {
+  color: #dc3545;
+  font-weight: 500;
+}
+.pagination {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.5rem;
+  background: #fafafa;
+  border-top: 1px solid #eee;
+}
+
+.pagination-button {
+  padding: 0.75rem 1.5rem;
+  border: 2px solid #ddd;
+  border-radius: 8px;
+  background: #fff;
+  color: #333;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 1.1rem;
+}
+
+.pagination-button:hover:not(:disabled) {
+  background: #f1f3f5;
+}
+
+.pagination-button:disabled {
+  color: #999;
+  cursor: not-allowed;
+}
+
+.pagination-info {
+  color: #666;
+  font-size: 1.1rem;
+}
+
+.rows-per-page-select {
+  padding: 0.75rem;
+  border: 2px solid #ddd;
+  border-radius: 8px;
+  font-size: 1.1rem;
+  background: #fff;
+  cursor: pointer;
+  transition: border-color 0.3s ease;
+}
+
+.rows-per-page-select:focus {
+  outline: none;
+  border-color: #3498db;
+  box-shadow: 0 0 8px rgba(52, 152, 219, 0.3);
+}
 /* Customers.css */
 .add-customer-container {
   max-width: 1200px; /* Wider to accommodate table */

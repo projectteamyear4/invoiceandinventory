@@ -32,35 +32,55 @@ const InvoiceList = () => {
   const [invoices, setInvoices] = useState(initialInvoices);
   const [sortField, setSortField] = useState(null);
   const [sortDirection, setSortDirection] = useState("asc");
+  const [sortOption, setSortOption] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
 
-  const handleSort = (field) => {
+  const handleSort = (field, directionFromSelect = null) => {
     const direction =
-      sortField === field && sortDirection === "asc" ? "desc" : "asc";
+      directionFromSelect !== null
+        ? directionFromSelect
+        : sortField === field && sortDirection === "asc"
+        ? "desc"
+        : "asc";
+
     setSortField(field);
     setSortDirection(direction);
+    setSortOption(`${field}-${direction}`); // Sync with select dropdown
 
     const sortedInvoices = [...invoices].sort((a, b) => {
       const aValue = field === "date" || field === "dueDate" ? new Date(a[field]) : a[field];
       const bValue = field === "date" || field === "dueDate" ? new Date(b[field]) : b[field];
-      
+
       if (direction === "asc") {
-        return typeof aValue === "string" 
-          ? aValue.localeCompare(bValue)
+        return typeof aValue === "string"
+          ? aValue.localeCompare(bValue, 'km') // Khmer locale for strings
           : aValue - bValue;
       } else {
         return typeof bValue === "string"
-          ? bValue.localeCompare(aValue)
+          ? bValue.localeCompare(aValue, 'km')
           : bValue - aValue;
       }
     });
     setInvoices(sortedInvoices);
   };
 
+  const handleSelectSort = (option) => {
+    setSortOption(option);
+    if (!option) {
+      setInvoices(initialInvoices); // Reset to initial order if "Default" is selected
+      setSortField(null);
+      setSortDirection("asc");
+      return;
+    }
+
+    const [field, direction] = option.split("-");
+    handleSort(field, direction);
+  };
+
   // Handle status toggle
   const handleStatusToggle = (id) => {
-    setInvoices(invoices.map(invoice => 
-      invoice.id === id 
+    setInvoices(invoices.map(invoice =>
+      invoice.id === id
         ? { ...invoice, status: invoice.status === "Open" ? "Closed" : "Open" }
         : invoice
     ));
@@ -72,6 +92,23 @@ const InvoiceList = () => {
       .toLowerCase()
       .includes(searchTerm.toLowerCase())
   );
+
+  // Sort options for dropdown
+  const sortOptions = [
+    { value: "", label: "លំនាំដើម" }, // Default
+    { value: "id-asc", label: "លេខសម្គាល់ (ក - ហ)" }, // ID (A-Z)
+    { value: "id-desc", label: "លេខសម្គាល់ (ហ - ក)" }, // ID (Z-A)
+    { value: "customerName-asc", label: "ឈ្មោះ (ក - ហ)" }, // Customer Name (A-Z)
+    { value: "customerName-desc", label: "ឈ្មោះ (ហ - ក)" }, // Customer Name (Z-A)
+    { value: "date-asc", label: "កាលបរិច្ឆេទ (ចាស់ - ថ្មី)" }, // Date (Old to New)
+    { value: "date-desc", label: "កាលបរិច្ឆេទ (ថ្មី - ចាស់)" }, // Date (New to Old)
+    { value: "dueDate-asc", label: "កាលបរិច្ឆេទកំណត់ (ចាស់ - ថ្មី)" }, // Due Date (Old to New)
+    { value: "dueDate-desc", label: "កាលបរិច្ឆេទកំណត់ (ថ្មី - ចាស់)" }, // Due Date (New to Old)
+    { value: "type-asc", label: "ប្រភេទ (ក - ហ)" }, // Type (A-Z)
+    { value: "type-desc", label: "ប្រភេទ (ហ - ក)" }, // Type (Z-A)
+    { value: "status-asc", label: "ស្ថានភាព (ក - ហ)" }, // Status (A-Z)
+    { value: "status-desc", label: "ស្ថានភាព (ហ - ក)" }, // Status (Z-A)
+  ];
 
   return (
     <div className="invoice-list-container">
@@ -89,27 +126,17 @@ const InvoiceList = () => {
             onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
-        
-        <div className="sort-buttons">
-          <button 
-            className="sort-btn" 
-            onClick={() => handleSort("customerName")}
-          >
-            តម្រៀបតាមឈ្មោះ {sortField === "customerName" && (sortDirection === "asc" ? "↑" : "↓")}
-          </button>
-          <button 
-            className="sort-btn" 
-            onClick={() => handleSort("date")}
-          >
-            តម្រៀបតាមកាលបរិច្ឆេទ {sortField === "date" && (sortDirection === "asc" ? "↑" : "↓")}
-          </button>
-          <button 
-            className="sort-btn" 
-            onClick={() => handleSort("status")}
-          >
-            តម្រៀបតាមស្ថានភាព {sortField === "status" && (sortDirection === "asc" ? "↑" : "↓")}
-          </button>
-        </div>
+        <select
+          className="sort-select"
+          value={sortOption}
+          onChange={(e) => handleSelectSort(e.target.value)}
+        >
+          {sortOptions.map((option) => (
+            <option key={option.value} value={option.value}>
+              {option.label}
+            </option>
+          ))}
+        </select>
       </div>
 
       <div className="invoice-table-card">
