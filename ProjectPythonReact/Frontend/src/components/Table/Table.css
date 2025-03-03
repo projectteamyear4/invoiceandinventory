@@ -1,104 +1,110 @@
-/* Table.css */
-
-.MuiTableRow-root > * {
-  padding: 16px; /* Increased from 12px for more spacing */
-  font-family: 'Inter', 'Noto Sans Khmer', sans-serif !important;
-  font-size: 1rem; /* Increased from 15px (0.9375rem) to 1.25rem */
+/* General Table Styling */
+.Table.cool-table {
+  padding: 20px;
+  max-width: 1700px;
+ 
+  font-family: 'Inter', 'Noto Sans Khmer', sans-serif;
 }
 
-.MuiTableRow-root.MuiTableRow-head > * {
-  font-weight: 700 !important; /* Bolder weight */
-  background-color: #f8f9fa;
-  color: #333;
+
+/* Table Container Styling */
+.table-container {
+  border-radius: 15px;
+  overflow: hidden;
+ 
+}
+
+/* Table Header Styling */
+.table-header {
+  background: linear-gradient(90deg, #1976d2, #42a5f5 !important);
+}
+
+.table-header .MuiTableCell-root {
+  color: #000000;
+  font-weight: 600;
+  font-size: 1.2rem;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  border-bottom: 2px solid #ddd !important;
-  font-size: 1.5rem; /* Increased from implicit 15px to 1.5rem */
+  border-bottom: 2px solid #1565c0;
 }
 
-.Table td,
-th {
-  border: none !important;
-  font-size: 1.25rem; /* Increased from 15px to 1.25rem */
- 
-  color: #555;
-}
-
-.Table:first-child {
-  border-radius: 12px !important;
-}
-
-.status {
-  padding: 10px 14px; /* Increased from 8px 12px */
-  border-radius: 12px;
-  font-weight: bold;
-  text-align: center;
+/* Table Row Styling */
+.table-row {
   transition: all 0.3s ease;
-  font-size: 1.1rem; /* Increased from implicit smaller size to 1.1rem */
 }
 
-.status:hover {
+.table-row:hover {
+  background-color: rgba(66, 165, 245, 0.1);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+/* Table Cell Styling */
+.table-cell {
+  font-size: 1.2rem !important;
+  color: #000000 !important;
+  font-weight: 500;
+  fontFamily: "'Inter', 'Noto Sans Khmer', sans-serif" !important;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+/* Status Badge Styling */
+.cool-status {
+  display: inline-block;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-weight: 500;
+  font-size: 0.9rem;
+  transition: all 0.3s ease;
+  border: 1px solid transparent;
+}
+
+.cool-status:hover {
   transform: scale(1.05);
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  border: 1px solid currentColor;
 }
 
-.Details {
-  color: #007bff !important;
-  cursor: pointer;
-  font-weight: bold;
-  text-decoration: underline;
-  transition: color 0.3s ease;
-  font-size: 1.25rem; /* Match body text size */
+/* Pagination Styling */
+.cool-pagination {
+  background: #ffffff;
+  border-top: 1px solid #e0e0e0;
+  color: #1976d2;
 }
 
-.Details:hover {
-  color: #0056b3 !important;
+.cool-pagination .MuiTablePagination-selectLabel,
+.cool-pagination .MuiTablePagination-displayedRows {
+  font-weight: 500;
+  color: #1976d2;
 }
 
-.TableContainer {
-  max-height: 400px;
-  overflow: auto;
-  box-shadow: 0px 13px 20px 0px #80808029;
-  border-radius: 15px;
-  background-color: #ffffff;
+.cool-pagination .MuiIconButton-root:hover {
+  background-color: rgba(25, 118, 210, 0.1);
 }
 
-.TableRow:hover {
-  background-color: #f2f2f2;
-  transition: background-color 0.3s ease;
-}
-
-@media screen and (max-width: 1200px) {
-  .Table {
-    width: 100%;
-    margin-top: 2rem;
-    border-collapse: separate;
+/* Animation Keyframes */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 
-@media screen and (max-width: 768px) {
-  .Table {
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    width: 100%;
+/* Responsive Design */
+@media (max-width: 600px) {
+  .table-title {
+    font-size: 1.5rem;
   }
-  .MuiTableRow-root > * {
-    font-size: 1rem; /* Slightly smaller on mobile but still larger than original */
-  }
-  .MuiTableRow-root.MuiTableRow-head > * {
-    font-size: 1.25rem; /* Adjusted for mobile */
-  }
-  .status {
-    font-size: 0.9rem; /* Adjusted for mobile */
-  }
-  .Details {
-    font-size: 1rem; /* Adjusted for mobile */
-  }
-}
 
-/* Add a subtle gradient for the header row */
-.MuiTableRow-root.MuiTableRow-head {
-  background: linear-gradient(90deg, #e3f2fd, #bbdefb);
+  .table-cell {
+    font-size: 0.9rem;
+  }
+
+  .cool-status {
+    padding: 6px 12px;
+    font-size: 0.8rem;
+  }
 }

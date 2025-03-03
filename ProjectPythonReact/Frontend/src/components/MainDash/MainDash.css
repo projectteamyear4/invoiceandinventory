@@ -1,7 +1,7 @@
 .MainDash{
     /* padding-top: 1rem; */
     display: flex;
-    height: 100vh;
+    height: 150vh;
     flex-direction: column;
     padding-top: 2.5rem;
     font-family: 'Inter', 'Noto Sans Khmer', sans-serif;

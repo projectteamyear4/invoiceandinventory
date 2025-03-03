@@ -18,27 +18,23 @@ const rows = [
   { name: "អន្សម", trackingId: "KH006", date: "2/02/2025", status: "បានដឹកជញ្ជូន" }, // Sticky Rice - Delivered
   { name: "កាហ្វេ", trackingId: "KH007", date: "2/02/2025", status: "បានអនុម័ត" }, // Coffee - Approved
   { name: "តែ", trackingId: "KH008", date: "2/02/2025", status: "រង់ចាំ" }, // Tea - Pending
-  { name: "ភីហ្សា", trackingId: "KH001", date: "2/02/2025", status: "បានអនុម័ត" }, // Pizza - Approved
-  { name: "ប៊ឺហ្គឺ", trackingId: "KH002", date: "2/02/2025", status: "រង់ចាំ" }, // Burger - Pending
-  { name: "សាំងវិច", trackingId: "KH003", date: "2/02/2025", status: "បានដឹកជញ្ជូន" }, // Sandwich - Delivered
-  { name: "បាយឆា", trackingId: "KH004", date: "2/02/2025", status: "បានអនុម័ត" }, // Fried Rice - Approved
+  { name: "នំបញ្ចុក", trackingId: "KH009", date: "2/02/2025", status: "បានដឹកជញ្ជូន" }, // Num Banh Chok - Delivered
+  { name: "បាយសី", trackingId: "KH010", date: "2/02/2025", status: "បានអនុម័ត" }, // Sticky Rice Cake - Approved
   { name: "មីកញ្ចប់", trackingId: "KH005", date: "2/02/2025", status: "រង់ចាំ" }, // Instant Noodles - Pending
   { name: "អន្សម", trackingId: "KH006", date: "2/02/2025", status: "បានដឹកជញ្ជូន" }, // Sticky Rice - Delivered
   { name: "កាហ្វេ", trackingId: "KH007", date: "2/02/2025", status: "បានអនុម័ត" }, // Coffee - Approved
   { name: "តែ", trackingId: "KH008", date: "2/02/2025", status: "រង់ចាំ" }, // Tea - Pending
   { name: "នំបញ្ចុក", trackingId: "KH009", date: "2/02/2025", status: "បានដឹកជញ្ជូន" }, // Num Banh Chok - Delivered
   { name: "បាយសី", trackingId: "KH010", date: "2/02/2025", status: "បានអនុម័ត" }, // Sticky Rice Cake - Approved
-  { name: "នំបញ្ចុក", trackingId: "KH009", date: "2/02/2025", status: "បានដឹកជញ្ជូន" }, // Num Banh Chok - Delivered
-  { name: "បាយសី", trackingId: "KH010", date: "2/02/2025", status: "បានអនុម័ត" }, // Sticky Rice Cake - Approved
 ];
 
 const makeStyle = (status) => {
   if (status === "បានអនុម័ត") { // Approved
-    return { background: "#e8f5e9", color: "#2e7d32" }; // Light green
+    return { background: "rgba(46, 125, 50, 0.1)", color: "#2e7d32", boxShadow: "0 2px 5px rgba(46, 125, 50, 0.3)" };
   } else if (status === "រង់ចាំ") { // Pending
-    return { background: "#ffebee", color: "#c62828" }; // Light red
+    return { background: "rgba(198, 40, 40, 0.1)", color: "#c62828", boxShadow: "0 2px 5px rgba(198, 40, 40, 0.3)" };
   } else { // Delivered
-    return { background: "#e3f2fd", color: "#1976d2" }; // Light blue
+    return { background: "rgba(25, 118, 210, 0.1)", color: "#1976d2", boxShadow: "0 2px 5px rgba(25, 118, 210, 0.3)" };
   }
 };
 
@@ -54,15 +50,16 @@ export default function PaginatedTable() {
   };
 
   return (
-    <div className="Table">
-      <h2>ការកម្ម៉ង់ថ្មីៗ</h2> {/* Recent Orders */}
+    <div className="Table cool-table">
+      <h2 className="table-title">ការកម្ម៉ង់ថ្មីៗ</h2> {/* Recent Orders */}
       <TableContainer
         component={Paper}
         className="table-container"
+        elevation={10}
       >
         <Table stickyHeader>
           <TableHead>
-          <TableRow>
+            <TableRow className="table-header">
               <TableCell sx={{ fontFamily: "'Inter', 'Noto Sans Khmer', sans-serif" }}>ផលិតផល</TableCell> {/* Product */}
               <TableCell sx={{ fontFamily: "'Inter', 'Noto Sans Khmer', sans-serif" }} align="left">លេខតាមដាន</TableCell> {/* Tracking ID */}
               <TableCell sx={{ fontFamily: "'Inter', 'Noto Sans Khmer', sans-serif" }} align="left">កាលបរិច្ឆេទ</TableCell> {/* Date */}
@@ -72,13 +69,17 @@ export default function PaginatedTable() {
           <TableBody>
             {rows
               .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-              .map((row) => (
-                <TableRow key={row.trackingId} className="table-row">
-                  <TableCell>{row.name}</TableCell>
-                  <TableCell align="left">{row.trackingId}</TableCell>
-                  <TableCell align="left">{row.date}</TableCell>
+              .map((row, index) => (
+                <TableRow
+                  key={row.trackingId}
+                  className="table-row"
+                  sx={{ animation: `fadeIn 0.5s ease-in ${index * 0.1}s forwards` }}
+                >
+                  <TableCell className="table-cell">{row.name}</TableCell>
+                  <TableCell align="left" className="table-cell">{row.trackingId}</TableCell>
+                  <TableCell align="left" className="table-cell">{row.date}</TableCell>
                   <TableCell align="left">
-                    <span className="status" style={makeStyle(row.status)}>
+                    <span className="status cool-status" style={makeStyle(row.status)}>
                       {row.status}
                     </span>
                   </TableCell>
@@ -87,13 +88,14 @@ export default function PaginatedTable() {
           </TableBody>
         </Table>
         <TablePagination
-          rowsPerPageOptions={[10, 15]}
+          rowsPerPageOptions={[5, 10, 15]}
           component="div"
           count={rows.length}
           rowsPerPage={rowsPerPage}
           page={page}
           onPageChange={handleChangePage}
           onRowsPerPageChange={handleChangeRowsPerPage}
+          className="cool-pagination"
         />
       </TableContainer>
     </div>

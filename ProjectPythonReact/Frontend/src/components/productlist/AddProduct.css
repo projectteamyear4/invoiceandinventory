@@ -1,6 +1,7 @@
 .add-product-container {
   max-width: 1400px;
   margin: 3rem auto;
+  min-height: 100vh;
   padding: 3rem;
   background: #fff;
   border-radius: 15px;
