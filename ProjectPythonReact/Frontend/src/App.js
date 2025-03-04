@@ -12,6 +12,7 @@ import AddProduct from './components/productlist/addproduct.jsx';
 import ProductList from './components/productlist/productlist.jsx';
 import Products from './components/productlist/products.jsx'; // Ensure this file exists
 import Sidebar from './components/Sidebar';
+import WarehouseTable from './components/stock/warehouse.jsx';
 
 function App() {
   return (
@@ -30,6 +31,7 @@ function App() {
             <Route path="/CategoryList" element={<CategoryList />} /> {/* Orders route */}
             <Route path="/add-product" element={<AddProduct />} />{/*AddProduct */}
             <Route path="/productlist" element={<ProductList />} />{/*AddProduct */}
+            <Route path="/warehouse" element={<WarehouseTable />} />{/*AddProduct */}
             <Route path="/invoice" element={< InvoiceForm />} />{/*AddProduct */}
             <Route path="/invoicelist" element={<  InvoiceList/>} />{/*AddProduct */}
           </Routes>
