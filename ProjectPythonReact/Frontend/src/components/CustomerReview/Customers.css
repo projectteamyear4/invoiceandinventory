@@ -1,7 +1,7 @@
 /* Customers.css */
 .customer-container {
   max-width: 1400px;
-  margin: 3rem auto;
+
   padding: 3rem;
   min-height: 90vh;
   border-radius: 12px;
@@ -201,12 +201,10 @@
 }
 /* Customers.css */
 .add-customer-container {
-  max-width: 1200px; /* Wider to accommodate table */
-  margin: 3rem auto;
-  padding: 3rem;
- 
+  max-width: 1500px; /* Wider to accommodate table */
+  padding: 1rem;
+  min-height: 100vh;
   border-radius: 15px;
-
   font-family: 'Inter', 'Noto Sans Khmer', sans-serif;
 }
 

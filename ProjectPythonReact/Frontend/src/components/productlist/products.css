@@ -2,8 +2,9 @@
 
 .PageProduct {
   /* background-color: #f5f7fa; */
-  min-height: 80vh;
+  min-height: 100vh;
   padding: 2rem;
+  font-family: 'Inter', 'Noto Sans Khmer', sans-serif;
 }
 
 .product-container {
