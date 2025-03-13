@@ -1,39 +1,48 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom'; // Import useNavigate
 import './WarehouseTable.css';
 
 const WarehouseTable = () => {
-  // Sample data (you'd typically fetch this from an API)
   const [warehouses, setWarehouses] = useState([
-    { id: 1, name: "Central Hub", location: "New York", capacity: 10000 },
-    { id: 2, name: "West Coast", location: "Los Angeles", capacity: 7500 },
-    { id: 3, name: "East Storage", location: "Boston", capacity: 5000 },
+    { id: 1, name: 'រំដួល', location: 'ភ្នំពេញ', capacity: 10000 },
   ]);
 
-
+  const navigate = useNavigate(); // Define navigate function
 
   return (
     <div className="warehouse-container">
-      <h2>Warehouse Inventory</h2>
-      <table className="warehouse-table">
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>Name</th>
-            <th>Location</th>
-            <th>Capacity</th>
-          </tr>
-        </thead>
-        <tbody>
-          {warehouses.map(warehouse => (
-            <tr key={warehouse.id}>
-              <td>{warehouse.id}</td>
-              <td>{warehouse.name}</td>
-              <td>{warehouse.location}</td>
-              <td>{warehouse.capacity}</td>
+      <h2>បញ្ជីឃ្លាំងទំនិញ</h2>
+      <div className="table-wrapper">
+        <table className="warehouse-table">
+          <thead>
+            <tr>
+              <th>លេខសម្គាល់</th>
+              <th>ឈ្មោះ</th>
+              <th>ទីតាំង</th>
+              <th>សមត្ថភាព</th>
+              <th>សកម្មភាព</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {warehouses.map((warehouse) => (
+              <tr key={warehouse.id}>
+                <td>{warehouse.id}</td>
+                <td>{warehouse.name}</td>
+                <td>{warehouse.location}</td>
+                <td>{warehouse.capacity}</td>
+                <td>
+                <button
+                    className="add-item-btn"
+                    onClick={() => navigate(`/cabinets/${warehouse.id}`)} // Navigate to CabinetTable
+                  >
+                    មើលបញ្ជីទូ
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 };

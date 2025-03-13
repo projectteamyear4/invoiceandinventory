@@ -12,6 +12,7 @@ import AddProduct from './components/productlist/addproduct.jsx';
 import ProductList from './components/productlist/productlist.jsx';
 import Products from './components/productlist/products.jsx'; // Ensure this file exists
 import Sidebar from './components/Sidebar';
+import CabinetTable from './components/stock/listcabinet.jsx';
 import WarehouseTable from './components/stock/warehouse.jsx';
 
 function App() {
@@ -34,6 +35,7 @@ function App() {
             <Route path="/warehouse" element={<WarehouseTable />} />{/*AddProduct */}
             <Route path="/invoice" element={< InvoiceForm />} />{/*AddProduct */}
             <Route path="/invoicelist" element={<  InvoiceList/>} />{/*AddProduct */}
+            <Route path="/cabinets/:warehouseId" element={<CabinetTable />} />
           </Routes>
         </div>
       </div>
