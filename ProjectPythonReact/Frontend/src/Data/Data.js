@@ -22,7 +22,7 @@ export const SidebarData = [
   { icon: UilPackage, heading: "ផលិតផល", path: "/products" }, // Products
   { icon: UilChart, heading: "បញ្ជីប្រភេទ", path: "/CategoryList" }, // CategoryList
   { icon: UilChart, heading: "បញ្ជីផលិតផល", path: "/productlist" }, // ProductList
-  { icon: UilChart, heading: "បញ្ជីផលិតផល", path: "/warehouse" }, // ProductList
+  { icon: UilClipboardAlt, heading: "បញ្ជី", path: "/warehouse" }, // ProductList
   { icon: UilChart, heading: "វិក្កយបត្រ", path: "/invoice" }, // Invoice
   { icon: UilChart, heading: "បញ្ជីវិក្កយបត្រ", path: "/invoicelist" }, // InvoiceList
 ];
