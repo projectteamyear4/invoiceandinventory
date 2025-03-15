@@ -254,7 +254,101 @@
   background: #02a00a;
   font-weight: bold;
 }
+/* Existing styles remain unchanged, add these new ones */
 
+.expand-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 18px;
+  color: #2c3e50;
+  padding: 5px;
+  transition: color 0.3s ease;
+}
+
+.expand-btn:hover {
+  color: #3498db;
+}
+
+.details-row {
+  background-color: #f9f9f9;
+}
+
+.product-details {
+  padding: 20px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  align-items: center;
+}
+
+.detail-field {
+  display: flex;
+  flex-direction: column;
+  min-width: 200px;
+}
+
+.detail-field label {
+  font-weight: bold;
+  margin-bottom: 5px;
+  color: #2c3e50;
+}
+
+.detail-field input,
+.detail-field select {
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+  color: #2c3e50;
+}
+
+.save-btn {
+  padding: 10px 20px;
+  background: linear-gradient(45deg, #2ecc71, #27ae60);
+  color: white;
+  border: none;
+  border-radius: 25px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.save-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+.save-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+.delete-btn {
+  padding: 10px 20px;
+  background: linear-gradient(45deg, #e74c3c, #c0392b); /* Red gradient for delete */
+  color: white;
+  border: none;
+  border-radius: 25px;
+  cursor: pointer;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.delete-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+.delete-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.btn-icon {font-size: 12px;
+}
 
 /* Responsive Design */
 @media (max-width: 768px) {

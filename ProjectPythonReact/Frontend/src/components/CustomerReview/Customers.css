@@ -1,7 +1,6 @@
 /* Customers.css */
 .customer-container {
   max-width: 1400px;
-
   padding: 3rem;
   min-height: 90vh;
   border-radius: 12px;
@@ -85,7 +84,7 @@
 
 .customer-table {
   width: 100%;
-  border-collapse: collapse;
+
   background: #fff;
   border-radius: 8px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
@@ -224,13 +223,14 @@ form {
 
 .customer-table {
   width: 100%;
-  border-collapse: collapse;
+  
   background: #f9f9f9;
   border-radius: 8px;
 }
 
+
 .customer-table th {
-  padding: 1.5rem;
+  padding: 1rem;
   background: #f1f3f5;
   color: #333;
   text-align: left;

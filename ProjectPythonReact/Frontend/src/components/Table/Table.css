@@ -10,13 +10,11 @@
 /* Table Container Styling */
 .table-container {
   border-radius: 15px;
-  overflow: hidden;
- 
 }
 
 /* Table Header Styling */
 .table-header {
-  background: linear-gradient(90deg, #1976d2, #42a5f5 !important);
+  background: linear-gradient(90deg, #1976d2, #42a5f5 );
 }
 
 .table-header .MuiTableCell-root {
@@ -31,6 +29,8 @@
 /* Table Row Styling */
 .table-row {
   transition: all 0.3s ease;
+  border-collapse: collapse;
+ 
 }
 
 .table-row:hover {
@@ -44,7 +44,7 @@
   font-size: 1.2rem !important;
   color: #000000 !important;
   font-weight: 500;
-  fontFamily: "'Inter', 'Noto Sans Khmer', sans-serif" !important;
+  
   border-bottom: 1px solid rgba(0, 0, 0, 0.05);
 }
 
