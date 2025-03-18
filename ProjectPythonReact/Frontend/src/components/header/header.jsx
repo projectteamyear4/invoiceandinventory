@@ -1,4 +1,4 @@
-import { UilEnvelope, UilPlusCircle } from "@iconscout/react-unicons";
+import { UilEnvelope } from "@iconscout/react-unicons";
 import React from "react";
 import "./Header.css";
 
@@ -12,7 +12,7 @@ const Header = () => {
           <span className="badge">១</span> {/* 1 in Khmer */}
         </div>
         <div className="icon-container">
-          <UilPlusCircle className="icon" />
+        
           <button className="create-button">បង្កើតកន្លែងធ្វើការ</button> {/* Create Workspace */}
         </div>
       </div>

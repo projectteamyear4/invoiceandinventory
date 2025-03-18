@@ -32,7 +32,7 @@ const WarehouseTable = () => {
                 <td>{warehouse.capacity}</td>
                 <td>
                 <button
-                    className="add-item-btn"
+                    className="inventory-btn"
                     onClick={() => navigate(`/cabinets/${warehouse.id}`)} // Navigate to CabinetTable
                   >
                     មើលបញ្ជីទូ

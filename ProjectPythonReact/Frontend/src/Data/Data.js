@@ -17,14 +17,13 @@ import img3 from "../imgs/img3.png";
 // Original Sidebar Data with Khmer Translations
 export const SidebarData = [
   { icon: UilEstate, heading: "ផ្ទាំងគ្រប់គ្រង", path: "/" }, // Dashboard
-  { icon: UilClipboardAlt, heading: "ការកម្ម៉ង់", path: "/orders" }, // Orders
+  { icon: UilClipboardAlt, heading: "អ្នកផ្គត់ផ្គង់", path: "/suppliers" }, // Orders
   { icon: UilUsersAlt, heading: "អតិថិជន", path: "/customers" }, // Customers
   { icon: UilPackage, heading: "ផលិតផល", path: "/products" }, // Products
   { icon: UilChart, heading: "បញ្ជីប្រភេទ", path: "/CategoryList" }, // CategoryList
-  { icon: UilChart, heading: "បញ្ជីផលិតផល", path: "/productlist" }, // ProductList
   { icon: UilClipboardAlt, heading: "បញ្ជី", path: "/warehouse" }, // ProductList
   { icon: UilChart, heading: "វិក្កយបត្រ", path: "/invoice" }, // Invoice
-  { icon: UilChart, heading: "បញ្ជីវិក្កយបត្រ", path: "/invoicelist" }, // InvoiceList
+  { icon: UilClipboardAlt, heading: "បញ្ជីវិក្កយបត្រ", path: "/invoicelist" }, // InvoiceList
 ];
 
 // Simplified and Cool Analytics Cards Data (already in Khmer)

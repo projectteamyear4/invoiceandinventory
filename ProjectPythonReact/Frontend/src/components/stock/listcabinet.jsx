@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { FaPlus } from 'react-icons/fa'; // Optional: for a cool icon
-import { useNavigate, useParams } from 'react-router-dom'; // Add useNavigate
-
+import { useNavigate, useParams } from 'react-router-dom';
 
 const CabinetTable = () => {
   const { warehouseId } = useParams();
@@ -19,6 +18,15 @@ const CabinetTable = () => {
   return (
     <div className="cabinet-container">
       <h2>បញ្ជីទូនៃឃ្លាំង {warehouseId}</h2>
+      <div className="action-bar">
+        <button
+          className="stock-movement-btn"
+          onClick={() => navigate(`/stock-movement/${warehouseId}`)}
+        >
+          <FaPlus className="btn-icon" />
+          មើលចលនាស្តុក
+        </button>
+      </div>
       <div className="table-wrapper">
         <table className="cabinet-table">
           <thead>
@@ -26,7 +34,7 @@ const CabinetTable = () => {
               <th>លេខសម្គាល់</th>
               <th>ឈ្មោះ</th>
               <th>សមត្ថភាព</th>
-              <th>សកម្មភាព</th> {/* New column for actions */}
+              <th>សកម្មភាព</th>
             </tr>
           </thead>
           <tbody>
@@ -37,10 +45,10 @@ const CabinetTable = () => {
                 <td>{cabinet.capacity}</td>
                 <td>
                   <button
-                    className="view-shelf-btn"
-                    onClick={() => navigate(`/shelves/${warehouseId}/${cabinet.id}`)} // Navigate to shelves
+                    className="inventory-btn"
+                    onClick={() => navigate(`/shelves/${warehouseId}/${cabinet.id}`)}
                   >
-                    <FaPlus className="btn-icon" /> {/* Optional icon */}
+                    <FaPlus className="btn-icon" />
                     មើលធ្នើរ
                   </button>
                 </td>
