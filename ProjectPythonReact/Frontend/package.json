@@ -12,6 +12,7 @@
     "@testing-library/user-event": "^13.2.1",
     "apexcharts": "^4.4.0",
     "axios": "^1.7.9",
+    "dashboard": "file:",
     "framer-motion": "^6.2.9",
     "react": "^18.0.0",
     "react-apexcharts": "^1.7.0",
