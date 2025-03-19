@@ -25,7 +25,7 @@ function App() {
       <Header />
         <div className="AppGlass">
           <Sidebar />
-          <Routes> {/* Define routes */}
+          <Routes> 
             <Route path="/" element={<><MainDash /></>} /> {/* Default route */}
             <Route path="/orders" element={<Orders />} /> {/* Orders route */}
             <Route path="/customers" element={<CustomerList />} />
