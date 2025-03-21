@@ -6,7 +6,6 @@ from .serializers import RegisterSerializer, UserDetailSerializer, LoginSerializ
 from django.contrib.auth.models import User
 from django.http import Http404
 from rest_framework.decorators import api_view, permission_classes
-
 from .models import Supplier
 from .serializers import SupplierSerializer
 
@@ -52,3 +51,26 @@ def list_suppliers(request):
     suppliers = Supplier.objects.all()
     serializer = SupplierSerializer(suppliers, many=True)
     return Response(serializer.data, status=status.HTTP_200_OK)
+
+@api_view(['GET', 'PATCH', 'DELETE'])
+@permission_classes([IsAuthenticated])
+def supplier_detail(request, pk):
+    try:
+        supplier = Supplier.objects.get(pk=pk)
+    except Supplier.DoesNotExist:
+        return Response({'detail': 'Supplier not found'}, status=status.HTTP_404_NOT_FOUND)
+
+    if request.method == 'GET':
+        serializer = SupplierSerializer(supplier)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    elif request.method == 'PATCH':
+        serializer = SupplierSerializer(supplier, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    elif request.method == 'DELETE':
+        supplier.delete()
+        return Response({'detail': 'Supplier deleted'}, status=status.HTTP_204_NO_CONTENT)

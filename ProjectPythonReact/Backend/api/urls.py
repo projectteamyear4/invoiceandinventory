@@ -6,4 +6,5 @@ urlpatterns = [
     path('api/login/', login, name='login'),
     path('api/suppliers/create/', views.create_supplier, name='create_supplier'),
     path('api/suppliers/', views.list_suppliers, name='list_suppliers'),
+    path('api/suppliers/<int:pk>/', views.supplier_detail, name='supplier_detail'),
 ]
