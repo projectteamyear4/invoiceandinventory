@@ -1,4 +1,4 @@
-import { UilBars, UilSignOutAlt } from "@iconscout/react-unicons";
+import { UilBars } from "@iconscout/react-unicons";
 import { motion } from "framer-motion";
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -67,9 +67,7 @@ const Sidebar = () => {
           ))}
 
           {/* Sign-out Button */}
-          <div className="menuItem">
-            <UilSignOutAlt />
-          </div>
+       
         </div>
       </motion.div>
     </>

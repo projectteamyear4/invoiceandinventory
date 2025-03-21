@@ -14,67 +14,98 @@
 .App {
   color: var(--black);
   background-color: white;
-  height: 100%;
+  min-height: 100vh; /* Ensure full height */
   display: flex;
-  align-items: center;
-  justify-content: center;
+  flex-direction: column; /* Stack header and content vertically */
   font-family: "Inter", sans-serif;
 }
 
 .Header {
-  position: fixed; /* Fix header to the top */
+  position: fixed;
   top: 0;
   left: 0;
   width: 100%;
-  height: 60px; /* Adjust based on your design */
-  background-color: white; /* Add a background color */
-  z-index: 1000; /* Ensure header stays on top */
-  box-shadow: var(--boxShadow); /* Optional shadow for separation */
+  height: 60px;
+  background-color: white;
+  z-index: 1000;
+  box-shadow: var(--boxShadow);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 1rem; /* Add horizontal padding */
+  padding: 0 1rem;
 }
 
 .AppGlass {
-  display: grid;
-  height: 100%;
+  display: flex; /* Switch to flex for simpler layout */
+  flex: 1; /* Take remaining height */
   width: 100%;
   background: var(--glass);
-  border-radius: 2rem;
-  gap: 16px;
-  grid-template-columns: 11rem auto 10rem;
-  overflow: hidden;
-  margin-top: 60px; /* Push content below the fixed header */
+  margin-top: 60px; /* Space for fixed header */
+  overflow: hidden; /* Prevent overflow issues */
 }
 
+/* Sidebar and Main Content Layout */
+.Sidebar {
+  width: 250px; /* Match your sidebar width */
+  flex-shrink: 0; /* Prevent shrinking */
+  background: #ffffff; /* Match your sidebar’s white bg */
+  height: calc(100vh - 60px); /* Full height minus header */
+  position: sticky;
+  top: 60px; /* Stick below header */
+}
+
+.MainContent {
+  flex: 1; /* Take remaining space */
+  padding: 1rem;
+  overflow-y: auto; /* Allow scrolling if content overflows */
+}
+
+/* Tablet View */
 @media screen and (max-width: 1200px) {
   .AppGlass {
-    grid-template-columns: 10% 50% auto;
-    overflow-y: scroll;
-  }
-}
-
-@media screen and (max-width: 768px) {
-  .AppGlass {
-    grid-template-columns: 1fr;
-    grid-template-rows: auto auto 1fr; /* Added row definition */
-  }
-
-  .MainDash {
-    order: 1; /* Move to the first position */
-  }
-
-  .RightSide {
-    order: 2; /* Move to the second position */
+    flex-direction: column; /* Stack vertically */
   }
 
   .Sidebar {
-    order: 3; /* Move to the bottom */
-    position: sticky;
-    bottom: 0;
-    background: var(--activeItem);
-    border-radius: 2rem 2rem 0 0;
+    width: 100%; /* Full width */
+    height: auto; /* Allow natural height */
+    position: relative; /* No longer sticky */
+    top: 0;
+  }
+
+  .MainContent {
+    width: 100%;
+  }
+}
+
+/* Mobile View */
+@media screen and (max-width: 768px) {
+  .AppGlass {
+    flex-direction: column;
+    margin-top: 60px; /* Ensure space for header */
+  }
+
+  .Sidebar {
+    width: 100%;
+    height: auto;
+    position: fixed; /* Use fixed for toggle behavior */
+    top: 60px; /* Below header */
+    left: 0;
+    z-index: 9;
+    background: #ffffff; /* Match sidebar */
+    border-radius: 0; /* Remove rounding for full-width */
     padding: 1rem;
+    transition: all 0.3s ease; /* Smooth toggle */
+  }
+
+  .MainContent {
+    width: 100%;
+    padding: 1rem;
+    margin-top: 0; /* No extra margin needed */
+  }
+
+  /* Adjust for sidebar toggle (handled in Sidebar.jsx) */
+  .Sidebar.closed {
+    left: -100%; /* Hide off-screen when closed */
   }
 }

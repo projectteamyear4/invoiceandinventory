@@ -3,6 +3,7 @@ from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
 from django.contrib.auth.password_validation import validate_password
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+from .models import Supplier
 
 # Existing RegisterSerializer
 class RegisterSerializer(serializers.ModelSerializer):
@@ -54,3 +55,9 @@ class LoginSerializer(TokenObtainPairSerializer):
         data['access'] = str(refresh.access_token)
         data['user'] = UserDetailSerializer(self.user).data
         return data
+
+# Corrected SupplierSerializer (standalone)
+class SupplierSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Supplier
+        fields = ['id', 'name', 'contact_person', 'phone', 'email', 'address', 'country']

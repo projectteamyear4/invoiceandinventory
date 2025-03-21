@@ -2,10 +2,11 @@ import { Route, BrowserRouter as Router, Routes } from 'react-router-dom';
 import './App.css';
 import Login from './components/auth/Login';
 import Register from './components/auth/Register';
+import { AuthProvider } from './components/AuthContext';
 import CategoryList from './components/category/categorylist.jsx';
 import { AddCustomer } from './components/CustomerReview/Addcustomer.jsx';
 import CustomerList from './components/CustomerReview/CustomerList.jsx';
-import Header from "./components/header/header";
+import Header from './components/header/header';
 import InvoiceForm from './components/invoice/invoice.jsx';
 import InvoiceList from './components/invoice/invoicelist.jsx';
 import MainDash from './components/MainDash/MainDash';
@@ -18,11 +19,12 @@ import CabinetTable from './components/stock/listcabinet.jsx';
 import ShelfTable from './components/stock/ShelfTable.jsx';
 import StockMovementTable from './components/stock/StockMovementTable.jsx';
 import WarehouseTable from './components/stock/warehouse.jsx';
+import AddSupplier from './components/supplier/AddSupplier.jsx'; // Fixed casing here
 import SupplierTable from './components/supplier/SupplierTable.jsx';
+import ProtectedRoute from './ProtectedRoute';
 
-// NotFound Component for handling undefined routes
 const NotFound = () => (
-  <div style={{ textAlign: "center", marginTop: "50px" }}>
+  <div style={{ textAlign: 'center', marginTop: '50px' }}>
     <h2>404 - Page Not Found</h2>
     <p>The page you are looking for does not exist.</p>
   </div>
@@ -31,32 +33,35 @@ const NotFound = () => (
 function App() {
   return (
     <Router>
-      <div className="App">
-        <Header />
-        <div className="AppGlass">
-          <Sidebar />
-          <Routes>
-            <Route path="/" element={<Register />} /> {/* Move this inside Routes */}
-            <Route path="/login" element={<Login />} />
-            <Route path="/dashboard" element={<MainDash />} /> {/* Default Route */}
-            <Route path="/orders" element={<Orders />} />
-            <Route path="/customers" element={<CustomerList />} />
-            <Route path="/add-customer" element={<AddCustomer />} />
-            <Route path="/products" element={<Products />} />
-            <Route path="/category-list" element={<CategoryList />} />
-            <Route path="/add-product" element={<AddProduct />} />
-            <Route path="/inventory/:warehouseId/:cabinetId/:shelfId" element={<InventoryTable />} />
-            <Route path="/warehouse" element={<WarehouseTable />} />
-            <Route path="/invoice" element={<InvoiceForm />} />
-            <Route path="/invoicelist" element={<InvoiceList />} />
-            <Route path="/cabinets/:warehouseId" element={<CabinetTable />} />
-            <Route path="/shelves/:warehouseId/:cabinetId" element={<ShelfTable />} />
-            <Route path="/stock-movement/:warehouseId" element={<StockMovementTable />} />
-            <Route path="/suppliers" element={<SupplierTable />} />
-            <Route path="*" element={<NotFound />} /> {/* Catch-all for 404 */}
-          </Routes>
+      <AuthProvider>
+        <div className="App">
+          <Header />
+          <div className="AppGlass">
+            <Sidebar />
+            <Routes>
+              <Route path="/" element={<Register />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/dashboard" element={<ProtectedRoute><MainDash /></ProtectedRoute>} />
+              <Route path="/orders" element={<ProtectedRoute><Orders /></ProtectedRoute>} />
+              <Route path="/customers" element={<ProtectedRoute><CustomerList /></ProtectedRoute>} />
+              <Route path="/add-customer" element={<ProtectedRoute><AddCustomer /></ProtectedRoute>} />
+              <Route path="/products" element={<ProtectedRoute><Products /></ProtectedRoute>} />
+              <Route path="/category-list" element={<ProtectedRoute><CategoryList /></ProtectedRoute>} />
+              <Route path="/add-product" element={<ProtectedRoute><AddProduct /></ProtectedRoute>} />
+              <Route path="/inventory/:warehouseId/:cabinetId/:shelfId" element={<ProtectedRoute><InventoryTable /></ProtectedRoute>} />
+              <Route path="/warehouse" element={<ProtectedRoute><WarehouseTable /></ProtectedRoute>} />
+              <Route path="/invoice" element={<ProtectedRoute><InvoiceForm /></ProtectedRoute>} />
+              <Route path="/invoicelist" element={<ProtectedRoute><InvoiceList /></ProtectedRoute>} />
+              <Route path="/cabinets/:warehouseId" element={<ProtectedRoute><CabinetTable /></ProtectedRoute>} />
+              <Route path="/shelves/:warehouseId/:cabinetId" element={<ProtectedRoute><ShelfTable /></ProtectedRoute>} />
+              <Route path="/stock-movement/:warehouseId" element={<ProtectedRoute><StockMovementTable /></ProtectedRoute>} />
+              <Route path="/suppliers" element={<ProtectedRoute><SupplierTable /></ProtectedRoute>} />
+              <Route path="/add-supplier" element={<ProtectedRoute><AddSupplier /></ProtectedRoute>} />
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </div>
         </div>
-      </div>
+      </AuthProvider>
     </Router>
   );
 }

@@ -1,14 +1,15 @@
 import axios from 'axios';
-import React, { useState } from 'react';
+import React, { useContext, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { AuthContext } from '../AuthContext';
+import './Login.css'; // Ensure this path is correct
 
 const Login = () => {
-  const [formData, setFormData] = useState({
-    username: '',
-    password: '',
-  });
-
+  const [formData, setFormData] = useState({ username: '', password: '' });
   const [message, setMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const { login } = useContext(AuthContext);
+  const navigate = useNavigate();
 
   const api = axios.create({
     baseURL: 'http://localhost:8000',
@@ -29,20 +30,15 @@ const Login = () => {
     try {
       const response = await api.post('/api/login/', formData);
       const { access, refresh, user } = response.data;
-      
-      // Store tokens (e.g., in localStorage)
-      localStorage.setItem('access_token', access);
-      localStorage.setItem('refresh_token', refresh);
-      localStorage.setItem('user', JSON.stringify(user));
-
+      login(user, access, refresh);
       setMessage('Login successful! Welcome, ' + user.username);
       setFormData({ username: '', password: '' });
+      navigate('/dashboard');
     } catch (error) {
       if (error.response) {
-        const errors = error.response.data;
-        setMessage(errors.detail || 'Login failed! Check your credentials.');
+        setMessage(error.response.data.detail || 'Login failed! Check your credentials.');
       } else if (error.request) {
-        setMessage('Unable to connect to server. Please check if backend is running.');
+        setMessage('Unable to connect to server.');
       } else {
         setMessage('Error: ' + error.message);
       }
@@ -52,48 +48,39 @@ const Login = () => {
   };
 
   return (
-    <div style={{ maxWidth: '400px', margin: '0 auto', padding: '20px' }}>
+    <div className="login-container">
       <h2>Login</h2>
-      <form onSubmit={handleSubmit}>
-        <div style={{ marginBottom: '15px' }}>
-          <input
-            type="text"
-            name="username"
-            placeholder="Username"
-            value={formData.username}
-            onChange={handleChange}
-            required
-            disabled={isLoading}
-            style={{ width: '100%', padding: '8px', marginBottom: '10px' }}
-          />
-          <input
-            type="password"
-            name="password"
-            placeholder="Password"
-            value={formData.password}
-            onChange={handleChange}
-            required
-            disabled={isLoading}
-            style={{ width: '100%', padding: '8px', marginBottom: '10px' }}
-          />
-          <button
-            type="submit"
-            disabled={isLoading}
-            style={{
-              width: '100%',
-              padding: '10px',
-              backgroundColor: isLoading ? '#ccc' : '#007bff',
-              color: 'white',
-              border: 'none',
-              cursor: isLoading ? 'not-allowed' : 'pointer',
-            }}
-          >
-            {isLoading ? 'Logging in...' : 'Login'}
-          </button>
-        </div>
+      <form onSubmit={handleSubmit} className="login-form">
+        <input
+          type="text"
+          name="username"
+          placeholder="Username"
+          value={formData.username}
+          onChange={handleChange}
+          required
+          disabled={isLoading}
+          className="login-input"
+        />
+        <input
+          type="password"
+          name="password"
+          placeholder="Password"
+          value={formData.password}
+          onChange={handleChange}
+          required
+          disabled={isLoading}
+          className="login-input"
+        />
+        <button type="submit" disabled={isLoading} className="login-button">
+          {isLoading ? 'Logging in...' : 'Login'}
+        </button>
       </form>
       {message && (
-        <p style={{ color: message.includes('successful') ? 'green' : 'red', marginTop: '10px' }}>
+        <p
+          className={`login-message ${
+            message.includes('successful') ? 'success' : 'error'
+          }`}
+        >
           {message}
         </p>
       )}

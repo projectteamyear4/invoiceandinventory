@@ -1,33 +1,50 @@
-import { UilEnvelope } from "@iconscout/react-unicons";
-import React from "react";
-import "./Header.css";
+import React, { useContext } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { AuthContext } from '../AuthContext'; // Ensure this path is correct
+import './Header.css'; // Updated to match Header.css
 
 const Header = () => {
+  const { user, logout } = useContext(AuthContext);
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    logout();
+    navigate('/login');
+  };
+
   return (
-    <div className="header">
-      {/* Navigation Icons */}
+    <header className="header">
       <div className="nav-icons">
         <div className="icon-container">
-          <UilEnvelope className="icon" />
-          <span className="badge">១</span> {/* 1 in Khmer */}
+          <span className="icon">🔔</span>
+          <span className="badge">3</span>
         </div>
         <div className="icon-container">
-        
-          <button className="create-button">បង្កើតកន្លែងធ្វើការ</button> {/* Create Workspace */}
+          <span className="icon">✉️</span>
+          <span className="badge">2</span>
         </div>
       </div>
 
-      {/* User Profile */}
-      <div className="profile">
-        <span className="language">ខ្មែរ</span> {/* Khmer */}
-        <img
-          src="https://static.vecteezy.com/system/resources/previews/000/439/863/original/vector-users-icon.jpg"
-          alt="Profile"
-          className="profile-image"
-        />
-        <span className="profile-name">ចន សុ</span> {/* John S. in Khmer */}
-      </div>
-    </div>
+      {user ? (
+        <div className="profile">
+          <img
+            src="https://via.placeholder.com/40"
+            alt="Profile"
+            className="profile-image"
+          />
+          <span className="profile-name">{user.username}</span>
+          <button className="create-button" onClick={handleLogout}>
+            Logout
+          </button>
+        </div>
+      ) : (
+        <h3  onClick={() => navigate('/login')}>
+          Login
+        </h3>
+      )}
+
+      <div className="language">EN</div>
+    </header>
   );
 };
 
