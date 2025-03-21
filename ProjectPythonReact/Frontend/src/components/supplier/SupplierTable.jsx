@@ -6,7 +6,12 @@ import './Supplier.css';
 
 const SupplierTable = () => {
   const [suppliers, setSuppliers] = useState([]);
+  const [filteredSuppliers, setFilteredSuppliers] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [sortConfig, setSortConfig] = useState({ key: 'id', direction: 'asc' });
+  const [currentPage, setCurrentPage] = useState(1);
+  const suppliersPerPage = 10;
   const { user } = useContext(AuthContext);
   const navigate = useNavigate();
 
@@ -24,14 +29,47 @@ const SupplierTable = () => {
       try {
         const response = await api.get('/api/suppliers/');
         setSuppliers(response.data);
+        setFilteredSuppliers(response.data);
       } catch (error) {
-        console.error('Error fetching suppliers:', error);
+        console.error('កំហុសក្នុងការទាញយកអ្នកផ្គត់ផ្គង់:', error);
       } finally {
         setLoading(false);
       }
     };
     fetchSuppliers();
   }, []);
+
+  useEffect(() => {
+    const filtered = suppliers.filter((supplier) =>
+      supplier.name.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+    setFilteredSuppliers(filtered);
+    setCurrentPage(1);
+  }, [searchTerm, suppliers]);
+
+  const handleSort = (key) => {
+    let direction = 'asc';
+    if (sortConfig.key === key && sortConfig.direction === 'asc') {
+      direction = 'desc';
+    }
+    setSortConfig({ key, direction });
+
+    const sorted = [...filteredSuppliers].sort((a, b) => {
+      if (a[key] < b[key]) return direction === 'asc' ? -1 : 1;
+      if (a[key] > b[key]) return direction === 'asc' ? 1 : -1;
+      return 0;
+    });
+    setFilteredSuppliers(sorted);
+  };
+
+  const indexOfLastSupplier = currentPage * suppliersPerPage;
+  const indexOfFirstSupplier = indexOfLastSupplier - suppliersPerPage;
+  const currentSuppliers = filteredSuppliers.slice(indexOfFirstSupplier, indexOfLastSupplier);
+  const totalPages = Math.ceil(filteredSuppliers.length / suppliersPerPage);
+
+  const handlePageChange = (page) => {
+    setCurrentPage(page);
+  };
 
   const handleAddSupplier = () => {
     navigate('/add-supplier');
@@ -42,42 +80,54 @@ const SupplierTable = () => {
   };
 
   const handleDeleteSupplier = async (id) => {
-    if (window.confirm('Are you sure you want to delete this supplier?')) {
+    if (window.confirm('តើអ្នកចង់លុបអ្នកផ្គត់ផ្គង់នេះឬ?')) {
       try {
         await api.delete(`/api/suppliers/${id}/`);
         setSuppliers(suppliers.filter((supplier) => supplier.id !== id));
+        setFilteredSuppliers(filteredSuppliers.filter((supplier) => supplier.id !== id));
       } catch (error) {
-        console.error('Error deleting supplier:', error);
-        alert('Failed to delete supplier.');
+        console.error('កំហុសក្នុងការលុបអ្នកផ្គត់ផ្គង់:', error);
+        alert('មិនអាចលុបអ្នកផ្គត់ផ្គង់បានទេ។');
       }
     }
   };
 
-  if (loading) return <p>Loading suppliers...</p>;
+  if (loading) return <p>កំពុងផ្ទុកអ្នកផ្គត់ផ្គង់...</p>;
 
   return (
     <div className="supplier-table-container">
       <div className="supplier-header">
-        <h2>Suppliers</h2>
+        <h2>អ្នកផ្គត់ផ្គង់</h2>
         <button className="supplier-add-button" onClick={handleAddSupplier}>
-          Add Supplier
+          បន្ថែមអ្នកផ្គត់ផ្គង់
         </button>
       </div>
+
+      <div className="supplier-search">
+        <input
+          type="text"
+          placeholder="ស្វែងរកតាមឈ្មោះ..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="supplier-search-input"
+        />
+      </div>
+
       <table className="supplier-table">
         <thead>
           <tr>
-            <th>ID</th>
-            <th>Name</th>
-            <th>Contact Person</th>
-            <th>Phone</th>
-            <th>Email</th>
-            <th>Address</th>
-            <th>Country</th>
-            <th>Actions</th> {/* New column for actions */}
+            <th onClick={() => handleSort('id')}>លេខសំគាល់</th>
+            <th onClick={() => handleSort('name')}>ឈ្មោះ</th>
+            <th onClick={() => handleSort('contact_person')}>អ្នកទាក់ទង</th>
+            <th onClick={() => handleSort('phone')}>ទូរស័ព្ទ</th>
+            <th>អ៊ីមែល</th>
+            <th>អាសយដ្ឋាន</th>
+            <th onClick={() => handleSort('country')}>ប្រទេស</th>
+            <th>សកម្មភាព</th>
           </tr>
         </thead>
         <tbody>
-          {suppliers.map((supplier) => (
+          {currentSuppliers.map((supplier) => (
             <tr key={supplier.id}>
               <td>{supplier.id}</td>
               <td>{supplier.name}</td>
@@ -91,19 +141,39 @@ const SupplierTable = () => {
                   className="supplier-edit-button"
                   onClick={() => handleEditSupplier(supplier.id)}
                 >
-                  Edit
+                  កែប្រែ
                 </button>
                 <button
                   className="supplier-delete-button"
                   onClick={() => handleDeleteSupplier(supplier.id)}
                 >
-                  Delete
+                  លុប
                 </button>
               </td>
             </tr>
           ))}
         </tbody>
       </table>
+
+      <div className="supplier-pagination">
+        <button
+          onClick={() => handlePageChange(currentPage - 1)}
+          disabled={currentPage === 1}
+          className="pagination-button"
+        >
+          មុន
+        </button>
+        <span>
+          ទំព័រ {currentPage} នៃ {totalPages}
+        </span>
+        <button
+          onClick={() => handlePageChange(currentPage + 1)}
+          disabled={currentPage === totalPages}
+          className="pagination-button"
+        >
+          បន្ទាប់
+        </button>
+      </div>
     </div>
   );
 };

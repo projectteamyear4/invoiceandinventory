@@ -3,7 +3,7 @@ from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
 from django.contrib.auth.password_validation import validate_password
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
-from .models import Supplier
+from .models import Supplier,Product, ProductVariant, Category
 
 # Existing RegisterSerializer
 class RegisterSerializer(serializers.ModelSerializer):
@@ -61,3 +61,24 @@ class SupplierSerializer(serializers.ModelSerializer):
     class Meta:
         model = Supplier
         fields = ['id', 'name', 'contact_person', 'phone', 'email', 'address', 'country']
+# Corrected CategorySerializer (standalone)
+class CategorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Category
+        fields = ['id', 'name']
+
+class ProductVariantSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ProductVariant
+        fields = ['id', 'product', 'size', 'color', 'stock_quantity', 'purchase_price', 'selling_price']
+
+class ProductSerializer(serializers.ModelSerializer):
+    variants = ProductVariantSerializer(many=True, read_only=True)
+    category = CategorySerializer(read_only=True)  # Nested category
+    category_id = serializers.PrimaryKeyRelatedField(
+        queryset=Category.objects.all(), source='category', write_only=True
+    )  # For writing category ID
+
+    class Meta:
+        model = Product
+        fields = ['id', 'name', 'category', 'category_id', 'description', 'brand','image_url', 'created_at', 'variants']

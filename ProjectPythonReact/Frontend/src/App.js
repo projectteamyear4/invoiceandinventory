@@ -3,7 +3,8 @@ import './App.css';
 import Login from './components/auth/Login';
 import Register from './components/auth/Register';
 import { AuthProvider } from './components/AuthContext';
-import CategoryList from './components/category/categorylist.jsx';
+import AddCategory from './components/category/AddCategory.jsx';
+import CategoryList from './components/category/Categorylist.jsx';
 import { AddCustomer } from './components/CustomerReview/Addcustomer.jsx';
 import CustomerList from './components/CustomerReview/CustomerList.jsx';
 import Header from './components/header/header';
@@ -12,6 +13,7 @@ import InvoiceList from './components/invoice/invoicelist.jsx';
 import MainDash from './components/MainDash/MainDash';
 import Orders from './components/Orderlist/Orders.jsx';
 import AddProduct from './components/productlist/addproduct.jsx';
+import AddProductVariant from './components/productlist/addproductvariant.jsx';
 import Products from './components/productlist/products.jsx';
 import Sidebar from './components/Sidebar';
 import InventoryTable from './components/stock/InventoryTable.jsx';
@@ -19,7 +21,8 @@ import CabinetTable from './components/stock/listcabinet.jsx';
 import ShelfTable from './components/stock/ShelfTable.jsx';
 import StockMovementTable from './components/stock/StockMovementTable.jsx';
 import WarehouseTable from './components/stock/warehouse.jsx';
-import AddSupplier from './components/supplier/AddSupplier.jsx'; // Fixed casing here
+import AddSupplier from './components/supplier/AddSupplier.jsx';
+import EditSupplier from './components/supplier/EditSupplier.jsx';
 import SupplierTable from './components/supplier/SupplierTable.jsx';
 import ProtectedRoute from './ProtectedRoute';
 
@@ -47,7 +50,9 @@ function App() {
               <Route path="/add-customer" element={<ProtectedRoute><AddCustomer /></ProtectedRoute>} />
               <Route path="/products" element={<ProtectedRoute><Products /></ProtectedRoute>} />
               <Route path="/category-list" element={<ProtectedRoute><CategoryList /></ProtectedRoute>} />
+              <Route path="/add-category" element={<ProtectedRoute><AddCategory /></ProtectedRoute>} />
               <Route path="/add-product" element={<ProtectedRoute><AddProduct /></ProtectedRoute>} />
+              <Route path="/add-variant/:productId" element={<ProtectedRoute><AddProductVariant /></ProtectedRoute>} />
               <Route path="/inventory/:warehouseId/:cabinetId/:shelfId" element={<ProtectedRoute><InventoryTable /></ProtectedRoute>} />
               <Route path="/warehouse" element={<ProtectedRoute><WarehouseTable /></ProtectedRoute>} />
               <Route path="/invoice" element={<ProtectedRoute><InvoiceForm /></ProtectedRoute>} />
@@ -57,6 +62,7 @@ function App() {
               <Route path="/stock-movement/:warehouseId" element={<ProtectedRoute><StockMovementTable /></ProtectedRoute>} />
               <Route path="/suppliers" element={<ProtectedRoute><SupplierTable /></ProtectedRoute>} />
               <Route path="/add-supplier" element={<ProtectedRoute><AddSupplier /></ProtectedRoute>} />
+              <Route path="/edit-supplier/:id" element={<ProtectedRoute><EditSupplier /></ProtectedRoute>} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </div>

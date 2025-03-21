@@ -1,78 +1,50 @@
-.supplier-table-container {
+.category-table-container {
   max-width: 1500px;
-  margin: 20px auto;
+  margin: 30px auto;
   padding: 20px;
   background: #ffffff;
   border-radius: 15px;
-  font-family: 'Inter', 'Noto Sans Khmer', sans-serif;
+ 
 }
 
-.supplier-header {
+.category-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 20px;
 }
 
-.supplier-table-container h2 {
+.category-table-container h2 {
   text-align: left;
   color: #007bff;
   font-size: 28px;
   margin: 0;
 }
 
-.supplier-search {
-  margin-bottom: 20px;
-}
-
-.supplier-search-input {
-  width: 100%;
-  max-width: 300px;
-  padding: 10px;
-  border: 2px solid #ddd;
-  border-radius: 8px;
-  font-size: 16px;
-  color: #333;
-  transition: all 0.3s ease;
-  background: #f9f9f9;
-}
-
-.supplier-search-input:focus {
-  outline: none;
-  border-color: #007bff;
-  box-shadow: 0 0 8px rgba(0, 123, 255, 0.3);
-  background: #fff;
-}
-
-.supplier-table {
+.category-table {
   width: 100%;
   border-collapse: collapse;
   font-size: 16px;
 }
 
-.supplier-table th,
-.supplier-table td {
+.category-table th,
+.category-table td {
   padding: 12px;
   text-align: left;
   border-bottom: 1px solid #ddd;
 }
 
-.supplier-table th {
+.category-table th {
   background: #007bff;
   color: white;
   text-transform: uppercase;
-  cursor: pointer; /* Indicate sortable columns */
 }
 
-.supplier-table th:hover {
-  background: #0056b3; /* Darken on hover */
-}
-
-.supplier-table tr:hover {
+.category-table tr:hover {
   background: rgba(0, 123, 255, 0.1);
 }
 
-.supplier-add-button {
+.category-add-button {
   padding: 10px 20px;
   background: linear-gradient(90deg, #007bff, #0056b3);
   color: white;
@@ -84,15 +56,15 @@
   text-transform: uppercase;
 }
 
-.supplier-add-button:hover {
+.category-add-button:hover {
   background: linear-gradient(90deg, #0056b3, #007bff);
   box-shadow: 0 4px 15px rgba(0, 123, 255, 0.4);
   transform: translateY(-2px);
 }
 
-.supplier-edit-button {
+.category-edit-button {
   padding: 8px 15px;
-  background: linear-gradient(90deg, #28a745, #218838);
+  background: linear-gradient(90deg, #28a745, #218838); /* Green for edit */
   color: white;
   border: none;
   border-radius: 5px;
@@ -102,61 +74,48 @@
   margin-right: 10px;
 }
 
-.supplier-edit-button:hover {
+.category-edit-button:hover {
   background: linear-gradient(90deg, #218838, #28a745);
   box-shadow: 0 4px 10px rgba(40, 167, 69, 0.4);
   transform: translateY(-2px);
 }
 
-.supplier-delete-button {
+.category-save-button {
   padding: 8px 15px;
-  background: linear-gradient(90deg, #dc3545, #c82333);
+  background: linear-gradient(90deg, #007bff, #0056b3); /* Blue for save */
   color: white;
   border: none;
   border-radius: 5px;
   font-size: 14px;
   cursor: pointer;
   transition: all 0.3s ease;
+  margin-right: 10px;
 }
 
-.supplier-delete-button:hover {
-  background: linear-gradient(90deg, #c82333, #dc3545);
-  box-shadow: 0 4px 10px rgba(220, 53, 69, 0.4);
-  transform: translateY(-2px);
-}
-
-.supplier-pagination {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  margin-top: 20px;
-  gap: 15px;
-}
-
-.pagination-button {
-  padding: 8px 15px;
-  background: linear-gradient(90deg, #007bff, #0056b3);
-  color: white;
-  border: none;
-  border-radius: 5px;
-  font-size: 14px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.pagination-button:disabled {
-  background: #ccc;
-  cursor: not-allowed;
-}
-
-.pagination-button:hover:not(:disabled) {
+.category-save-button:hover {
   background: linear-gradient(90deg, #0056b3, #007bff);
   box-shadow: 0 4px 10px rgba(0, 123, 255, 0.4);
   transform: translateY(-2px);
 }
 
-/* Existing form styles remain unchanged */
-.supplier-form-container {
+.category-delete-button {
+  padding: 8px 15px;
+  background: linear-gradient(90deg, #dc3545, #c82333); /* Red for delete */
+  color: white;
+  border: none;
+  border-radius: 5px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.category-delete-button:hover {
+  background: linear-gradient(90deg, #c82333, #dc3545);
+  box-shadow: 0 4px 10px rgba(220, 53, 69, 0.4);
+  transform: translateY(-2px);
+}
+
+.category-form-container {
   max-width: 500px;
   margin: 20px auto;
   padding: 20px;
@@ -165,7 +124,7 @@
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
 }
 
-.supplier-form-container h2 {
+.category-form-container h2 {
   text-align: center;
   color: #007bff;
   font-size: 28px;
@@ -173,13 +132,13 @@
   text-transform: uppercase;
 }
 
-.supplier-form {
+.category-form {
   display: flex;
   flex-direction: column;
   gap: 15px;
 }
 
-.supplier-input {
+.category-input {
   width: 100%;
   padding: 12px;
   border: 2px solid #ddd;
@@ -190,19 +149,14 @@
   background: #f9f9f9;
 }
 
-.supplier-input:focus {
+.category-input:focus {
   outline: none;
   border-color: #007bff;
   box-shadow: 0 0 8px rgba(0, 123, 255, 0.3);
   background: #fff;
 }
 
-.supplier-textarea {
-  min-height: 80px;
-  resize: vertical;
-}
-
-.supplier-button {
+.category-button {
   width: 100%;
   padding: 12px;
   background: linear-gradient(90deg, #007bff, #0056b3);
@@ -215,28 +169,28 @@
   text-transform: uppercase;
 }
 
-.supplier-button:disabled {
+.category-button:disabled {
   background: #ccc;
   cursor: not-allowed;
 }
 
-.supplier-button:hover:not(:disabled) {
+.category-button:hover:not(:disabled) {
   background: linear-gradient(90deg, #0056b3, #007bff);
   box-shadow: 0 4px 15px rgba(0, 123, 255, 0.4);
   transform: translateY(-2px);
 }
 
-.supplier-message {
+.category-message {
   text-align: center;
   margin-top: 15px;
   font-size: 14px;
   font-weight: bold;
 }
 
-.supplier-message.success {
+.category-message.success {
   color: #28a745;
 }
 
-.supplier-message.error {
+.category-message.error {
   color: #dc3545;
 }

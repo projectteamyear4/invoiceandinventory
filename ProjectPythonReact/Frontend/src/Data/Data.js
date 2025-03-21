@@ -20,7 +20,7 @@ export const SidebarData = [
   { icon: UilClipboardAlt, heading: "អ្នកផ្គត់ផ្គង់", path: "/suppliers" }, // Orders
   { icon: UilUsersAlt, heading: "អតិថិជន", path: "/customers" }, // Customers
   { icon: UilPackage, heading: "ផលិតផល", path: "/products" }, // Products
-  { icon: UilChart, heading: "បញ្ជីប្រភេទ", path: "/CategoryList" }, // CategoryList
+  { icon: UilChart, heading: "បញ្ជីប្រភេទ", path: "/category-list" }, // CategoryList
   { icon: UilClipboardAlt, heading: "បញ្ជី", path: "/warehouse" }, // ProductList
   { icon: UilChart, heading: "វិក្កយបត្រ", path: "/invoice" }, // Invoice
   { icon: UilClipboardAlt, heading: "បញ្ជីវិក្កយបត្រ", path: "/invoicelist" }, // InvoiceList
