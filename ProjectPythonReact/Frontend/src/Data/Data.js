@@ -16,7 +16,7 @@ import img3 from "../imgs/img3.png";
 
 // Original Sidebar Data with Khmer Translations
 export const SidebarData = [
-  { icon: UilEstate, heading: "ផ្ទាំងគ្រប់គ្រង", path: "/" }, // Dashboard
+  { icon: UilEstate, heading: "ផ្ទាំងគ្រប់គ្រង", path: "/dashboard" }, // Dashboard
   { icon: UilClipboardAlt, heading: "អ្នកផ្គត់ផ្គង់", path: "/suppliers" }, // Orders
   { icon: UilUsersAlt, heading: "អតិថិជន", path: "/customers" }, // Customers
   { icon: UilPackage, heading: "ផលិតផល", path: "/products" }, // Products
