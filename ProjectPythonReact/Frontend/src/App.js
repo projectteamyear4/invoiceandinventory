@@ -1,5 +1,6 @@
 import { Route, BrowserRouter as Router, Routes } from 'react-router-dom';
 import './App.css';
+import Login from './components/auth/Login';
 import Register from './components/auth/Register';
 import CategoryList from './components/category/categorylist.jsx';
 import { AddCustomer } from './components/CustomerReview/Addcustomer.jsx';
@@ -36,6 +37,7 @@ function App() {
           <Sidebar />
           <Routes>
             <Route path="/" element={<Register />} /> {/* Move this inside Routes */}
+            <Route path="/login" element={<Login />} />
             <Route path="/dashboard" element={<MainDash />} /> {/* Default Route */}
             <Route path="/orders" element={<Orders />} />
             <Route path="/customers" element={<CustomerList />} />
