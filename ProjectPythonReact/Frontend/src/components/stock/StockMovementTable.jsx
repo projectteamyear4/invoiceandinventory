@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useParams } from 'react-router-dom';
-import './WarehouseTable.css';
+
 
 const StockMovementTable = () => {
   const { warehouseId } = useParams();

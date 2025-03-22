@@ -1,15 +1,15 @@
+/* General container styling */
 *{
-  font-family: 'Inter', 'Noto Sans Khmer', sans-serif;
+  font-family: 'Khmer', 'Arial', sans-serif; /* Use Khmer font if available, fallback to Arial */
 }
 .product-table-container {
-  max-width: 1500px;
-  margin: 20px auto;
-  padding: 20px;
-  background: #ffffff;
-  border-radius: 15px;
- 
+  padding: 30px;
+  max-width: 1200px;
+  margin: 0 auto;
+  font-family: 'Khmer', 'Arial', sans-serif; /* Use Khmer font if available, fallback to Arial */
 }
 
+/* Header section with title and controls */
 .product-header {
   display: flex;
   justify-content: space-between;
@@ -17,50 +17,83 @@
   margin-bottom: 20px;
 }
 
-.product-table-container h2 {
-  text-align: left;
-  color: #007bff;
-  font-size: 28px;
+.product-header h2 {
+  font-size: 24px;
+  color: #333;
   margin: 0;
 }
 
-.product-item {
-  margin-bottom: 30px;
+/* Controls (search and add button) */
+.product-controls {
+  display: flex;
+  gap: 10px;
+  align-items: center;
 }
 
-.product-table, .variant-table {
+.product-search-input {
+  padding: 8px 12px;
+  border: 2px solid #ddd;
+  border-radius: 5px;
+  font-size: 14px;
+  width: 200px;
+  outline: none;
+  transition: border-color 0.3s;
+}
+
+.product-search-input:focus {
+  border-color: #007bff;
+}
+
+.product-add-button {
+  background: linear-gradient(90deg, #007bff, #0056b3);
+  color: white;
+  border: none;
+  padding: 10px 15px;
+  border-radius: 5px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.product-add-button:hover {
+  background-color: #0056b3;
+}
+
+/* Table styling */
+.product-table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 16px;
-  margin-top: 10px;
+  background-color: #fff;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
 
 .product-table th,
-.product-table td,
-.variant-table th,
-.variant-table td {
-  padding: 12px;
+.product-table td {
+  padding: 12px 15px;
   text-align: left;
+  
   border-bottom: 1px solid #ddd;
 }
 
 .product-table th {
   background: #007bff;
-  color: white;
-  text-transform: uppercase;
+  color: #e9ecef;
+  font-weight: bold;
+  cursor: pointer;
+  user-select: none; /* Prevent text selection on sort click */
 }
 
-.variant-table th {
-  background: #17a2b8;
-  color: white;
-  text-transform: uppercase;
+.product-table th:hover {
+  background-color: #0056b3;
 }
 
-.product-table tr:hover,
-.variant-table tr:hover {
-  background: rgba(0, 123, 255, 0.1);
+/* Sort indicator styling */
+.product-table th::after {
+  content: '';
+  margin-left: 5px;
 }
 
+/* Image styling */
 .product-image {
   width: 50px;
   height: 50px;
@@ -68,33 +101,72 @@
   border-radius: 5px;
 }
 
-.product-add-button, .product-add-variant-button {
-  padding: 10px 20px;
-  background: linear-gradient(90deg, #007bff, #0056b3);
-  color: white;
+/* Action buttons */
+.product-add-variant-button,
+.product-edit-button,
+.product-delete-button,
+.variant-edit-button,
+.variant-delete-button {
+  padding: 6px 12px;
+  margin: 2px;
   border: none;
-  border-radius: 8px;
-  font-size: 16px;
+  border-radius: 5px;
+  font-size: 12px;
   cursor: pointer;
-  transition: all 0.3s ease;
-  text-transform: uppercase;
+  transition: background-color 0.3s;
 }
 
-.product-add-button:hover, .product-add-variant-button:hover {
-  background: linear-gradient(90deg, #0056b3, #007bff);
-  box-shadow: 0 4px 15px rgba(0, 123, 255, 0.4);
-  transform: translateY(-2px);
+/* Specific button styles */
+.product-add-variant-button {
+  background-color: #28a745;
+  color: white;
 }
 
+.product-add-variant-button:hover {
+  background-color: #218838;
+}
+
+.product-edit-button,
+.variant-edit-button {
+  background-color: #ffc107;
+  color: white;
+}
+
+.product-edit-button:hover,
+.variant-edit-button:hover {
+  background-color: #e0a800;
+}
+
+.product-delete-button,
+.variant-delete-button {
+  background-color: #dc3545;
+  color: white;
+}
+
+.product-delete-button:hover,
+.variant-delete-button:hover {
+  background-color: #c82333;
+}
+
+/* Loading message */
+p {
+  text-align: center;
+  font-size: 16px;
+  color: #666;
+  margin-top: 20px;
+}
+
+
+/* Form container */
 .product-form-container {
   max-width: 1000px; /* Wider for multiple rows */
   margin: 30px auto;
   padding: 20px;
   background: #ffffff;
   border-radius: 15px;
- 
 }
 
+/* Header */
 .product-form-container h2 {
   text-align: center;
   color: #007bff;
@@ -103,12 +175,14 @@
   text-transform: uppercase;
 }
 
+/* Form layout */
 .product-form {
   display: flex;
   flex-direction: column;
   gap: 20px;
 }
 
+/* Row for grouping inputs */
 .product-row {
   display: flex;
   flex-wrap: wrap;
@@ -118,6 +192,7 @@
   padding-bottom: 15px;
 }
 
+/* Input fields */
 .product-input {
   flex: 1;
   min-width: 200px;
@@ -137,46 +212,13 @@
   background: #fff;
 }
 
+/* Larger textarea-like input for description */
 .product-textarea {
   min-height: 80px;
   resize: vertical;
 }
 
-.product-add-row-button {
-  padding: 10px 20px;
-  background: linear-gradient(90deg, #28a745, #218838); /* Green for adding rows */
-  color: white;
-  border: none;
-  border-radius: 8px;
-  font-size: 16px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  text-transform: uppercase;
-}
-
-.product-add-row-button:hover {
-  background: linear-gradient(90deg, #218838, #28a745);
-  box-shadow: 0 4px 15px rgba(40, 167, 69, 0.4);
-  transform: translateY(-2px);
-}
-
-.product-remove-button {
-  padding: 8px 15px;
-  background: linear-gradient(90deg, #dc3545, #c82333); /* Red for remove */
-  color: white;
-  border: none;
-  border-radius: 8px;
-  font-size: 14px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.product-remove-button:hover {
-  background: linear-gradient(90deg, #c82333, #dc3545);
-  box-shadow: 0 4px 15px rgba(220, 53, 69, 0.4);
-  transform: translateY(-2px);
-}
-
+/* Submit button */
 .product-button {
   width: 100%;
   padding: 12px;
@@ -201,6 +243,7 @@
   transform: translateY(-2px);
 }
 
+/* Success/Error messages */
 .product-message {
   text-align: center;
   margin-top: 15px;
@@ -215,3 +258,79 @@
 .product-message.error {
   color: #dc3545;
 }
+/* នេលដបរាត្យ CSS នេក្រេប៉ុប តិបបាន់ */
+
+.product-form-container {
+  max-width: 600px;
+  margin: auto;
+  padding: 20px;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+h2 {
+  text-align: center;
+  color: #333;
+}
+
+.product-form {
+  display: flex;
+  flex-direction: column;
+}
+
+.product-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.product-input, .product-textarea, select {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.product-textarea {
+  resize: vertical;
+}
+
+.product-add-row-button, .product-button {
+  background-color: #007bff;
+  color: #fff;
+  border: none;
+  padding: 10px;
+  margin-top: 10px;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+.product-add-row-button:hover, .product-button:hover {
+  background-color: #0056b3;
+}
+
+.product-remove-button {
+  background-color: #dc3545;
+  color: white;
+  border: none;
+  padding: 8px;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+.product-remove-button:hover {
+  background-color: #c82333;
+}
+
+.product-message.success {
+  color: green;
+  text-align: center;
+}
+
+.product-message.error {
+  color: red;
+  text-align: center;
+}
+

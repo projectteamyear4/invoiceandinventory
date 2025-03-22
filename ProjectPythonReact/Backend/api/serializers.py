@@ -1,9 +1,10 @@
 from django.contrib.auth.models import User
 from rest_framework import serializers
+from django.db import models
 from rest_framework.validators import UniqueValidator
 from django.contrib.auth.password_validation import validate_password
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
-from .models import Supplier,Product, ProductVariant, Category
+from .models import Supplier,Product, ProductVariant, Category, Warehouse, Shelf
 
 # Existing RegisterSerializer
 class RegisterSerializer(serializers.ModelSerializer):
@@ -82,3 +83,30 @@ class ProductSerializer(serializers.ModelSerializer):
     class Meta:
         model = Product
         fields = ['id', 'name', 'category', 'category_id', 'description', 'brand','image_url', 'created_at', 'variants']
+        
+# Corrected WarehouseSerializer (standalone)
+class WarehouseSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Warehouse
+        fields = ['id', 'name', 'location', 'owner', 'contact_person', 'contact_number','capacity', 'created_at']
+        
+class ShelfSerializer(serializers.ModelSerializer):
+    warehouse = serializers.PrimaryKeyRelatedField(queryset=Warehouse.objects.all())
+
+    class Meta:
+        model = Shelf
+        fields = ['id', 'warehouse', 'shelf_name', 'section', 'capacity', 'created_at']
+
+    def validate(self, data):
+        warehouse = data.get('warehouse')
+        capacity = data.get('capacity')
+        if warehouse and capacity:
+            total_shelf_capacity = (
+                warehouse.shelves.exclude(id=self.instance.id if self.instance else None)
+                .aggregate(models.Sum('capacity'))['capacity__sum'] or 0
+            )
+            if total_shelf_capacity + capacity > warehouse.capacity:
+                raise serializers.ValidationError(
+                    f"Total shelf capacity ({total_shelf_capacity + capacity}) exceeds warehouse capacity ({warehouse.capacity})."
+                )
+        return data

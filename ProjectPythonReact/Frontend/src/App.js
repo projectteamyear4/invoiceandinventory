@@ -14,13 +14,18 @@ import MainDash from './components/MainDash/MainDash';
 import Orders from './components/Orderlist/Orders.jsx';
 import AddProduct from './components/productlist/addproduct.jsx';
 import AddProductVariant from './components/productlist/addproductvariant.jsx';
+import EditProduct from './components/productlist/EditProduct.jsx';
+import EditProductVariant from './components/productlist/EditProductVariant.jsx';
 import Products from './components/productlist/products.jsx';
 import Sidebar from './components/Sidebar';
+import AddShelf from './components/stock/AddShelf.jsx';
+import AddWarehouse from './components/stock/AddWarehouse.jsx';
+import EditShelf from './components/stock/EditShelf.jsx';
+import EditWarehouse from './components/stock/EditWarehouse.jsx';
 import InventoryTable from './components/stock/InventoryTable.jsx';
-import CabinetTable from './components/stock/listcabinet.jsx';
-import ShelfTable from './components/stock/ShelfTable.jsx';
+import Shelves from './components/stock/Shelves.jsx';
 import StockMovementTable from './components/stock/StockMovementTable.jsx';
-import WarehouseTable from './components/stock/warehouse.jsx';
+import Warehouses from './components/stock/Warehouses.jsx';
 import AddSupplier from './components/supplier/AddSupplier.jsx';
 import EditSupplier from './components/supplier/EditSupplier.jsx';
 import SupplierTable from './components/supplier/SupplierTable.jsx';
@@ -53,12 +58,17 @@ function App() {
               <Route path="/add-category" element={<ProtectedRoute><AddCategory /></ProtectedRoute>} />
               <Route path="/add-product" element={<ProtectedRoute><AddProduct /></ProtectedRoute>} />
               <Route path="/add-variant/:productId" element={<ProtectedRoute><AddProductVariant /></ProtectedRoute>} />
+              <Route path="/edit-variant/:variantId" element={<ProtectedRoute><EditProductVariant /></ProtectedRoute>} />
+              <Route path="/edit-product/:productId" element={<ProtectedRoute><EditProduct /></ProtectedRoute>} />
               <Route path="/inventory/:warehouseId/:cabinetId/:shelfId" element={<ProtectedRoute><InventoryTable /></ProtectedRoute>} />
-              <Route path="/warehouse" element={<ProtectedRoute><WarehouseTable /></ProtectedRoute>} />
+              <Route path="/warehouses" element={<ProtectedRoute><Warehouses /></ProtectedRoute>} />
+              <Route path="/add-warehouse" element={<ProtectedRoute><AddWarehouse /></ProtectedRoute>} />
+              <Route path="/edit-warehouse/:id" element={<ProtectedRoute><EditWarehouse /></ProtectedRoute>} />
               <Route path="/invoice" element={<ProtectedRoute><InvoiceForm /></ProtectedRoute>} />
               <Route path="/invoicelist" element={<ProtectedRoute><InvoiceList /></ProtectedRoute>} />
-              <Route path="/cabinets/:warehouseId" element={<ProtectedRoute><CabinetTable /></ProtectedRoute>} />
-              <Route path="/shelves/:warehouseId/:cabinetId" element={<ProtectedRoute><ShelfTable /></ProtectedRoute>} />
+              <Route path="/shelves" element={<ProtectedRoute><Shelves /></ProtectedRoute>} />
+              <Route path="/add-shelf" element={<ProtectedRoute><AddShelf /></ProtectedRoute>} />
+              <Route path="/edit-shelf/:id" element={<ProtectedRoute><EditShelf /></ProtectedRoute>} />
               <Route path="/stock-movement/:warehouseId" element={<ProtectedRoute><StockMovementTable /></ProtectedRoute>} />
               <Route path="/suppliers" element={<ProtectedRoute><SupplierTable /></ProtectedRoute>} />
               <Route path="/add-supplier" element={<ProtectedRoute><AddSupplier /></ProtectedRoute>} />

@@ -1,0 +1,143 @@
+/* src/components/Warehouse.css */
+.warehouse-container {
+    max-width: 1200px;
+    margin: 20px auto;
+    padding: 20px;
+    background: #ffffff;
+    border-radius: 10px;
+  }
+  
+  .warehouse-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+  }
+  
+  .warehouse-header h2 {
+    color: #007bff;
+    font-size: 24px;
+  }
+  
+  .warehouse-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  
+  .warehouse-table th,
+  .warehouse-table td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+  }
+  
+  .warehouse-table th {
+    background: #007bff;
+    color: white;
+  }
+  
+  .warehouse-table tr:hover {
+    background: rgba(0, 123, 255, 0.1);
+  }
+  
+  .warehouse-add-button,
+  .warehouse-edit-button,
+  .warehouse-delete-button,
+  .warehouse-button {
+    padding: 8px 16px;
+    margin: 0 5px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    color: white;
+  }
+  
+  .warehouse-add-button {
+    background: #28a745;
+  }
+  
+  .warehouse-add-button:hover {
+    background: #218838;
+  }
+  
+  .warehouse-edit-button {
+    background: #ffc107;
+  }
+  
+  .warehouse-edit-button:hover {
+    background: #e0a800;
+  }
+  
+  .warehouse-delete-button {
+    background: #dc3545;
+  }
+  
+  .warehouse-delete-button:hover {
+    background: #c82333;
+  }
+  
+  .warehouse-form-container {
+    max-width: 600px;
+    margin: 20px auto;
+    padding: 20px;
+    background: #ffffff;
+    border-radius: 10px;
+  }
+  
+  .warehouse-form-container h2 {
+    color: #007bff;
+    text-align: center;
+    margin-bottom: 20px;
+  }
+  
+  .warehouse-form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+  }
+  
+  .warehouse-input {
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    font-size: 16px;
+  }
+  
+  .warehouse-button {
+    background: #007bff;
+  }
+  
+  .warehouse-button:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+  }
+  
+  .warehouse-button:hover:not(:disabled) {
+    background: #0056b3;
+  }
+  
+  .warehouse-message {
+    text-align: center;
+    margin-top: 15px;
+  }
+  
+  .warehouse-message.success {
+    color: #28a745;
+  }
+  
+  .warehouse-message.error {
+    color: #dc3545;
+  }
+  .warehouse-shelves-button { /* Added */
+    background: #17a2b8; /* Cyan color for distinction */
+    padding: 8px 16px;
+    margin: 0 5px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    color: white;
+  }
+  
+  .warehouse-shelves-button:hover { /* Added */
+    background: #138496;
+  }

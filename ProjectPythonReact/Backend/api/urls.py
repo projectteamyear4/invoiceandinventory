@@ -13,4 +13,8 @@ urlpatterns = [
     path('api/products/<int:pk>/', views.product_detail, name='product_detail'),
     path('api/variants/', views.variant_list_create, name='variant_list_create'),
     path('api/variants/<int:pk>/', views.variant_detail, name='variant_detail'),
+    path('api/warehouses/', views.warehouse_list_create, name='warehouse_list_create'),
+    path('api/warehouses/<int:pk>/', views.warehouse_detail, name='warehouse_detail'),
+    path('api/shelves/', views.shelf_list_create, name='shelf_list_create'),
+    path('api/shelves/<int:pk>/', views.shelf_detail, name='shelf_detail'),
 ]

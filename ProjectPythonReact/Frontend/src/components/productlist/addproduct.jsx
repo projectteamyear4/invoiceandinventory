@@ -29,7 +29,7 @@ const AddProduct = () => {
         const response = await api.get('/api/categories/');
         setCategories(response.data);
       } catch (error) {
-        console.error('Error fetching categories:', error);
+        console.error('មានបញ្ហាក្នុងការទាញយកប្រភេទផលិតផល:', error);
       }
     };
     fetchCategories();
@@ -61,16 +61,16 @@ const AddProduct = () => {
       const responses = await Promise.all(
         products.map((product) => api.post('/api/products/', product))
       );
-      setMessage('Products added successfully!');
+      setMessage('បានបន្ថែមផលិតផលដោយជោគជ័យ!');
       setProducts([{ name: '', category_id: '', description: '', brand: '', image_url: '' }]);
       setTimeout(() => navigate('/products'), 1000);
     } catch (error) {
       if (error.response) {
-        setMessage(error.response.data.detail || 'Failed to add some products.');
+        setMessage(error.response.data.detail || 'មិនអាចបន្ថែមផលិតផលបានទេ។');
       } else if (error.request) {
-        setMessage('Unable to connect to server.');
+        setMessage('មិនអាចភ្ជាប់ទៅម៉ាស៊ីនបម្រើបានទេ។');
       } else {
-        setMessage('Error: ' + error.message);
+        setMessage('កំហុស: ' + error.message);
       }
     } finally {
       setIsLoading(false);
@@ -79,14 +79,14 @@ const AddProduct = () => {
 
   return (
     <div className="product-form-container">
-      <h2>Add Products</h2>
+      <h2>បន្ថែមផលិតផល</h2>
       <form onSubmit={handleSubmit} className="product-form">
         {products.map((product, index) => (
           <div key={index} className="product-row">
             <input
               type="text"
               name="name"
-              placeholder="Product Name"
+              placeholder="ឈ្មោះផលិតផល"
               value={product.name}
               onChange={(e) => handleChange(index, e)}
               required
@@ -100,7 +100,7 @@ const AddProduct = () => {
               disabled={isLoading}
               className="product-input"
             >
-              <option value="">Select Category</option>
+              <option value="">ជ្រើសប្រភេទ</option>
               {categories.map((category) => (
                 <option key={category.id} value={category.id}>
                   {category.name}
@@ -109,7 +109,7 @@ const AddProduct = () => {
             </select>
             <textarea
               name="description"
-              placeholder="Description"
+              placeholder="សេចក្ដីពិពណ៌នា"
               value={product.description}
               onChange={(e) => handleChange(index, e)}
               disabled={isLoading}
@@ -118,7 +118,7 @@ const AddProduct = () => {
             <input
               type="text"
               name="brand"
-              placeholder="Brand"
+              placeholder="ម៉ាកផលិតផល"
               value={product.brand}
               onChange={(e) => handleChange(index, e)}
               disabled={isLoading}
@@ -127,7 +127,7 @@ const AddProduct = () => {
             <input
               type="url"
               name="image_url"
-              placeholder="Image URL"
+              placeholder="URL រូបភាព"
               value={product.image_url}
               onChange={(e) => handleChange(index, e)}
               disabled={isLoading}
@@ -140,20 +140,20 @@ const AddProduct = () => {
                 disabled={isLoading}
                 className="product-remove-button"
               >
-                Remove
+                លុប
               </button>
             )}
           </div>
         ))}
         <button type="button" onClick={addProductRow} disabled={isLoading} className="product-add-row-button">
-          Add Another Product
+          បន្ថែមផលិតផលផ្សេងទៀត
         </button>
         <button type="submit" disabled={isLoading} className="product-button">
-          {isLoading ? 'Adding...' : 'Add Products'}
+          {isLoading ? 'កំពុងបន្ថែម...' : 'បន្ថែមផលិតផល'}
         </button>
       </form>
       {message && (
-        <p className={`product-message ${message.includes('successfully') ? 'success' : 'error'}`}>
+        <p className={`product-message ${message.includes('ជោគជ័យ') ? 'success' : 'error'}`}>
           {message}
         </p>
       )}
