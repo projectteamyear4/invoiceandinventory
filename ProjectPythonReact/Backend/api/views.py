@@ -4,9 +4,12 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from .serializers import RegisterSerializer, UserDetailSerializer, LoginSerializer
 from django.contrib.auth.models import User
-from .models import Supplier, Product, ProductVariant, Category, Warehouse,Shelf
-from .serializers import SupplierSerializer, ProductSerializer, ProductVariantSerializer, CategorySerializer, WarehouseSerializer,ShelfSerializer
+from rest_framework import viewsets
+from .models import Supplier, Product, ProductVariant, Category, Warehouse,Shelf,Purchase
+from .serializers import SupplierSerializer, ProductSerializer, ProductVariantSerializer, CategorySerializer, WarehouseSerializer,ShelfSerializer,PurchaseSerializer
+import logging
 
+logger = logging.getLogger(__name__)
 @api_view(['POST'])
 @permission_classes([])  # Allow anyone
 def register(request):
@@ -250,3 +253,43 @@ def shelf_detail(request, pk):
     elif request.method == 'DELETE':
         shelf.delete()
         return Response({'detail': 'Shelf deleted'}, status=status.HTTP_204_NO_CONTENT)
+    #purchase views
+@api_view(['GET', 'POST'])
+def purchase_list_create(request):
+    if request.method == 'GET':
+        purchases = Purchase.objects.all()
+        serializer = PurchaseSerializer(purchases, many=True)
+        return Response(serializer.data)
+    elif request.method == 'POST':
+        logger.info("Received POST data: %s", request.data)
+        serializer = PurchaseSerializer(data=request.data)
+        if serializer.is_valid():
+            try:
+                serializer.save()
+                logger.info("Saved purchase: %s", serializer.data)
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
+            except Exception as e:
+                logger.error("Save error: %s", str(e))
+                return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        logger.error("Validation errors: %s", serializer.errors)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['GET', 'PUT', 'DELETE'])
+def purchase_detail(request, pk):
+    try:
+        purchase = Purchase.objects.get(pk=pk)
+    except Purchase.DoesNotExist:
+        return Response(status=status.HTTP_404_NOT_FOUND)
+    
+    if request.method == 'GET':
+        serializer = PurchaseSerializer(purchase)
+        return Response(serializer.data)
+    elif request.method == 'PUT':
+        serializer = PurchaseSerializer(purchase, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    elif request.method == 'DELETE':
+        purchase.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)

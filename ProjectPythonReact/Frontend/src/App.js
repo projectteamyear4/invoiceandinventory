@@ -26,8 +26,10 @@ import InventoryTable from './components/stock/InventoryTable.jsx';
 import Shelves from './components/stock/Shelves.jsx';
 import StockMovementTable from './components/stock/StockMovementTable.jsx';
 import Warehouses from './components/stock/Warehouses.jsx';
+import AddPurchase from './components/supplier/AddPurchase.jsx';
 import AddSupplier from './components/supplier/AddSupplier.jsx';
 import EditSupplier from './components/supplier/EditSupplier.jsx';
+import Purchases from './components/supplier/Purchases.jsx';
 import SupplierTable from './components/supplier/SupplierTable.jsx';
 import ProtectedRoute from './ProtectedRoute';
 
@@ -54,6 +56,8 @@ function App() {
               <Route path="/customers" element={<ProtectedRoute><CustomerList /></ProtectedRoute>} />
               <Route path="/add-customer" element={<ProtectedRoute><AddCustomer /></ProtectedRoute>} />
               <Route path="/products" element={<ProtectedRoute><Products /></ProtectedRoute>} />
+              <Route path="/purchases" element={<ProtectedRoute><Purchases /></ProtectedRoute>} />
+              <Route path="/add-purchase" element={<ProtectedRoute><AddPurchase /></ProtectedRoute>} />
               <Route path="/category-list" element={<ProtectedRoute><CategoryList /></ProtectedRoute>} />
               <Route path="/add-category" element={<ProtectedRoute><AddCategory /></ProtectedRoute>} />
               <Route path="/add-product" element={<ProtectedRoute><AddProduct /></ProtectedRoute>} />

@@ -1,4 +1,6 @@
 from django.db import models
+import uuid
+import random
 from django.core.exceptions import ValidationError
 #Supplier model
 class Supplier(models.Model):
@@ -17,13 +19,17 @@ class Category(models.Model):
 
     def __str__(self):
         return self.name
-
+def generate_sequential_barcode():
+    last_product = Product.objects.order_by('-id').first()
+    last_id = int(last_product.barcode[1:]) if last_product and last_product.barcode else 0
+    return f"P{str(last_id + 1).zfill(11)}"  # e.g., P00000000001
 class Product(models.Model):
     name = models.CharField(max_length=100, null=False)
     category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True, blank=True, related_name='products')
     description = models.TextField(blank=True, null=True)
     brand = models.CharField(max_length=50, blank=True, null=True)
     image_url = models.URLField(max_length=200, blank=True, null=True)
+    barcode = models.CharField(max_length=12, unique=True, default=generate_sequential_barcode, editable=False)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
@@ -82,3 +88,16 @@ class Shelf(models.Model):
 
     class Meta:
         db_table = 'shelf'
+#purchase model
+class Purchase(models.Model):
+    id = models.AutoField(primary_key=True)
+    supplier = models.ForeignKey(Supplier, on_delete=models.CASCADE)
+    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+    product_variant = models.ForeignKey(ProductVariant, on_delete=models.CASCADE, null=True, blank=True)
+    batch_number = models.CharField(max_length=50)
+    quantity = models.IntegerField()
+    purchase_price = models.DecimalField(max_digits=10, decimal_places=2)
+    purchase_date = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Purchase {self.id} - {self.product.name} ({self.batch_number})"

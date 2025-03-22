@@ -2,14 +2,15 @@
 *{
   font-family: 'Khmer', 'Arial', sans-serif; /* Use Khmer font if available, fallback to Arial */
 }
+/* src/components/Product.css */
 .product-table-container {
-  padding: 30px;
-  max-width: 1200px;
-  margin: 0 auto;
-  font-family: 'Khmer', 'Arial', sans-serif; /* Use Khmer font if available, fallback to Arial */
+  max-width: 1400px;
+  margin: 20px auto;
+  padding: 20px;
+  background: #fff;
+  border-radius: 10px;
 }
 
-/* Header section with title and controls */
 .product-header {
   display: flex;
   justify-content: space-between;
@@ -18,82 +19,48 @@
 }
 
 .product-header h2 {
+  color: #007bff;
   font-size: 24px;
-  color: #333;
-  margin: 0;
 }
 
-/* Controls (search and add button) */
 .product-controls {
   display: flex;
   gap: 10px;
-  align-items: center;
 }
 
 .product-search-input {
-  padding: 8px 12px;
-  border: 2px solid #ddd;
+  padding: 8px;
+  border: 1px solid #ddd;
   border-radius: 5px;
-  font-size: 14px;
-  width: 200px;
-  outline: none;
-  transition: border-color 0.3s;
+  font-size: 16px;
 }
 
-.product-search-input:focus {
-  border-color: #007bff;
-}
-
-.product-add-button {
-  background: linear-gradient(90deg, #007bff, #0056b3);
-  color: white;
-  border: none;
-  padding: 10px 15px;
-  border-radius: 5px;
-  font-size: 14px;
-  cursor: pointer;
-  transition: background-color 0.3s;
-}
-
-.product-add-button:hover {
-  background-color: #0056b3;
-}
-
-/* Table styling */
 .product-table {
   width: 100%;
   border-collapse: collapse;
-  background-color: #fff;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
 
 .product-table th,
 .product-table td {
-  padding: 12px 15px;
+  padding: 12px;
   text-align: left;
-  
   border-bottom: 1px solid #ddd;
 }
 
 .product-table th {
   background: #007bff;
-  color: #e9ecef;
-  font-weight: bold;
+  color: white;
   cursor: pointer;
-  user-select: none; /* Prevent text selection on sort click */
 }
 
 .product-table th:hover {
-  background-color: #0056b3;
+  background: #0056b3;
 }
 
-/* Sort indicator styling */
-.product-table th::after {
-  content: '';
-  margin-left: 5px;
+.product-table tr:hover {
+  background: rgba(0, 123, 255, 0.1);
 }
 
-/* Image styling */
 .product-image {
   width: 50px;
   height: 50px;
@@ -101,162 +68,112 @@
   border-radius: 5px;
 }
 
-/* Action buttons */
+.product-add-button,
 .product-add-variant-button,
 .product-edit-button,
 .product-delete-button,
 .variant-edit-button,
 .variant-delete-button {
   padding: 6px 12px;
-  margin: 2px;
+  margin: 0 5px;
   border: none;
   border-radius: 5px;
-  font-size: 12px;
   cursor: pointer;
-  transition: background-color 0.3s;
-}
-
-/* Specific button styles */
-.product-add-variant-button {
-  background-color: #28a745;
   color: white;
 }
 
+.product-add-button {
+  background: #28a745;
+}
+
+.product-add-button:hover {
+  background: #218838;
+}
+
+.product-add-variant-button {
+  background: #17a2b8;
+}
+
 .product-add-variant-button:hover {
-  background-color: #218838;
+  background: #138496;
 }
 
 .product-edit-button,
 .variant-edit-button {
-  background-color: #ffc107;
-  color: white;
+  background: #ffc107;
 }
 
 .product-edit-button:hover,
 .variant-edit-button:hover {
-  background-color: #e0a800;
+  background: #e0a800;
 }
 
 .product-delete-button,
 .variant-delete-button {
-  background-color: #dc3545;
-  color: white;
+  background: #dc3545;
 }
 
 .product-delete-button:hover,
 .variant-delete-button:hover {
-  background-color: #c82333;
+  background: #c82333;
 }
 
-/* Loading message */
-p {
-  text-align: center;
-  font-size: 16px;
-  color: #666;
+/* Barcode Styling */
+/* Barcode Styling */
+.barcode-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 60px; /* Ensure enough space for both barcode and number */
+  padding: 5px;
+}
+
+.barcode-display {
+  font-family: 'Libre Barcode 39', cursive; /* Barcode font */
+  font-size: 28px; /* Adjust size for visibility */
+  letter-spacing: 1px; /* Space between bars */
+  color: #000; /* Black bars */
+  line-height: 1; /* Tighten spacing */
+}
+
+.barcode-number {
+  font-family: monospace; /* Clean, readable font for numbers */
+  font-size: 12px; /* Smaller size for the number */
+  color: #333; /* Slightly lighter than black */
+  margin-top: 2px; /* Space between barcode and number */
+}
+/* Pagination Styling */
+.pagination {
+  display: flex;
+  justify-content: center;
+  gap: 5px;
   margin-top: 20px;
 }
 
-
-/* Form container */
-.product-form-container {
-  max-width: 1000px; /* Wider for multiple rows */
-  margin: 30px auto;
-  padding: 20px;
-  background: #ffffff;
-  border-radius: 15px;
-}
-
-/* Header */
-.product-form-container h2 {
-  text-align: center;
-  color: #007bff;
-  font-size: 28px;
-  margin-bottom: 20px;
-  text-transform: uppercase;
-}
-
-/* Form layout */
-.product-form {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
-
-/* Row for grouping inputs */
-.product-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 15px;
-  align-items: center;
-  border-bottom: 1px solid #eee;
-  padding-bottom: 15px;
-}
-
-/* Input fields */
-.product-input {
-  flex: 1;
-  min-width: 200px;
-  padding: 12px;
-  border: 2px solid #ddd;
-  border-radius: 8px;
-  font-size: 16px;
-  color: #333;
-  transition: all 0.3s ease;
-  background: #f9f9f9;
-}
-
-.product-input:focus {
-  outline: none;
-  border-color: #007bff;
-  box-shadow: 0 0 8px rgba(0, 123, 255, 0.3);
+.pagination-button {
+  padding: 6px 12px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
   background: #fff;
-}
-
-/* Larger textarea-like input for description */
-.product-textarea {
-  min-height: 80px;
-  resize: vertical;
-}
-
-/* Submit button */
-.product-button {
-  width: 100%;
-  padding: 12px;
-  background: linear-gradient(90deg, #007bff, #0056b3);
-  color: white;
-  border: none;
-  border-radius: 8px;
-  font-size: 16px;
   cursor: pointer;
-  transition: all 0.3s ease;
-  text-transform: uppercase;
+  color: #007bff;
 }
 
-.product-button:disabled {
-  background: #ccc;
+.pagination-button:hover:not(:disabled) {
+  background: #007bff;
+  color: white;
+}
+
+.pagination-button:disabled {
+  color: #aaa;
   cursor: not-allowed;
 }
 
-.product-button:hover:not(:disabled) {
-  background: linear-gradient(90deg, #0056b3, #007bff);
-  box-shadow: 0 4px 15px rgba(0, 123, 255, 0.4);
-  transform: translateY(-2px);
-}
-
-/* Success/Error messages */
-.product-message {
-  text-align: center;
-  margin-top: 15px;
-  font-size: 14px;
+.pagination-button.active {
+  background: #007bff;
+  color: white;
   font-weight: bold;
-}
-
-.product-message.success {
-  color: #28a745;
-}
-
-.product-message.error {
-  color: #dc3545;
 }
 /* នេលដបរាត្យ CSS នេក្រេប៉ុប តិបបាន់ */
 

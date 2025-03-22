@@ -4,7 +4,7 @@ from django.db import models
 from rest_framework.validators import UniqueValidator
 from django.contrib.auth.password_validation import validate_password
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
-from .models import Supplier,Product, ProductVariant, Category, Warehouse, Shelf
+from .models import Supplier, Product, ProductVariant, Category, Warehouse, Shelf, Purchase
 
 # Existing RegisterSerializer
 class RegisterSerializer(serializers.ModelSerializer):
@@ -45,7 +45,6 @@ class LoginSerializer(TokenObtainPairSerializer):
     @classmethod
     def get_token(cls, user):
         token = super().get_token(user)
-        # Add custom claims if needed
         token['username'] = user.username
         return token
 
@@ -62,34 +61,65 @@ class SupplierSerializer(serializers.ModelSerializer):
     class Meta:
         model = Supplier
         fields = ['id', 'name', 'contact_person', 'phone', 'email', 'address', 'country']
+
 # Corrected CategorySerializer (standalone)
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = Category
         fields = ['id', 'name']
 
+# Purchase order serializer
+class PurchaseSerializer(serializers.ModelSerializer):
+    supplier_name = serializers.CharField(source='supplier.name', read_only=True)
+    product_name = serializers.CharField(source='product.name', read_only=True)
+    product_variant_info = serializers.CharField(source='product_variant.__str__', read_only=True)
+
+    class Meta:
+        model = Purchase
+        fields = [
+            'id', 'supplier', 'supplier_name', 'product', 'product_name',
+            'product_variant', 'product_variant_info', 'batch_number',
+            'quantity', 'purchase_price', 'purchase_date'
+        ]
+
+# Updated ProductVariantSerializer
 class ProductVariantSerializer(serializers.ModelSerializer):
+    purchases = PurchaseSerializer(source='purchase_set', many=True, read_only=True)
+    stock_quantity = serializers.SerializerMethodField()
+    purchase_price = serializers.SerializerMethodField()
+
     class Meta:
         model = ProductVariant
-        fields = ['id', 'product', 'size', 'color', 'stock_quantity', 'purchase_price', 'selling_price']
+        fields = ['id', 'product', 'size', 'color', 'stock_quantity', 'purchase_price', 'selling_price', 'purchases']
 
+    def get_stock_quantity(self, obj):
+        purchases = obj.purchase_set.all()
+        total_quantity = purchases.aggregate(total=models.Sum('quantity'))['total'] or 0
+        return total_quantity
+
+    def get_purchase_price(self, obj):
+        latest_purchase = obj.purchase_set.order_by('-purchase_date').first()
+        return latest_purchase.purchase_price if latest_purchase else 0.00
+
+# Updated ProductSerializer
 class ProductSerializer(serializers.ModelSerializer):
     variants = ProductVariantSerializer(many=True, read_only=True)
-    category = CategorySerializer(read_only=True)  # Nested category
+    category = CategorySerializer(read_only=True)
     category_id = serializers.PrimaryKeyRelatedField(
         queryset=Category.objects.all(), source='category', write_only=True
-    )  # For writing category ID
+    )
 
     class Meta:
         model = Product
-        fields = ['id', 'name', 'category', 'category_id', 'description', 'brand','image_url', 'created_at', 'variants']
-        
+        fields = ['id', 'name', 'category', 'category_id', 'description', 'brand', 'image_url', 'barcode', 'created_at', 'variants']
+
 # Corrected WarehouseSerializer (standalone)
 class WarehouseSerializer(serializers.ModelSerializer):
     class Meta:
         model = Warehouse
-        fields = ['id', 'name', 'location', 'owner', 'contact_person', 'contact_number','capacity', 'created_at']
-        
+        fields = ['id', 'name', 'location', 'owner', 'contact_person', 'contact_number', 'capacity', 'created_at']
+
+# Corrected ShelfSerializer (standalone)
 class ShelfSerializer(serializers.ModelSerializer):
     warehouse = serializers.PrimaryKeyRelatedField(queryset=Warehouse.objects.all())
 

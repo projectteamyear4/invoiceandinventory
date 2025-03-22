@@ -1,7 +1,7 @@
 import axios from 'axios';
 import React, { useContext, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { AuthContext } from '../AuthContext'; // Fixed path
+import { AuthContext } from '../AuthContext'; // ធ្វើឲ្យផ្លូវត្រឹមត្រូវ
 import './Category.css';
 
 const CategoryList = () => {
@@ -27,7 +27,7 @@ const CategoryList = () => {
         const response = await api.get('/api/categories/');
         setCategories(response.data);
       } catch (error) {
-        console.error('Error fetching categories:', error);
+        console.error('មានកំហុសក្នុងការទាញយកប្រភេទ:', error);
       } finally {
         setLoading(false);
       }
@@ -51,39 +51,39 @@ const CategoryList = () => {
       setEditCategory(null);
       setEditName('');
     } catch (error) {
-      console.error('Error updating category:', error);
-      alert('Failed to update category.');
+      console.error('មានកំហុសក្នុងការធ្វើបច្ចុប្បន្នភាពប្រភេទ:', error);
+      alert('បរាជ័យក្នុងការធ្វើបច្ចុប្បន្នភាពប្រភេទ។');
     }
   };
 
   const handleDeleteCategory = async (id) => {
-    if (window.confirm('Are you sure you want to delete this category?')) {
+    if (window.confirm('តើអ្នកប្រាកដជាចង់លុបប្រភេទនេះមែនទេ?')) {
       try {
         await api.delete(`/api/categories/${id}/`);
         setCategories(categories.filter((cat) => cat.id !== id));
       } catch (error) {
-        console.error('Error deleting category:', error);
-        alert('Failed to delete category.');
+        console.error('មានកំហុសក្នុងការលុបប្រភេទ:', error);
+        alert('បរាជ័យក្នុងការលុបប្រភេទ។');
       }
     }
   };
 
-  if (loading) return <p>Loading categories...</p>;
+  if (loading) return <p>កំពុងផ្ទុកប្រភេទ...</p>;
 
   return (
     <div className="category-table-container">
       <div className="category-header">
-        <h2>Categories</h2>
+        <h2>ប្រភេទ</h2>
         <button className="category-add-button" onClick={handleAddCategory}>
-          Add Category
+          បន្ថែមប្រភេទ
         </button>
       </div>
       <table className="category-table">
         <thead>
           <tr>
             <th>ID</th>
-            <th>Name</th>
-            <th>Actions</th>
+            <th>ឈ្មោះ</th>
+            <th>សកម្មភាព</th>
           </tr>
         </thead>
         <tbody>
@@ -108,21 +108,21 @@ const CategoryList = () => {
                     className="category-save-button"
                     onClick={() => handleUpdateCategory(category.id)}
                   >
-                    Save
+                    រក្សាទុក
                   </button>
                 ) : (
                   <button
                     className="category-edit-button"
                     onClick={() => handleEditCategory(category)}
                   >
-                    Edit
+                    កែសម្រួល
                   </button>
                 )}
                 <button
                   className="category-delete-button"
                   onClick={() => handleDeleteCategory(category.id)}
                 >
-                  Delete
+                  លុប
                 </button>
               </td>
             </tr>
