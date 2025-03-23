@@ -12,7 +12,7 @@ const Purchases = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
   const [currentPage, setCurrentPage] = useState(1);
-  const purchasesPerPage = 7; // 7 purchases per page
+  const purchasesPerPage = 7; // ៧ ទំនិញក្នុងមួយទំព័រ
   const { user } = useContext(AuthContext);
   const navigate = useNavigate();
 
@@ -25,16 +25,16 @@ const Purchases = () => {
     },
   });
 
-  // Fetch purchases
+  // ទាញយកទំនិញដែលបានទិញ
   useEffect(() => {
     const fetchPurchases = async () => {
       try {
         const response = await api.get('/api/purchases/');
-        console.log('Total purchases fetched:', response.data.length);
+        console.log('សរុបទំនិញបានទិញ៖', response.data.length);
         setPurchases(response.data);
         setFilteredPurchases(response.data);
       } catch (error) {
-        console.error('Error fetching purchases:', error);
+        console.error('កំហុសក្នុងការទាញយកទំនិញ៖', error);
       } finally {
         setLoading(false);
       }
@@ -42,7 +42,7 @@ const Purchases = () => {
     fetchPurchases();
   }, []);
 
-  // Search and filter functionality
+  // ស្វែងរក និង ចម្រាញ់ទំនិញ
   useEffect(() => {
     const filtered = purchases.filter((purchase) =>
       purchase.product_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -52,7 +52,7 @@ const Purchases = () => {
     setCurrentPage(1);
   }, [searchTerm, purchases]);
 
-  // Sort functionality
+  // តម្រៀបទំនិញ
   const handleSort = (key) => {
     let direction = 'asc';
     if (sortConfig.key === key && sortConfig.direction === 'asc') {
@@ -73,7 +73,7 @@ const Purchases = () => {
     setFilteredPurchases(sorted);
   };
 
-  // Pagination logic
+  // គ្រប់គ្រងទំព័រពីមួយទៅមួយ
   const indexOfLastPurchase = currentPage * purchasesPerPage;
   const indexOfFirstPurchase = indexOfLastPurchase - purchasesPerPage;
   const currentPurchases = filteredPurchases.slice(indexOfFirstPurchase, indexOfLastPurchase);
@@ -84,53 +84,38 @@ const Purchases = () => {
   };
 
   const handleAddPurchase = () => {
-    navigate('/add-purchase'); // Assuming you'll create this route
+    navigate('/add-purchase'); // សន្សំទីតាំងនេះសម្រាប់បន្ថែមទំនិញ
   };
 
-  if (loading) return <p>Loading purchases...</p>;
+  if (loading) return <p>កំពុងផ្ទុកទំនិញ...</p>;
 
   return (
     <div className="product-table-container">
       <div className="product-header">
-        <h2>Purchases</h2>
+        <h2>ការទិញទំនិញ</h2>
         <div className="product-controls">
           <input
             type="text"
-            placeholder="Search by product or batch number..."
+            placeholder="ស្វែងរកតាមផលិតផល ឬ លេខបាច់..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="product-search-input"
           />
           <button className="product-add-button" onClick={handleAddPurchase}>
-            Add Purchase
+            បន្ថែមការទិញ
           </button>
         </div>
       </div>
       <table className="product-table">
         <thead>
           <tr>
-            <th onClick={() => handleSort('supplier_name')}>
-              Supplier {sortConfig.key === 'supplier_name' ? (sortConfig.direction === 'asc' ? '↑' : '↓') : ''}
-            </th>
-            <th onClick={() => handleSort('product_name')}>
-              Product {sortConfig.key === 'product_name' ? (sortConfig.direction === 'asc' ? '↑' : '↓') : ''}
-            </th>
-            <th onClick={() => handleSort('product_variant_info')}>
-              Variant {sortConfig.key === 'product_variant_info' ? (sortConfig.direction === 'asc' ? '↑' : '↓') : ''}
-            </th>
-           
-            <th onClick={() => handleSort('batch_number')}>
-              Batch Number {sortConfig.key === 'batch_number' ? (sortConfig.direction === 'asc' ? '↑' : '↓') : ''}
-            </th>
-            <th onClick={() => handleSort('quantity')}>
-              Quantity {sortConfig.key === 'quantity' ? (sortConfig.direction === 'asc' ? '↑' : '↓') : ''}
-            </th>
-            <th onClick={() => handleSort('purchase_price')}>
-              Purchase Price {sortConfig.key === 'purchase_price' ? (sortConfig.direction === 'asc' ? '↑' : '↓') : ''}
-            </th>
-            <th onClick={() => handleSort('purchase_date')}>
-              Purchase Date {sortConfig.key === 'purchase_date' ? (sortConfig.direction === 'asc' ? '↑' : '↓') : ''}
-            </th>
+            <th onClick={() => handleSort('supplier_name')}>អ្នកផ្គត់ផ្គង់</th>
+            <th onClick={() => handleSort('product_name')}>ផលិតផល</th>
+            <th onClick={() => handleSort('product_variant_info')}>ប្រភេទ</th>
+            <th onClick={() => handleSort('batch_number')}>លេខបាច់</th>
+            <th onClick={() => handleSort('quantity')}>បរិមាណ</th>
+            <th onClick={() => handleSort('purchase_price')}>តម្លៃទិញ</th>
+            <th onClick={() => handleSort('purchase_date')}>កាលបរិច្ឆេទទិញ</th>
           </tr>
         </thead>
         <tbody>
@@ -139,7 +124,6 @@ const Purchases = () => {
               <td>{purchase.supplier_name}</td>
               <td>{purchase.product_name}</td>
               <td>{purchase.product_variant_info || '-'}</td>
-             
               <td>{purchase.batch_number}</td>
               <td>{purchase.quantity}</td>
               <td>{purchase.purchase_price}</td>
@@ -149,7 +133,7 @@ const Purchases = () => {
         </tbody>
       </table>
 
-      {/* Pagination Controls */}
+      {/* គ្រប់គ្រងទំព័រ */}
       {totalPages > 1 && (
         <div className="pagination">
           <button
@@ -157,7 +141,7 @@ const Purchases = () => {
             disabled={currentPage === 1}
             className="pagination-button"
           >
-            Previous
+            ថយក្រោយ
           </button>
           {Array.from({ length: totalPages }, (_, index) => index + 1).map((page) => (
             <button
@@ -173,7 +157,7 @@ const Purchases = () => {
             disabled={currentPage === totalPages}
             className="pagination-button"
           >
-            Next
+            ទៅមុខ
           </button>
         </div>
       )}

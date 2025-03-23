@@ -21,4 +21,5 @@ urlpatterns = [
     path('api/warehouses/<int:pk>/', views.warehouse_detail, name='warehouse_detail'),
     path('api/purchases/', views.purchase_list_create, name='purchase_list_create'),
     path('api/purchases/<int:pk>/', views.purchase_detail, name='purchase_detail'),
+    path('api/stock-movements/', views.stock_movement_list, name='stock_movement_list'),
 ]

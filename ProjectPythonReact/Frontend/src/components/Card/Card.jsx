@@ -1,12 +1,11 @@
-import { UilTimes } from "@iconscout/react-unicons";
+// src/components/Card/Card.jsx
+import { UilClipboardAlt, UilMoneyWithdrawal, UilShoppingCart, UilTimes, UilUsdSquare } from "@iconscout/react-unicons";
 import { AnimateSharedLayout, motion } from "framer-motion";
 import React, { useState } from "react";
 import Chart from "react-apexcharts";
 import { CircularProgressbar } from "react-circular-progressbar";
 import "react-circular-progressbar/dist/styles.css";
 import "./Card.css";
-
-// parent Card
 
 const Card = (props) => {
   const [expanded, setExpanded] = useState(false);
@@ -21,24 +20,20 @@ const Card = (props) => {
   );
 };
 
-// Compact Card
 function CompactCard({ param, setExpanded }) {
-  const Png = param.png;
+  const Png = param.png === "UilShoppingCart" ? UilShoppingCart :
+              param.png === "UilMoneyWithdrawal" ? UilMoneyWithdrawal :
+              param.png === "UilClipboardAlt" ? UilClipboardAlt :
+              UilUsdSquare;
   return (
     <motion.div
       className="CompactCard"
-      style={{
-        background: param.color.backGround,
-        boxShadow: param.color.boxShadow,
-      }}
+      style={{ background: param.color.backGround, boxShadow: param.color.boxShadow }}
       layoutId="expandableCard"
       onClick={setExpanded}
     >
       <div className="radialBar">
-        <CircularProgressbar
-          value={param.barValue}
-          text={`${param.barValue}%`}
-        />
+        <CircularProgressbar value={param.barValue} text={`${param.barValue}%`} />
         <span>{param.title}</span>
       </div>
       <div className="detail">
@@ -50,44 +45,16 @@ function CompactCard({ param, setExpanded }) {
   );
 }
 
-// Expanded Card
 function ExpandedCard({ param, setExpanded }) {
   const data = {
     options: {
-      chart: {
-        type: "area",
-        height: "auto",
-      },
-
-      dropShadow: {
-        enabled: false,
-        enabledOnSeries: undefined,
-        top: 0,
-        left: 0,
-        blur: 3,
-        color: "#000",
-        opacity: 0.35,
-      },
-
-      fill: {
-        colors: ["#fff"],
-        type: "gradient",
-      },
-      dataLabels: {
-        enabled: false,
-      },
-      stroke: {
-        curve: "smooth",
-        colors: ["white"],
-      },
-      tooltip: {
-        x: {
-          format: "dd/MM/yy HH:mm",
-        },
-      },
-      grid: {
-        show: true,
-      },
+      chart: { type: "area", height: "auto" },
+      dropShadow: { enabled: false, top: 0, left: 0, blur: 3, color: "#000", opacity: 0.35 },
+      fill: { colors: ["#fff"], type: "gradient" },
+      dataLabels: { enabled: false },
+      stroke: { curve: "smooth", colors: ["white"] },
+      tooltip: { x: { format: "dd/MM/yy HH:mm" } },
+      grid: { show: true },
       xaxis: {
         type: "datetime",
         categories: [
@@ -106,16 +73,13 @@ function ExpandedCard({ param, setExpanded }) {
   return (
     <motion.div
       className="ExpandedCard"
-      style={{
-        background: param.color.backGround,
-        boxShadow: param.color.boxShadow,
-      }}
+      style={{ background: param.color.backGround, boxShadow: param.color.boxShadow }}
       layoutId="expandableCard"
     >
       <div style={{ alignSelf: "flex-end", cursor: "pointer", color: "white" }}>
         <UilTimes onClick={setExpanded} />
       </div>
-        <span>{param.title}</span>
+      <span>{param.title}</span>
       <div className="chartContainer">
         <Chart options={data.options} series={param.series} type="area" />
       </div>

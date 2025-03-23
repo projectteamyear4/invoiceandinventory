@@ -1,23 +1,12 @@
+/* src/components/Cards/Cards.css */
 .Cards {
   display: flex;
+  flex-wrap: wrap;
   gap: 20px;
-}
-.parentContainer{
-  width: 100%;
+  justify-content: center;
 }
 
-@media screen and (max-width: 1200px) {
-  .Cards{
-    flex-direction: column;
-  }
-  .parentContainer{
-    height: 9rem;
-  }
-}
-
-@media screen and (max-width: 768px)
-{
-  .Cards{
-    width: 90%;
-  }
+.parentContainer {
+  flex: 1;
+  min-width: 250px;
 }

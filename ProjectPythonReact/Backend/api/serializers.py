@@ -4,7 +4,7 @@ from django.db import models
 from rest_framework.validators import UniqueValidator
 from django.contrib.auth.password_validation import validate_password
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
-from .models import Supplier, Product, ProductVariant, Category, Warehouse, Shelf, Purchase
+from .models import Supplier, Product, ProductVariant, Category, Warehouse, Shelf, Purchase, StockMovement
 
 # Existing RegisterSerializer
 class RegisterSerializer(serializers.ModelSerializer):
@@ -80,6 +80,36 @@ class PurchaseSerializer(serializers.ModelSerializer):
             'id', 'supplier', 'supplier_name', 'product', 'product_name',
             'product_variant', 'product_variant_info', 'batch_number',
             'quantity', 'purchase_price', 'purchase_date'
+        ]
+
+    def create(self, validated_data):
+        # Create the purchase
+        purchase = Purchase.objects.create(**validated_data)
+
+        # Automatically create a stock movement entry
+        StockMovement.objects.create(
+            product=purchase.product,
+            product_variant=purchase.product_variant,
+            warehouse=Warehouse.objects.first(),  # Default to first warehouse (adjust logic as needed)
+            shelf=Shelf.objects.first(),  # Default to first shelf (adjust logic as needed)
+            movement_type='IN',
+            quantity=purchase.quantity,
+            purchase=purchase
+        )
+        return purchase
+
+class StockMovementSerializer(serializers.ModelSerializer):
+    product_name = serializers.CharField(source='product.name', read_only=True)
+    variant_info = serializers.CharField(source='product_variant.__str__', read_only=True)
+    warehouse_name = serializers.CharField(source='warehouse.name', read_only=True)
+    shelf_name = serializers.CharField(source='shelf.name', read_only=True)
+
+    class Meta:
+        model = StockMovement
+        fields = [
+            'id', 'product', 'product_name', 'product_variant', 'variant_info',
+            'warehouse', 'warehouse_name', 'shelf', 'shelf_name', 'movement_type',
+            'quantity', 'movement_date', 'purchase'
         ]
 
 # Updated ProductVariantSerializer

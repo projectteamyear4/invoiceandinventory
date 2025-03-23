@@ -5,8 +5,8 @@ from rest_framework.permissions import IsAuthenticated
 from .serializers import RegisterSerializer, UserDetailSerializer, LoginSerializer
 from django.contrib.auth.models import User
 from rest_framework import viewsets
-from .models import Supplier, Product, ProductVariant, Category, Warehouse,Shelf,Purchase
-from .serializers import SupplierSerializer, ProductSerializer, ProductVariantSerializer, CategorySerializer, WarehouseSerializer,ShelfSerializer,PurchaseSerializer
+from .models import Supplier, Product, ProductVariant, Category, Warehouse,Shelf,Purchase,StockMovement
+from .serializers import SupplierSerializer, ProductSerializer, ProductVariantSerializer, CategorySerializer, WarehouseSerializer,ShelfSerializer,PurchaseSerializer,StockMovementSerializer,StockMovementSerializer
 import logging
 
 logger = logging.getLogger(__name__)
@@ -293,3 +293,8 @@ def purchase_detail(request, pk):
     elif request.method == 'DELETE':
         purchase.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+@api_view(['GET'])
+def stock_movement_list(request):
+    movements = StockMovement.objects.all()
+    serializer = StockMovementSerializer(movements, many=True)
+    return Response(serializer.data)
