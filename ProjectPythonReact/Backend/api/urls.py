@@ -22,4 +22,5 @@ urlpatterns = [
     path('api/purchases/', views.purchase_list_create, name='purchase_list_create'),
     path('api/purchases/<int:pk>/', views.purchase_detail, name='purchase_detail'),
     path('api/stock-movements/', views.stock_movement_list, name='stock_movement_list'),
+    path('api/stock-movements/<int:pk>/', views.stock_movement_detail, name='stock_movement_detail'),
 ]

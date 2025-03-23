@@ -298,3 +298,20 @@ def stock_movement_list(request):
     movements = StockMovement.objects.all()
     serializer = StockMovementSerializer(movements, many=True)
     return Response(serializer.data)
+@api_view(['GET', 'PATCH'])
+def stock_movement_detail(request, pk):
+    try:
+        movement = StockMovement.objects.get(pk=pk)
+    except StockMovement.DoesNotExist:
+        return Response({'error': 'Stock movement not found'}, status=status.HTTP_404_NOT_FOUND)
+
+    if request.method == 'GET':
+        serializer = StockMovementSerializer(movement)
+        return Response(serializer.data)
+    
+    elif request.method == 'PATCH':
+        serializer = StockMovementSerializer(movement, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

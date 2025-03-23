@@ -40,15 +40,12 @@ const AddPurchase = () => {
           api.get('/api/products/'),
           api.get('/api/variants/'),
         ]);
-        console.log('Suppliers:', supplierRes.data);
-        console.log('Products:', productRes.data);
-        console.log('Variants:', variantRes.data);
         setSuppliers(supplierRes.data);
         setProducts(productRes.data);
         setProductVariants(variantRes.data);
       } catch (err) {
         setError('Failed to load options. Please try again.');
-        console.error('Fetch error:', err.response?.data || err);
+        console.error(err);
       } finally {
         setLoading(false);
       }
@@ -58,7 +55,6 @@ const AddPurchase = () => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    console.log(`Field ${name} changed to: ${value}`);
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
@@ -74,20 +70,18 @@ const AddPurchase = () => {
       quantity: parseInt(formData.quantity) || null,
       purchase_price: parseFloat(formData.purchase_price) || null,
     };
-    console.log('Submitting purchase data:', purchaseData);
     if (!purchaseData.supplier || !purchaseData.product || !purchaseData.batch_number || !purchaseData.quantity || !purchaseData.purchase_price) {
       setError('All required fields must be filled.');
       return;
     }
     try {
       const response = await api.post('/api/purchases/', purchaseData);
-      console.log('Server response:', response.data);
-      setSuccess('Purchase added successfully!');
+      setSuccess('Purchase added successfully! Stock updated.');
       setTimeout(() => navigate('/purchases'), 1000);
     } catch (err) {
       const errorMsg = err.response?.data || 'Failed to add purchase. Please check your input.';
       setError(JSON.stringify(errorMsg));
-      console.error('Full error:', err.response?.data || err);
+      console.error(err.response?.data || err);
     }
   };
 
@@ -136,40 +130,17 @@ const AddPurchase = () => {
         </div>
         <div className="form-group">
           <label>Batch Number:</label>
-          <input
-            type="text"
-            name="batch_number"
-            value={formData.batch_number}
-            onChange={handleChange}
-            required
-          />
+          <input type="text" name="batch_number" value={formData.batch_number} onChange={handleChange} required />
         </div>
         <div className="form-group">
           <label>Quantity:</label>
-          <input
-            type="number"
-            name="quantity"
-            value={formData.quantity}
-            onChange={handleChange}
-            min="1"
-            required
-          />
+          <input type="number" name="quantity" value={formData.quantity} onChange={handleChange} min="1" required />
         </div>
         <div className="form-group">
           <label>Purchase Price:</label>
-          <input
-            type="number"
-            name="purchase_price"
-            value={formData.purchase_price}
-            onChange={handleChange}
-            step="0.01"
-            min="0"
-            required
-          />
+          <input type="number" name="purchase_price" value={formData.purchase_price} onChange={handleChange} step="0.01" min="0" required />
         </div>
-        <button type="submit" className="product-add-button">
-          Save Purchase
-        </button>
+        <button type="submit" className="product-add-button">Save Purchase</button>
       </form>
     </div>
   );

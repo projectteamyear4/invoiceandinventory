@@ -79,7 +79,7 @@ class PurchaseSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'supplier', 'supplier_name', 'product', 'product_name',
             'product_variant', 'product_variant_info', 'batch_number',
-            'quantity', 'purchase_price', 'purchase_date'
+            'quantity', 'purchase_price', 'purchase_date', 'total'  # Use the model field
         ]
 
     def create(self, validated_data):
@@ -102,7 +102,7 @@ class StockMovementSerializer(serializers.ModelSerializer):
     product_name = serializers.CharField(source='product.name', read_only=True)
     variant_info = serializers.CharField(source='product_variant.__str__', read_only=True)
     warehouse_name = serializers.CharField(source='warehouse.name', read_only=True)
-    shelf_name = serializers.CharField(source='shelf.name', read_only=True)
+    shelf_name = serializers.CharField(source='shelf.shelf_name', read_only=True, allow_null=True)
 
     class Meta:
         model = StockMovement

@@ -33,13 +33,13 @@ const MainDash = () => {
           purchase.purchase_date.startsWith(today)
         );
         const totalPriceToday = todayPurchases.reduce(
-          (sum, purchase) => sum + parseFloat(purchase.purchase_price),
+          (sum, purchase) => sum + parseFloat(purchase.total),
           0
         );
 
         // Calculate total purchase price for all time
         const totalPurchasePrice = purchases.reduce(
-          (sum, purchase) => sum + parseFloat(purchase.purchase_price),
+          (sum, purchase) => sum + parseFloat(purchase.total),
           0
         );
 
@@ -55,7 +55,7 @@ const MainDash = () => {
             border: "1px solid #fb8c00",
             boxShadow: "0 4px 10px rgba(251, 140, 0, 0.3)",
           },
-          barValue: Math.min((totalPriceToday / 100) * 100, 100),
+          barValue: Math.min((totalPriceToday / 1000) * 100, 100),
           value: `${khmerNumbers(totalPriceToday)} $`,
           png: "UilUsdSquare",
           series: [{ name: "តម្លៃទិញ", data: todayPurchases.map((p) => parseFloat(p.purchase_price)) }],
@@ -69,7 +69,7 @@ const MainDash = () => {
             border: "1px solid #2196f3",
             boxShadow: "0 4px 10px rgba(33, 150, 243, 0.3)",
           },
-          barValue: Math.min((totalPurchasePrice / 1000) * 100, 100),
+          barValue: Math.min((totalPurchasePrice / 10000) * 100, 100),
           value: `${khmerNumbers(totalPurchasePrice)} $`,
           png: "UilMoneyWithdrawal",
           series: [{ name: "សរុប", data: purchases.map((p) => parseFloat(p.purchase_price)) }],

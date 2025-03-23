@@ -91,16 +91,22 @@ class Shelf(models.Model):
 #purchase model
 class Purchase(models.Model):
     id = models.AutoField(primary_key=True)
-    supplier = models.ForeignKey(Supplier, on_delete=models.CASCADE)
-    product = models.ForeignKey(Product, on_delete=models.CASCADE)
-    product_variant = models.ForeignKey(ProductVariant, on_delete=models.CASCADE, null=True, blank=True)
+    supplier = models.ForeignKey('Supplier', on_delete=models.CASCADE)
+    product = models.ForeignKey('Product', on_delete=models.CASCADE)
+    product_variant = models.ForeignKey('ProductVariant', on_delete=models.CASCADE, null=True, blank=True)
     batch_number = models.CharField(max_length=50)
     quantity = models.IntegerField()
     purchase_price = models.DecimalField(max_digits=10, decimal_places=2)
     purchase_date = models.DateTimeField(auto_now_add=True)
+    total = models.DecimalField(max_digits=12, decimal_places=2, null=True, blank=True)  # New field for total
 
     def __str__(self):
         return f"Purchase {self.id} - {self.product.name} ({self.batch_number})"
+
+    def save(self, *args, **kwargs):
+        # Calculate total as quantity * purchase_price
+        self.total = self.quantity * self.purchase_price
+        super().save(*args, **kwargs)
 
 #stock model
 class StockMovement(models.Model):

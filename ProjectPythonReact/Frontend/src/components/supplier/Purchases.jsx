@@ -73,11 +73,32 @@ const Purchases = () => {
     setFilteredPurchases(sorted);
   };
 
+  // លុបទំនិញ
+  const handleDelete = async (purchaseId) => {
+    if (window.confirm('តើអ្នកប្រាកដជាចង់លុបការទិញនេះមែនទេ?')) {
+      try {
+        await api.delete(`/api/purchases/${purchaseId}/`);
+        // Remove the deleted purchase from the state
+        const updatedPurchases = purchases.filter((purchase) => purchase.id !== purchaseId);
+        setPurchases(updatedPurchases);
+        setFilteredPurchases(updatedPurchases);
+        alert('ការទិញត្រូវបានលុបដោយជោគជ័យ!');
+      } catch (error) {
+        console.error('កំហុសក្នុងការលុបការទិញ៖', error);
+        alert('មានបញ្ហាក្នុងការលុបការទិញ។ សូមព្យាយាមម្តងទៀត។');
+      }
+    }
+  };
+
   // គ្រប់គ្រងទំព័រពីមួយទៅមួយ
   const indexOfLastPurchase = currentPage * purchasesPerPage;
   const indexOfFirstPurchase = indexOfLastPurchase - purchasesPerPage;
   const currentPurchases = filteredPurchases.slice(indexOfFirstPurchase, indexOfLastPurchase);
   const totalPages = Math.ceil(filteredPurchases.length / purchasesPerPage);
+
+  // គណនាសរុបបរិមាណ និង តម្លៃសរុប
+  const totalQuantity = currentPurchases.reduce((sum, purchase) => sum + purchase.quantity, 0);
+  const totalPurchasePrice = currentPurchases.reduce((sum, purchase) => sum + parseFloat(purchase.total), 0).toFixed(2);
 
   const handlePageChange = (pageNumber) => {
     setCurrentPage(pageNumber);
@@ -115,7 +136,9 @@ const Purchases = () => {
             <th onClick={() => handleSort('batch_number')}>លេខបាច់</th>
             <th onClick={() => handleSort('quantity')}>បរិមាណ</th>
             <th onClick={() => handleSort('purchase_price')}>តម្លៃទិញ</th>
+            <th onClick={() => handleSort('total')}>តម្លៃសរុប</th>
             <th onClick={() => handleSort('purchase_date')}>កាលបរិច្ឆេទទិញ</th>
+            <th>សកម្មភាព</th> {/* New column for actions */}
           </tr>
         </thead>
         <tbody>
@@ -127,7 +150,16 @@ const Purchases = () => {
               <td>{purchase.batch_number}</td>
               <td>{purchase.quantity}</td>
               <td>{purchase.purchase_price}</td>
+              <td>{parseFloat(purchase.total).toFixed(2)}</td>
               <td>{new Date(purchase.purchase_date).toLocaleString()}</td>
+              <td>
+                <button
+                  onClick={() => handleDelete(purchase.id)}
+                  className="delete-button"
+                >
+                  លុប
+                </button>
+              </td>
             </tr>
           ))}
         </tbody>
