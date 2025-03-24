@@ -125,6 +125,9 @@ const Purchases = () => {
           <button className="product-add-button" onClick={handleAddPurchase}>
             បន្ថែមការទិញ
           </button>
+          <button onClick={() => navigate('/stock-movements')} className="add-button">
+          ស្តុកផលិតផល
+        </button>
         </div>
       </div>
       <table className="product-table">
@@ -138,7 +141,7 @@ const Purchases = () => {
             <th onClick={() => handleSort('purchase_price')}>តម្លៃទិញ</th>
             <th onClick={() => handleSort('total')}>តម្លៃសរុប</th>
             <th onClick={() => handleSort('purchase_date')}>កាលបរិច្ឆេទទិញ</th>
-            <th>សកម្មភាព</th> {/* New column for actions */}
+            {/* <th>សកម្មភាព</th>  */}
           </tr>
         </thead>
         <tbody>
@@ -154,12 +157,12 @@ const Purchases = () => {
               <td>{new Date(purchase.purchase_date).toLocaleString()}</td>
               <td>
               
-                <button
+                {/* <button
                   onClick={() => handleDelete(purchase.id)}
                   className="delete-button"
                 >
                   លុប
-                </button>
+                </button> */}
               </td>
             </tr>
           ))}

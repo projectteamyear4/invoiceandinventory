@@ -34,7 +34,7 @@
   }
   
   .login-form {
-    background: rgba(0, 123, 255, 0.05); /* Very light blue glass effect */
+  
     padding: 2.5rem;
     border-radius: 15px;
     backdrop-filter: blur(12px);
