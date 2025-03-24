@@ -72,6 +72,20 @@
     font-size: 16px;
     text-align: center;
   }
+  /* Style for the join stock button */
+.join-stock-button {
+  background-color: #ff9800; /* Orange background */
+  color: white;
+  border: none;
+  padding: 5px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.join-stock-button:hover {
+  background-color: #e68900; /* Darker orange on hover */
+}
   /* src/components/EditStockMovement.css */
 .edit-stock-movement-container {
     padding: 20px;

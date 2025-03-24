@@ -255,23 +255,25 @@ def shelf_detail(request, pk):
         return Response({'detail': 'Shelf deleted'}, status=status.HTTP_204_NO_CONTENT)
     #purchase views
 @api_view(['GET', 'POST'])
-def purchase_list_create(request):
+def purchase_list(request):
     if request.method == 'GET':
         purchases = Purchase.objects.all()
         serializer = PurchaseSerializer(purchases, many=True)
         return Response(serializer.data)
     elif request.method == 'POST':
-        logger.info("Received POST data: %s", request.data)
         serializer = PurchaseSerializer(data=request.data)
         if serializer.is_valid():
-            try:
-                serializer.save()
-                logger.info("Saved purchase: %s", serializer.data)
-                return Response(serializer.data, status=status.HTTP_201_CREATED)
-            except Exception as e:
-                logger.error("Save error: %s", str(e))
-                return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-        logger.error("Validation errors: %s", serializer.errors)
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['POST'])
+def purchase_bulk_create(request):
+    if request.method == 'POST':
+        serializer = PurchaseSerializer(data=request.data, many=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['GET', 'PUT', 'DELETE'])

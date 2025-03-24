@@ -79,19 +79,19 @@ class PurchaseSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'supplier', 'supplier_name', 'product', 'product_name',
             'product_variant', 'product_variant_info', 'batch_number',
-            'quantity', 'purchase_price', 'purchase_date', 'total'  # Use the model field
+            'quantity', 'purchase_price', 'purchase_date', 'total'
         ]
 
     def create(self, validated_data):
         # Create the purchase
         purchase = Purchase.objects.create(**validated_data)
 
-        # Automatically create a stock movement entry
+        # Create a stock movement entry with warehouse and shelf as null
         StockMovement.objects.create(
             product=purchase.product,
             product_variant=purchase.product_variant,
-            warehouse=Warehouse.objects.first(),  # Default to first warehouse (adjust logic as needed)
-            shelf=Shelf.objects.first(),  # Default to first shelf (adjust logic as needed)
+            warehouse=None,  # Set to null
+            shelf=None,     # Set to null
             movement_type='IN',
             quantity=purchase.quantity,
             purchase=purchase

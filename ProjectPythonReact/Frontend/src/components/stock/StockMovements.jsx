@@ -63,27 +63,32 @@ const StockMovements = () => {
           </tr>
         </thead>
         <tbody>
-          {stockMovements.map((movement) => (
-            <tr key={movement.id}>
-              <td>{movement.id}</td>
-              <td>{movement.product_name}</td>
-              <td>{movement.variant_info || 'N/A'}</td>
-              <td>{movement.warehouse_name}</td>
-              <td>{movement.shelf_name || 'N/A'}</td>
-              <td>{movement.movement_type}</td>
-              <td>{movement.quantity}</td>
-              <td>{new Date(movement.movement_date).toLocaleString()}</td>
-              <td>{movement.purchase || 'N/A'}</td>
-              <td>
-                <button
-                  onClick={() => navigate(`/edit-stock-movement/${movement.id}`)}
-                  className="edit-button"
-                >
-                  Edit
-                </button>
-              </td>
-            </tr>
-          ))}
+          {stockMovements.map((movement) => {
+            // Check if warehouse_name or shelf_name is 'N/A'
+            const isMissingStockInfo = !movement.warehouse_name || !movement.shelf_name;
+
+            return (
+              <tr key={movement.id}>
+                <td>{movement.id}</td>
+                <td>{movement.product_name}</td>
+                <td>{movement.variant_info || 'N/A'}</td>
+                <td>{movement.warehouse_name || 'N/A'}</td>
+                <td>{movement.shelf_name || 'N/A'}</td>
+                <td>{movement.movement_type}</td>
+                <td>{movement.quantity}</td>
+                <td>{new Date(movement.movement_date).toLocaleString()}</td>
+                <td>{movement.purchase || 'N/A'}</td>
+                <td>
+                  <button
+                    onClick={() => navigate(`/edit-stock-movement/${movement.id}`)}
+                    className={isMissingStockInfo ? 'join-stock-button' : 'edit-button'}
+                  >
+                    {isMissingStockInfo ? 'Join Stock' : 'Edit'}
+                  </button>
+                </td>
+              </tr>
+            );
+          })}
         </tbody>
       </table>
     </div>

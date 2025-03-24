@@ -94,7 +94,7 @@ const EditStockMovement = () => {
 
   return (
     <div className="edit-stock-movement-container">
-      <h2>Edit Stock Movement</h2>
+      <h2>Stock Movement</h2>
       {error && <p className="error-message">{error}</p>}
       {success && <p className="success-message">{success}</p>}
       <form onSubmit={handleSubmit} className="edit-form">

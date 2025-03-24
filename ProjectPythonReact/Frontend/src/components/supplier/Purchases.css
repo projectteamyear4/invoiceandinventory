@@ -111,3 +111,92 @@
     color: white;
     font-weight: bold;
   }
+  /* src/components/Purchases.css */
+
+/* Existing styles... */
+
+
+/* Style for the purchase table */
+.purchase-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 20px;
+}
+
+.purchase-table th,
+.purchase-table td {
+  border: 1px solid #ddd;
+  padding: 8px;
+  text-align: left;
+}
+
+.purchase-table th {
+  background-color: #f2f2f2;
+  font-weight: bold;
+}
+
+.purchase-table td {
+  background-color: #fff;
+}
+
+/* Style for inputs and selects within the table */
+.purchase-table select,
+.purchase-table input {
+  width: 100%;
+  padding: 5px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  box-sizing: border-box;
+}
+
+/* Style for the form actions container */
+.form-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+/* Style for the add row button */
+.add-row-button {
+  background-color: #2196F3; /* Blue background */
+  color: white;
+  border: none;
+  padding: 10px 15px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.add-row-button:hover {
+  background-color: #1976D2; /* Darker blue on hover */
+}
+
+/* Style for the remove button */
+.remove-button {
+  background-color: #ff4d4f; /* Red background */
+  color: white;
+  border: none;
+  padding: 5px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.remove-button:hover {
+  background-color: #d9363e; /* Darker red on hover */
+}
+
+/* Style for the save button */
+.product-add-button {
+  background-color: #4CAF50; /* Green background */
+  color: white;
+  border: none;
+  padding: 10px 15px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.product-add-button:hover {
+  background-color: #45a049; /* Darker green on hover */
+}

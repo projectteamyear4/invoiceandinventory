@@ -114,14 +114,14 @@ class StockMovement(models.Model):
         ('IN', 'In'),
         ('OUT', 'Out'),
     )
-    product = models.ForeignKey(Product, on_delete=models.CASCADE)
-    product_variant = models.ForeignKey(ProductVariant, on_delete=models.CASCADE, null=True, blank=True)
-    warehouse = models.ForeignKey(Warehouse, on_delete=models.CASCADE)
-    shelf = models.ForeignKey(Shelf, on_delete=models.CASCADE)
+    product = models.ForeignKey('Product', on_delete=models.CASCADE)
+    product_variant = models.ForeignKey('ProductVariant', on_delete=models.CASCADE, null=True, blank=True)
+    warehouse = models.ForeignKey('Warehouse', on_delete=models.CASCADE, null=True, blank=True)  # Allow null
+    shelf = models.ForeignKey('Shelf', on_delete=models.CASCADE, null=True, blank=True)  # Allow null
     movement_type = models.CharField(max_length=3, choices=MOVEMENT_TYPES)
     quantity = models.IntegerField()
     movement_date = models.DateTimeField(auto_now_add=True)
-    purchase = models.ForeignKey(Purchase, on_delete=models.CASCADE, null=True, blank=True)
+    purchase = models.ForeignKey('Purchase', on_delete=models.CASCADE, null=True, blank=True)
 
     def __str__(self):
         return f"{self.movement_type} - {self.product.name} - {self.quantity}"

@@ -9,14 +9,16 @@ const AddPurchase = () => {
   const [suppliers, setSuppliers] = useState([]);
   const [products, setProducts] = useState([]);
   const [productVariants, setProductVariants] = useState([]);
-  const [formData, setFormData] = useState({
-    supplier: '',
-    product: '',
-    product_variant: '',
-    batch_number: '',
-    quantity: '',
-    purchase_price: '',
-  });
+  const [formData, setFormData] = useState([
+    {
+      supplier: '',
+      product: '',
+      product_variant: '',
+      batch_number: '',
+      quantity: '',
+      purchase_price: '',
+    },
+  ]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
@@ -53,33 +55,73 @@ const AddPurchase = () => {
     fetchData();
   }, []);
 
-  const handleChange = (e) => {
+  const handleChange = (index, e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    const updatedFormData = [...formData];
+    updatedFormData[index] = { ...updatedFormData[index], [name]: value };
+    setFormData(updatedFormData);
+  };
+
+  const addPurchaseRow = () => {
+    setFormData([
+      ...formData,
+      {
+        supplier: '',
+        product: '',
+        product_variant: '',
+        batch_number: '',
+        quantity: '',
+        purchase_price: '',
+      },
+    ]);
+  };
+
+  const removePurchaseRow = (index) => {
+    if (formData.length === 1) {
+      setError('You must have at least one purchase entry.');
+      return;
+    }
+    const updatedFormData = formData.filter((_, i) => i !== index);
+    setFormData(updatedFormData);
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError(null);
     setSuccess(null);
-    const purchaseData = {
-      supplier: parseInt(formData.supplier) || null,
-      product: parseInt(formData.product) || null,
-      product_variant: formData.product_variant ? parseInt(formData.product_variant) : null,
-      batch_number: formData.batch_number || null,
-      quantity: parseInt(formData.quantity) || null,
-      purchase_price: parseFloat(formData.purchase_price) || null,
-    };
-    if (!purchaseData.supplier || !purchaseData.product || !purchaseData.batch_number || !purchaseData.quantity || !purchaseData.purchase_price) {
-      setError('All required fields must be filled.');
-      return;
-    }
+
+    // Validate and prepare data for submission
+    const purchaseDataList = formData.map((entry, index) => {
+      const purchaseData = {
+        supplier: parseInt(entry.supplier) || null,
+        product: parseInt(entry.product) || null,
+        product_variant: entry.product_variant ? parseInt(entry.product_variant) : null,
+        batch_number: entry.batch_number || null,
+        quantity: parseInt(entry.quantity) || null,
+        purchase_price: parseFloat(entry.purchase_price) || null,
+      };
+
+      // Validate each entry
+      if (
+        !purchaseData.supplier ||
+        !purchaseData.product ||
+        !purchaseData.batch_number ||
+        !purchaseData.quantity ||
+        !purchaseData.purchase_price
+      ) {
+        throw new Error(`All required fields must be filled for purchase entry ${index + 1}.`);
+      }
+
+      return purchaseData;
+    });
+
     try {
-      const response = await api.post('/api/purchases/', purchaseData);
-      setSuccess('Purchase added successfully! Stock updated.');
+      // Send all purchases in a single request
+      const response = await api.post('/api/purchases/bulk/', purchaseDataList);
+      setSuccess('Purchases added successfully! Stock updated.');
       setTimeout(() => navigate('/purchases'), 1000);
     } catch (err) {
-      const errorMsg = err.response?.data || 'Failed to add purchase. Please check your input.';
+      const errorMsg = err.response?.data || 'Failed to add purchases. Please check your input.';
       setError(JSON.stringify(errorMsg));
       console.error(err.response?.data || err);
     }
@@ -90,57 +132,119 @@ const AddPurchase = () => {
   return (
     <div className="product-table-container">
       <div className="product-header">
-        <h2>Add New Purchase</h2>
+        <h2>Add New Purchases</h2>
       </div>
       {error && <p className="error-message">{error}</p>}
       {success && <p className="success-message">{success}</p>}
       <form onSubmit={handleSubmit} className="add-form">
-        <div className="form-group">
-          <label>Supplier:</label>
-          <select name="supplier" value={formData.supplier} onChange={handleChange} required>
-            <option value="">Select Supplier</option>
-            {suppliers.map((supplier) => (
-              <option key={supplier.id} value={supplier.id}>
-                {supplier.name}
-              </option>
+        <table className="purchase-table">
+          <thead>
+            <tr>
+              <th>Supplier</th>
+              <th>Product</th>
+              <th>Product Variant (Optional)</th>
+              <th>Batch Number</th>
+              <th>Quantity</th>
+              <th>Purchase Price</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {formData.map((entry, index) => (
+              <tr key={index}>
+                <td>
+                  <select
+                    name="supplier"
+                    value={entry.supplier}
+                    onChange={(e) => handleChange(index, e)}
+                    required
+                  >
+                    <option value="">Select Supplier</option>
+                    {suppliers.map((supplier) => (
+                      <option key={supplier.id} value={supplier.id}>
+                        {supplier.name}
+                      </option>
+                    ))}
+                  </select>
+                </td>
+                <td>
+                  <select
+                    name="product"
+                    value={entry.product}
+                    onChange={(e) => handleChange(index, e)}
+                    required
+                  >
+                    <option value="">Select Product</option>
+                    {products.map((product) => (
+                      <option key={product.id} value={product.id}>
+                        {product.name}
+                      </option>
+                    ))}
+                  </select>
+                </td>
+                <td>
+                  <select
+                    name="product_variant"
+                    value={entry.product_variant}
+                    onChange={(e) => handleChange(index, e)}
+                  >
+                    <option value="">No Variant</option>
+                    {productVariants.map((variant) => (
+                      <option key={variant.id} value={variant.id}>
+                        {variant.product.name} - {variant.size || ''} {variant.color || ''}
+                      </option>
+                    ))}
+                  </select>
+                </td>
+                <td>
+                  <input
+                    type="text"
+                    name="batch_number"
+                    value={entry.batch_number}
+                    onChange={(e) => handleChange(index, e)}
+                    required
+                  />
+                </td>
+                <td>
+                  <input
+                    type="number"
+                    name="quantity"
+                    value={entry.quantity}
+                    onChange={(e) => handleChange(index, e)}
+                    min="1"
+                    required
+                  />
+                </td>
+                <td>
+                  <input
+                    type="number"
+                    name="purchase_price"
+                    value={entry.purchase_price}
+                    onChange={(e) => handleChange(index, e)}
+                    step="0.01"
+                    min="0"
+                    required
+                  />
+                </td>
+                <td>
+                  <button
+                    type="button"
+                    onClick={() => removePurchaseRow(index)}
+                    className="remove-button"
+                  >
+                    Remove
+                  </button>
+                </td>
+              </tr>
             ))}
-          </select>
+          </tbody>
+        </table>
+        <div className="form-actions">
+          <button type="button" onClick={addPurchaseRow} className="add-row-button">
+            Add Another Purchase
+          </button>
+          <button type="submit" className="product-add-button">Save All Purchases</button>
         </div>
-        <div className="form-group">
-          <label>Product:</label>
-          <select name="product" value={formData.product} onChange={handleChange} required>
-            <option value="">Select Product</option>
-            {products.map((product) => (
-              <option key={product.id} value={product.id}>
-                {product.name}
-              </option>
-            ))}
-          </select>
-        </div>
-        <div className="form-group">
-          <label>Product Variant (Optional):</label>
-          <select name="product_variant" value={formData.product_variant} onChange={handleChange}>
-            <option value="">No Variant</option>
-            {productVariants.map((variant) => (
-              <option key={variant.id} value={variant.id}>
-                {variant.product.name} - {variant.size || ''} {variant.color || ''}
-              </option>
-            ))}
-          </select>
-        </div>
-        <div className="form-group">
-          <label>Batch Number:</label>
-          <input type="text" name="batch_number" value={formData.batch_number} onChange={handleChange} required />
-        </div>
-        <div className="form-group">
-          <label>Quantity:</label>
-          <input type="number" name="quantity" value={formData.quantity} onChange={handleChange} min="1" required />
-        </div>
-        <div className="form-group">
-          <label>Purchase Price:</label>
-          <input type="number" name="purchase_price" value={formData.purchase_price} onChange={handleChange} step="0.01" min="0" required />
-        </div>
-        <button type="submit" className="product-add-button">Save Purchase</button>
       </form>
     </div>
   );

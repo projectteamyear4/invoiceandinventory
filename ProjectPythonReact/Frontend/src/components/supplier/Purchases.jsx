@@ -153,6 +153,7 @@ const Purchases = () => {
               <td>{parseFloat(purchase.total).toFixed(2)}</td>
               <td>{new Date(purchase.purchase_date).toLocaleString()}</td>
               <td>
+              
                 <button
                   onClick={() => handleDelete(purchase.id)}
                   className="delete-button"
