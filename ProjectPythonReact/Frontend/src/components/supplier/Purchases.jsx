@@ -1,7 +1,10 @@
 // src/components/Purchases.jsx
 import axios from 'axios';
-import React, { useContext, useEffect, useState } from 'react';
+import html2canvas from 'html2canvas';
+import React, { useContext, useEffect, useRef, useState } from 'react';
+import { CSVLink } from 'react-csv';
 import { useNavigate } from 'react-router-dom';
+import * as XLSX from 'xlsx'; // Import xlsx for Excel export
 import { AuthContext } from '../AuthContext';
 import './Purchases.css';
 
@@ -12,9 +15,11 @@ const Purchases = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
   const [currentPage, setCurrentPage] = useState(1);
+  const [exportFormat, setExportFormat] = useState(''); // State for selected export format
   const purchasesPerPage = 7; // ៧ ទំនិញក្នុងមួយទំព័រ
   const { user } = useContext(AuthContext);
   const navigate = useNavigate();
+  const tableRef = useRef(null); // Reference to the table for capturing as image
 
   const api = axios.create({
     baseURL: 'http://localhost:8000',
@@ -25,7 +30,96 @@ const Purchases = () => {
     },
   });
 
-  // ទាញយកទំនិញដែលបានទិញ
+  // Prepare data for export (CSV and Excel)
+  const exportHeaders = [
+    { label: 'អ្នកផ្គត់ផ្គង់', key: 'supplier_name' },
+    { label: 'ផលិតផល', key: 'product_name' },
+    { label: 'ប្រភេទ', key: 'product_variant_info' },
+    { label: 'លេខបាច់', key: 'batch_number' },
+    { label: 'បរិមាណ', key: 'quantity' },
+    { label: 'តម្លៃទិញ', key: 'purchase_price' },
+    { label: 'តម្លៃសរុប', key: 'total' },
+    { label: 'កាលបរិច្ឆេទទិញ', key: 'purchase_date' },
+  ];
+
+  const exportData = filteredPurchases.map((purchase) => ({
+    supplier_name: purchase.supplier_name,
+    product_name: purchase.product_name,
+    product_variant_info: purchase.product_variant_info || '-',
+    batch_number: purchase.batch_number,
+    quantity: purchase.quantity,
+    purchase_price: purchase.purchase_price,
+    total: parseFloat(purchase.total).toFixed(2),
+    purchase_date: new Date(purchase.purchase_date).toLocaleString(),
+  }));
+
+  // Download as PNG
+  const downloadAsPNG = () => {
+    if (tableRef.current) {
+      html2canvas(tableRef.current).then((canvas) => {
+        const link = document.createElement('a');
+        link.download = 'purchases-table.png';
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+      });
+    }
+  };
+
+  // Download as SVG
+  const downloadAsSVG = () => {
+    if (tableRef.current) {
+      html2canvas(tableRef.current).then((canvas) => {
+        const imgData = canvas.toDataURL('image/png');
+        const svg = `
+          <svg xmlns="http://www.w3.org/2000/svg" width="${canvas.width}" height="${canvas.height}">
+            <image href="${imgData}" width="${canvas.width}" height="${canvas.height}"/>
+          </svg>
+        `;
+        const blob = new Blob([svg], { type: 'image/svg+xml' });
+        const link = document.createElement('a');
+        link.download = 'purchases-table.svg';
+        link.href = URL.createObjectURL(blob);
+        link.click();
+      });
+    }
+  };
+
+  // Download as Excel
+  const downloadAsExcel = () => {
+    const worksheet = XLSX.utils.json_to_sheet(exportData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Purchases');
+    // Set column headers
+    XLSX.utils.sheet_add_aoa(worksheet, [exportHeaders.map((header) => header.label)], { origin: 'A1' });
+    XLSX.writeFile(workbook, 'purchases.xlsx');
+  };
+
+  // Handle export based on selected format
+  const handleExport = () => {
+    if (!exportFormat) {
+      alert('សូមជ្រើសរើសទម្រង់សម្រាប់ទាញយក!');
+      return;
+    }
+
+    switch (exportFormat) {
+      case 'csv':
+        document.getElementById('csv-link').click();
+        break;
+      case 'excel':
+        downloadAsExcel();
+        break;
+      case 'png':
+        downloadAsPNG();
+        break;
+      case 'svg':
+        downloadAsSVG();
+        break;
+      default:
+        alert('ទម្រង់មិនត្រឹមត្រូវ!');
+    }
+  };
+
+  // Fetch purchases
   useEffect(() => {
     const fetchPurchases = async () => {
       try {
@@ -42,17 +136,18 @@ const Purchases = () => {
     fetchPurchases();
   }, []);
 
-  // ស្វែងរក និង ចម្រាញ់ទំនិញ
+  // Search and filter purchases
   useEffect(() => {
-    const filtered = purchases.filter((purchase) =>
-      purchase.product_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      purchase.batch_number.toLowerCase().includes(searchTerm.toLowerCase())
+    const filtered = purchases.filter(
+      (purchase) =>
+        purchase.product_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        purchase.batch_number.toLowerCase().includes(searchTerm.toLowerCase())
     );
     setFilteredPurchases(filtered);
     setCurrentPage(1);
   }, [searchTerm, purchases]);
 
-  // តម្រៀបទំនិញ
+  // Sort purchases
   const handleSort = (key) => {
     let direction = 'asc';
     if (sortConfig.key === key && sortConfig.direction === 'asc') {
@@ -73,39 +168,18 @@ const Purchases = () => {
     setFilteredPurchases(sorted);
   };
 
-  // លុបទំនិញ
-  const handleDelete = async (purchaseId) => {
-    if (window.confirm('តើអ្នកប្រាកដជាចង់លុបការទិញនេះមែនទេ?')) {
-      try {
-        await api.delete(`/api/purchases/${purchaseId}/`);
-        // Remove the deleted purchase from the state
-        const updatedPurchases = purchases.filter((purchase) => purchase.id !== purchaseId);
-        setPurchases(updatedPurchases);
-        setFilteredPurchases(updatedPurchases);
-        alert('ការទិញត្រូវបានលុបដោយជោគជ័យ!');
-      } catch (error) {
-        console.error('កំហុសក្នុងការលុបការទិញ៖', error);
-        alert('មានបញ្ហាក្នុងការលុបការទិញ។ សូមព្យាយាមម្តងទៀត។');
-      }
-    }
-  };
-
-  // គ្រប់គ្រងទំព័រពីមួយទៅមួយ
+  // Pagination
   const indexOfLastPurchase = currentPage * purchasesPerPage;
   const indexOfFirstPurchase = indexOfLastPurchase - purchasesPerPage;
   const currentPurchases = filteredPurchases.slice(indexOfFirstPurchase, indexOfLastPurchase);
   const totalPages = Math.ceil(filteredPurchases.length / purchasesPerPage);
-
-  // គណនាសរុបបរិមាណ និង តម្លៃសរុប
-  const totalQuantity = currentPurchases.reduce((sum, purchase) => sum + purchase.quantity, 0);
-  const totalPurchasePrice = currentPurchases.reduce((sum, purchase) => sum + parseFloat(purchase.total), 0).toFixed(2);
 
   const handlePageChange = (pageNumber) => {
     setCurrentPage(pageNumber);
   };
 
   const handleAddPurchase = () => {
-    navigate('/add-purchase'); // សន្សំទីតាំងនេះសម្រាប់បន្ថែមទំនិញ
+    navigate('/add-purchase');
   };
 
   if (loading) return <p>កំពុងផ្ទុកទំនិញ...</p>;
@@ -126,11 +200,34 @@ const Purchases = () => {
             បន្ថែមការទិញ
           </button>
           <button onClick={() => navigate('/stock-movements')} className="add-button">
-          ស្តុកផលិតផល
-        </button>
+            ស្តុកផលិតផល
+          </button>
+          {/* Export Format Selector */}
+          <select
+            value={exportFormat}
+            onChange={(e) => setExportFormat(e.target.value)}
+            className="export-select"
+          >
+            <option value="">ជ្រើសរើសទម្រង់ទាញយក</option>
+            <option value="csv">CSV</option>
+            <option value="excel">Excel</option>
+            <option value="png">PNG</option>
+            <option value="svg">SVG</option>
+          </select>
+          <button onClick={handleExport} className="export-button">
+            ទាញយក
+          </button>
+          {/* Hidden CSVLink for triggering CSV download */}
+          <CSVLink
+            data={exportData}
+            headers={exportHeaders}
+            filename="purchases.csv"
+            id="csv-link"
+            style={{ display: 'none' }}
+          />
         </div>
       </div>
-      <table className="product-table">
+      <table className="product-table" ref={tableRef}>
         <thead>
           <tr>
             <th onClick={() => handleSort('supplier_name')}>អ្នកផ្គត់ផ្គង់</th>
@@ -141,7 +238,6 @@ const Purchases = () => {
             <th onClick={() => handleSort('purchase_price')}>តម្លៃទិញ</th>
             <th onClick={() => handleSort('total')}>តម្លៃសរុប</th>
             <th onClick={() => handleSort('purchase_date')}>កាលបរិច្ឆេទទិញ</th>
-            {/* <th>សកម្មភាព</th>  */}
           </tr>
         </thead>
         <tbody>
@@ -155,21 +251,12 @@ const Purchases = () => {
               <td>{purchase.purchase_price}</td>
               <td>{parseFloat(purchase.total).toFixed(2)}</td>
               <td>{new Date(purchase.purchase_date).toLocaleString()}</td>
-              <td>
-              
-                {/* <button
-                  onClick={() => handleDelete(purchase.id)}
-                  className="delete-button"
-                >
-                  លុប
-                </button> */}
-              </td>
             </tr>
           ))}
         </tbody>
       </table>
 
-      {/* គ្រប់គ្រងទំព័រ */}
+      {/* Pagination */}
       {totalPages > 1 && (
         <div className="pagination">
           <button

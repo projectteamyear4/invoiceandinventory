@@ -1,130 +1,243 @@
 /* src/components/Shelf.css */
 .shelf-container {
-    max-width: 1200px;
-    margin: 20px auto;
-    padding: 20px;
-    background: #ffffff;
-    border-radius: 10px;
-  }
-  
+  padding: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.shelf-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.shelf-header h2 {
+  font-size: 24px;
+  color: #333;
+}
+
+.shelf-controls {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.shelf-search-input {
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+  width: 200px;
+  transition: border-color 0.3s ease;
+}
+
+.shelf-search-input:focus {
+  outline: none;
+  border-color: #007bff;
+}
+
+.shelf-add-button {
+  padding: 10px 20px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: background-color 0.3s ease;
+}
+
+.shelf-add-button:hover {
+  background-color: #0056b3;
+}
+
+.export-select {
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+  background-color: #fff;
+  cursor: pointer;
+  transition: border-color 0.3s ease;
+}
+
+.export-select:focus {
+  outline: none;
+  border-color: #007bff;
+}
+
+.export-button {
+  padding: 10px 20px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: background-color 0.3s ease;
+}
+
+.export-button:hover {
+  background-color: #0056b3;
+}
+
+.back-button {
+  padding: 10px 20px;
+  background-color: #6c757d;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: background-color 0.3s ease;
+}
+
+.back-button:hover {
+  background-color: #5a6268;
+}
+
+.shelf-message {
+  font-size: 16px;
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.shelf-message.success {
+  color: #28a745;
+}
+
+.shelf-message.error {
+  color: #dc3545;
+}
+
+.no-shelves {
+  text-align: center;
+  padding: 20px;
+  background-color: #f8f9fa;
+  border-radius: 5px;
+  margin-top: 20px;
+}
+
+.no-shelves p {
+  font-size: 16px;
+  color: #666;
+  margin-bottom: 10px;
+}
+
+.shelf-table {
+  width: 100%;
+  border-collapse: collapse;
+  background-color: #fff;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  display: block;
+  overflow-x: auto;
+}
+
+.shelf-table th,
+.shelf-table td {
+  padding: 12px;
+  text-align: left;
+  border-bottom: 1px solid #ddd;
+  white-space: nowrap;
+}
+
+.shelf-table th {
+  background-color: #007bff;
+  font-weight: bold;
+  color: #ffffff;
+  cursor: pointer;
+  position: relative;
+  transition: background-color 0.3s ease;
+}
+
+.shelf-table th:hover {
+  background-color: #0056b3;
+}
+
+.shelf-table th::after {
+  content: '';
+  display: inline-block;
+  margin-left: 5px;
+  width: 0;
+  height: 0;
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  vertical-align: middle;
+}
+
+.shelf-table th.asc::after {
+  border-bottom: 5px solid #ffffff;
+}
+
+.shelf-table th.desc::after {
+  border-top: 5px solid #ffffff;
+}
+
+.shelf-table tr:hover {
+  background-color: #f9f9f9;
+}
+
+.shelf-edit-button {
+  padding: 5px 10px;
+  background-color: #ffc107;
+  color: white;
+  border: none;
+  border-radius: 3px;
+  cursor: pointer;
+  font-size: 14px;
+  margin-right: 5px;
+  transition: background-color 0.3s ease;
+}
+
+.shelf-edit-button:hover {
+  background-color: #e0a800;
+}
+
+.shelf-delete-button {
+  padding: 5px 10px;
+  background-color: #dc3545;
+  color: white;
+  border: none;
+  border-radius: 3px;
+  cursor: pointer;
+  font-size: 14px;
+  margin-right: 5px;
+  transition: background-color 0.3s ease;
+}
+
+.shelf-delete-button:hover {
+  background-color: #c82333;
+}
+
+.loading-spinner {
+  text-align: center;
+  font-size: 18px;
+  color: #007bff;
+  margin-top: 20px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
   .shelf-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 20px;
-  }
-  
-  .shelf-header h2 {
-    color: #007bff;
-    font-size: 24px;
-  }
-  
-  .shelf-table {
-    width: 100%;
-    border-collapse: collapse;
-  }
-  
-  .shelf-table th,
-  .shelf-table td {
-    padding: 12px;
-    text-align: left;
-    border-bottom: 1px solid #ddd;
-  }
-  
-  .shelf-table th {
-    background: #007bff;
-    color: white;
-  }
-  
-  .shelf-table tr:hover {
-    background: rgba(0, 123, 255, 0.1);
-  }
-  
-  .shelf-add-button,
-  .shelf-edit-button,
-  .shelf-delete-button,
-  .shelf-button {
-    padding: 8px 16px;
-    margin: 0 5px;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    color: white;
-  }
-  
-  .shelf-add-button {
-    background: #28a745;
-  }
-  
-  .shelf-add-button:hover {
-    background: #218838;
-  }
-  
-  .shelf-edit-button {
-    background: #ffc107;
-  }
-  
-  .shelf-edit-button:hover {
-    background: #e0a800;
-  }
-  
-  .shelf-delete-button {
-    background: #dc3545;
-  }
-  
-  .shelf-delete-button:hover {
-    background: #c82333;
-  }
-  
-  .shelf-form-container {
-    max-width: 600px;
-    margin: 20px auto;
-    padding: 20px;
-    background: #ffffff;
-    border-radius: 10px;
-  }
-  
-  .shelf-form-container h2 {
-    color: #007bff;
-    text-align: center;
-    margin-bottom: 20px;
-  }
-  
-  .shelf-form {
-    display: flex;
     flex-direction: column;
-    gap: 15px;
+    gap: 10px;
   }
-  
-  .shelf-input {
-    padding: 10px;
-    border: 1px solid #ddd;
-    border-radius: 5px;
-    font-size: 16px;
+
+  .shelf-controls {
+    justify-content: center;
+    width: 100%;
   }
-  
-  .shelf-button {
-    background: #007bff;
+
+  .shelf-search-input {
+    width: 150px;
   }
-  
-  .shelf-button:disabled {
-    background: #ccc;
-    cursor: not-allowed;
+
+  .shelf-add-button,
+  .export-button,
+  .back-button {
+    width: 100%;
+    max-width: 200px;
   }
-  
-  .shelf-button:hover:not(:disabled) {
-    background: #0056b3;
-  }
-  
-  .shelf-message {
-    text-align: center;
-    margin-top: 15px;
-  }
-  
-  .shelf-message.success {
-    color: #28a745;
-  }
-  
-  .shelf-message.error {
-    color: #dc3545;
-  }
+}

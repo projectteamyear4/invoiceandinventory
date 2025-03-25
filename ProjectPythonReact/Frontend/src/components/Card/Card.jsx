@@ -39,7 +39,7 @@ function CompactCard({ param, setExpanded }) {
       <div className="detail">
         <Png />
         <span>{param.value}</span>
-        <span>Last 24 hours</span>
+     
       </div>
     </motion.div>
   );
@@ -58,13 +58,13 @@ function ExpandedCard({ param, setExpanded }) {
       xaxis: {
         type: "datetime",
         categories: [
-          "2018-09-19T00:00:00.000Z",
-          "2018-09-19T01:30:00.000Z",
-          "2018-09-19T02:30:00.000Z",
-          "2018-09-19T03:30:00.000Z",
-          "2018-09-19T04:30:00.000Z",
-          "2018-09-19T05:30:00.000Z",
-          "2018-09-19T06:30:00.000Z",
+          "2025-09-19T00:00:00.000Z",
+          "2025-09-19T01:30:00.000Z",
+          "2025-09-19T02:30:00.000Z",
+          "2025-09-19T03:30:00.000Z",
+          "2025-09-19T04:30:00.000Z",
+          "2025-09-19T05:30:00.000Z",
+          "2025-09-19T06:30:00.000Z",
         ],
       },
     },
@@ -83,7 +83,7 @@ function ExpandedCard({ param, setExpanded }) {
       <div className="chartContainer">
         <Chart options={data.options} series={param.series} type="area" />
       </div>
-      <span>Last 24 hours</span>
+     
     </motion.div>
   );
 }

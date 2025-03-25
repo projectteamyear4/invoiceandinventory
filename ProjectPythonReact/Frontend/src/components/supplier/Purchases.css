@@ -200,3 +200,40 @@
 .product-add-button:hover {
   background-color: #45a049; /* Darker green on hover */
 }
+.export-select {
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+  margin-left: 10px;
+  background-color: #fff;
+  cursor: pointer;
+}
+
+.export-select:focus {
+  outline: none;
+  border-color: #2196F3;
+}
+
+/* Style for the export button */
+.export-button {
+  background-color: #2196F3; /* Blue background */
+  color: white;
+  border: none;
+  padding: 10px 15px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  margin-left: 10px;
+}
+
+.export-button:hover {
+  background-color: #1976D2; /* Darker blue on hover */
+}
+
+/* Ensure table is styled properly for image capture */
+.product-table {
+  width: 100%;
+  border-collapse: collapse;
+  background-color: #fff; /* Ensure background is white for image capture */
+}

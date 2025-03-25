@@ -1,80 +1,128 @@
 /* src/components/StockMovements.css */
 .stock-movement-container {
-    padding: 20px;
-    max-width: 1200px;
-    margin: 0 auto;
-  }
-  
-  .stock-movement-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 20px;
-  }
-  
-  .stock-movement-header h2 {
-    font-size: 24px;
-    color: #333;
-  }
-  
-  .add-button {
-    padding: 10px 20px;
-    background-color: #007bff;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    font-size: 16px;
-  }
-  
-  .add-button:hover {
-    background-color: #0056b3;
-  }
-  
-  .stock-movement-table {
-    width: 100%;
-    border-collapse: collapse;
-    background-color: #fff;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-  }
-  
-  .stock-movement-table th,
-  .stock-movement-table td {
-    padding: 12px;
-    text-align: left;
-    border-bottom: 1px solid #ddd;
-  }
-  
-  .stock-movement-table th {
-    background-color: #007bff;
-    font-weight: bold;
-    color: #ffffff;
-  }
-  .edit-button {
-    padding: 5px 10px;
-    background-color: #ffc107;
-    color: white;
-    border: none;
-    border-radius: 3px;
-    cursor: pointer;
-    font-size: 14px;
-  }
-  
-  .edit-button:hover {
-    background-color: #e0a800;
-  }
-  .stock-movement-table tr:hover {
-    background-color: #f9f9f9;
-  }
-  
-  .error-message {
-    color: red;
-    font-size: 16px;
-    text-align: center;
-  }
-  /* Style for the join stock button */
+  padding: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.stock-movement-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.stock-movement-header h2 {
+  font-size: 24px;
+  color: #333;
+}
+
+.stock-movement-controls {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.stock-movement-search-input {
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+  width: 200px;
+}
+
+.stock-movement-search-input:focus {
+  outline: none;
+  border-color: #007bff;
+}
+
+.add-button {
+  padding: 10px 20px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.add-button:hover {
+  background-color: #0056b3;
+}
+
+.export-select {
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+  background-color: #fff;
+  cursor: pointer;
+}
+
+.export-select:focus {
+  outline: none;
+  border-color: #007bff;
+}
+
+.export-button {
+  padding: 10px 20px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.export-button:hover {
+  background-color: #0056b3;
+}
+
+.stock-movement-table {
+  width: 100%;
+  border-collapse: collapse;
+  background-color: #fff;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.stock-movement-table th,
+.stock-movement-table td {
+  padding: 12px;
+  text-align: left;
+  border-bottom: 1px solid #ddd;
+}
+
+.stock-movement-table th {
+  background-color: #007bff;
+  font-weight: bold;
+  color: #ffffff;
+  cursor: pointer;
+}
+
+.stock-movement-table th:hover {
+  background-color: #0056b3;
+}
+
+.stock-movement-table tr:hover {
+  background-color: #f9f9f9;
+}
+
+.edit-button {
+  padding: 5px 10px;
+  background-color: #ffc107;
+  color: white;
+  border: none;
+  border-radius: 3px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.edit-button:hover {
+  background-color: #e0a800;
+}
+
 .join-stock-button {
-  background-color: #ff9800; /* Orange background */
+  background-color: #ff9800;
   color: white;
   border: none;
   padding: 5px 10px;
@@ -84,58 +132,90 @@
 }
 
 .join-stock-button:hover {
-  background-color: #e68900; /* Darker orange on hover */
+  background-color: #e68900;
 }
-  /* src/components/EditStockMovement.css */
+
+.error-message {
+  color: red;
+  font-size: 16px;
+  text-align: center;
+}
+/* Add more styles as needed */
+/* src/components/EditStockMovement.css */
 .edit-stock-movement-container {
-    padding: 20px;
-    max-width: 600px;
-    margin: 0 auto;
+  padding: 20px;
+  max-width: 600px;
+  margin: 0 auto;
+
+  border-radius: 5px;
+}
+
+.edit-stock-movement-container h2 {
+  font-size: 24px;
+  color: #333;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.edit-form {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.form-group label {
+  font-size: 16px;
+  color: #555;
+  margin-bottom: 5px;
+}
+
+.form-group select {
+  padding: 10px;
+  font-size: 16px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  width: 100%;
+  transition: border-color 0.3s ease;
+}
+
+.form-group select:focus {
+  outline: none;
+  border-color: #007bff;
+}
+
+.save-button {
+  padding: 10px 20px;
+  background-color: #28a745;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 16px;
+  margin-top: 10px;
+  transition: background-color 0.3s ease;
+}
+
+.save-button:hover {
+  background-color: #218838;
+}
+
+/* Responsive adjustments */
+@media (max-width: 600px) {
+  .edit-stock-movement-container {
+    padding: 15px;
+    max-width: 100%;
   }
-  
-  .edit-stock-movement-container h2 {
-    font-size: 24px;
-    color: #333;
-    margin-bottom: 20px;
-    text-align: center;
-  }
-  
-  .edit-form {
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-  }
-  
-  .form-group {
-    display: flex;
-    flex-direction: column;
-  }
-  
-  .form-group label {
-    font-size: 16px;
-    color: #555;
-    margin-bottom: 5px;
-  }
-  
+
   .form-group select {
-    padding: 10px;
-    font-size: 16px;
-    border: 1px solid #ddd;
-    border-radius: 5px;
-    width: 100%;
+    font-size: 14px;
   }
-  
+
   .save-button {
-    padding: 10px 20px;
-    background-color: #28a745;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    font-size: 16px;
-    margin-top: 10px;
+    font-size: 14px;
   }
-  
-  .save-button:hover {
-    background-color: #218838;
-  }
+}

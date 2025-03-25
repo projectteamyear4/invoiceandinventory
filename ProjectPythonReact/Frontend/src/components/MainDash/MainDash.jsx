@@ -20,10 +20,16 @@ const MainDash = () => {
   });
 
   useEffect(() => {
-    const fetchPurchases = async () => {
+    const fetchData = async () => {
       try {
-        const response = await api.get("/api/purchases/");
-        const purchases = response.data;
+        // Fetch purchases and products concurrently
+        const [purchasesResponse, productsResponse] = await Promise.all([
+          api.get("/api/purchases/"),
+          api.get("/api/products/"),
+        ]);
+
+        const purchases = purchasesResponse.data;
+        const products = productsResponse.data;
 
         // Get today's date in YYYY-MM-DD format
         const today = new Date().toISOString().split("T")[0];
@@ -43,9 +49,12 @@ const MainDash = () => {
           0
         );
 
+        // Calculate total number of products
+        const totalProducts = products.length;
+
         // Convert numbers to Khmer numerals
         const khmerNumbers = (num) =>
-          num.toFixed(2).replace(/\d/g, (d) => "០១២៣៤៥៦៧៨៩"[d]);
+          num.toString().replace(/\d/g, (d) => "០១២៣៤៥៦៧៨៩"[d]);
 
         // Card for today's purchase price
         const purchaseTodayCard = {
@@ -56,7 +65,7 @@ const MainDash = () => {
             boxShadow: "0 4px 10px rgba(251, 140, 0, 0.3)",
           },
           barValue: Math.min((totalPriceToday / 1000) * 100, 100),
-          value: `${khmerNumbers(totalPriceToday)} $`,
+          value: `${khmerNumbers(totalPriceToday.toFixed(2))} $`,
           png: "UilUsdSquare",
           series: [{ name: "តម្លៃទិញ", data: todayPurchases.map((p) => parseFloat(p.purchase_price)) }],
         };
@@ -70,22 +79,36 @@ const MainDash = () => {
             boxShadow: "0 4px 10px rgba(33, 150, 243, 0.3)",
           },
           barValue: Math.min((totalPurchasePrice / 10000) * 100, 100),
-          value: `${khmerNumbers(totalPurchasePrice)} $`,
+          value: `${khmerNumbers(totalPurchasePrice.toFixed(2))} $`,
           png: "UilMoneyWithdrawal",
           series: [{ name: "សរុប", data: purchases.map((p) => parseFloat(p.purchase_price)) }],
         };
 
+        // Card for total number of products
+        const totalProductsCard = {
+          title: "ចំនួនផលិតផលសរុប", // Total Number of Products
+          color: {
+            backGround: "#e8f5e9",
+            border: "1px solid #4caf50",
+            boxShadow: "0 4px 10px rgba(76, 175, 80, 0.3)",
+          },
+          barValue: Math.min((totalProducts / 100) * 100, 100), // Scale to 100 products max for the bar
+          value: khmerNumbers(totalProducts),
+          png: "UilBox", // Use an appropriate icon (you may need to import this from 'react-icons')
+          series: [{ name: "ផលិតផល", data: [totalProducts] }], // Simple series for the chart
+        };
+
         // Update cardsData with new cards
-        setDynamicCardsData([...cardsData, purchaseTodayCard, totalPurchaseCard]);
+        setDynamicCardsData([...cardsData, purchaseTodayCard, totalPurchaseCard, totalProductsCard]);
       } catch (err) {
-        setError("Failed to load purchase data.");
+        setError("Failed to load data.");
         console.error("Fetch error:", err.response?.data || err);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchPurchases();
+    fetchData();
   }, []);
 
   if (loading) return <p>Loading dashboard...</p>;

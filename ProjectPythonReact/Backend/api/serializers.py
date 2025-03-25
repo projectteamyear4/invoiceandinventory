@@ -1,6 +1,8 @@
 from django.contrib.auth.models import User
 from rest_framework import serializers
 from django.db import models
+from django.db.models import Sum
+from rest_framework import viewsets
 from rest_framework.validators import UniqueValidator
 from django.contrib.auth.password_validation import validate_password
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
@@ -144,18 +146,43 @@ class ProductSerializer(serializers.ModelSerializer):
         fields = ['id', 'name', 'category', 'category_id', 'description', 'brand', 'image_url', 'barcode', 'created_at', 'variants']
 
 # Corrected WarehouseSerializer (standalone)
+# Updated WarehouseSerializer
 class WarehouseSerializer(serializers.ModelSerializer):
+    shelf_count = serializers.SerializerMethodField()
+    total_quantity = serializers.SerializerMethodField()
+
     class Meta:
         model = Warehouse
-        fields = ['id', 'name', 'location', 'owner', 'contact_person', 'contact_number', 'capacity', 'created_at']
+        fields = ['id', 'name', 'location', 'owner', 'contact_person', 'contact_number', 'capacity', 'created_at', 'shelf_count', 'total_quantity']
 
-# Corrected ShelfSerializer (standalone)
+    def get_shelf_count(self, obj):
+        return obj.shelves.count()
+
+    def get_total_quantity(self, obj):
+        # Sum the quantities of stock movements where movement_type='IN' for this warehouse
+        total = StockMovement.objects.filter(
+            warehouse=obj,
+            movement_type='IN'
+        ).aggregate(total_quantity=Sum('quantity'))['total_quantity'] or 0
+        return total
+
+# Updated ShelfSerializer
 class ShelfSerializer(serializers.ModelSerializer):
     warehouse = serializers.PrimaryKeyRelatedField(queryset=Warehouse.objects.all())
+    warehouse_name = serializers.CharField(source='warehouse.name', read_only=True)
+    total_quantity = serializers.SerializerMethodField()
 
     class Meta:
         model = Shelf
-        fields = ['id', 'warehouse', 'shelf_name', 'section', 'capacity', 'created_at']
+        fields = ['id', 'warehouse', 'warehouse_name', 'shelf_name', 'section', 'capacity', 'created_at', 'total_quantity']
+
+    def get_total_quantity(self, obj):
+        # Sum the quantities of stock movements where movement_type='IN' for this shelf
+        total = StockMovement.objects.filter(
+            shelf=obj,
+            movement_type='IN'
+        ).aggregate(total_quantity=Sum('quantity'))['total_quantity'] or 0
+        return total
 
     def validate(self, data):
         warehouse = data.get('warehouse')
@@ -163,10 +190,25 @@ class ShelfSerializer(serializers.ModelSerializer):
         if warehouse and capacity:
             total_shelf_capacity = (
                 warehouse.shelves.exclude(id=self.instance.id if self.instance else None)
-                .aggregate(models.Sum('capacity'))['capacity__sum'] or 0
+                .aggregate(total=Sum('capacity'))['total'] or 0
             )
             if total_shelf_capacity + capacity > warehouse.capacity:
                 raise serializers.ValidationError(
                     f"Total shelf capacity ({total_shelf_capacity + capacity}) exceeds warehouse capacity ({warehouse.capacity})."
                 )
         return data
+class ShelfViewSet(viewsets.ModelViewSet):
+    queryset = Shelf.objects.all()
+    serializer_class = ShelfSerializer
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        warehouse_id = self.request.query_params.get('warehouse', None)
+        print(f"Filtering shelves for warehouse_id: {warehouse_id}")  # Debug
+        if warehouse_id:
+            try:
+                warehouse_id = int(warehouse_id)  # Ensure it's an integer
+                queryset = queryset.filter(warehouse_id=warehouse_id)
+            except (ValueError, TypeError):
+                print(f"Invalid warehouse_id: {warehouse_id}")
+        return queryset

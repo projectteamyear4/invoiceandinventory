@@ -35,9 +35,7 @@ const EditStockMovement = () => {
           api.get('/api/warehouses/'),
           api.get('/api/shelves/'),
         ]);
-        console.log('Movement:', movementRes.data);
-        console.log('Warehouses:', warehouseRes.data);
-        console.log('Shelves:', shelfRes.data);
+        
         const initialWarehouse = movementRes.data.warehouse;
         setFormData({
           warehouse: initialWarehouse,
@@ -46,10 +44,9 @@ const EditStockMovement = () => {
         setWarehouses(warehouseRes.data);
         setAllShelves(shelfRes.data);
         const filtered = shelfRes.data.filter(shelf => shelf.warehouse === initialWarehouse);
-        console.log('Filtered Shelves:', filtered);
         setFilteredShelves(filtered);
       } catch (err) {
-        setError('Failed to load data. Please try again.');
+        setError('មិនអាចទាញយកទិន្នន័យបាន។ សូមព្យាយាមម្តងទៀត។');
         console.error(err);
       } finally {
         setLoading(false);
@@ -62,7 +59,6 @@ const EditStockMovement = () => {
     const warehouseId = parseInt(e.target.value);
     setFormData((prev) => ({ ...prev, warehouse: warehouseId, shelf: '' }));
     const filtered = allShelves.filter(shelf => shelf.warehouse === warehouseId);
-    console.log('Filtered Shelves after warehouse change:', filtered);
     setFilteredShelves(filtered);
   };
 
@@ -80,33 +76,32 @@ const EditStockMovement = () => {
         warehouse: parseInt(formData.warehouse) || null,
         shelf: parseInt(formData.shelf) || null,
       };
-      const response = await api.patch(`/api/stock-movements/${id}/`, updatedData);
-      setSuccess('Stock movement updated successfully!');
+      await api.patch(`/api/stock-movements/${id}/`, updatedData);
+      setSuccess('បានកែប្រែការផ្លាស់ទីស្តុកដោយជោគជ័យ!');
       setTimeout(() => navigate('/stock-movements'), 1000);
     } catch (err) {
-      const errorMsg = err.response?.data || 'Failed to update stock movement.';
-      setError(JSON.stringify(errorMsg));
+      setError('មិនអាចកែប្រែការផ្លាស់ទីស្តុកបាន។');
       console.error(err.response?.data || err);
     }
   };
 
-  if (loading) return <p>Loading...</p>;
+  if (loading) return <p>កំពុងផ្ទុក...</p>;
 
   return (
     <div className="edit-stock-movement-container">
-      <h2>Stock Movement</h2>
+      <h2>ការផ្លាស់ទីស្តុក</h2>
       {error && <p className="error-message">{error}</p>}
       {success && <p className="success-message">{success}</p>}
       <form onSubmit={handleSubmit} className="edit-form">
         <div className="form-group">
-          <label>Warehouse:</label>
+          <label>ឃ្លាំង:</label>
           <select
             name="warehouse"
             value={formData.warehouse}
             onChange={handleWarehouseChange}
             required
           >
-            <option value="">Select Warehouse</option>
+            <option value="">ជ្រើសរើសឃ្លាំង</option>
             {warehouses.map((warehouse) => (
               <option key={warehouse.id} value={warehouse.id}>
                 {warehouse.name}
@@ -115,14 +110,14 @@ const EditStockMovement = () => {
           </select>
         </div>
         <div className="form-group">
-          <label>Shelf:</label>
+          <label>ធ្នើរ:</label>
           <select
             name="shelf"
             value={formData.shelf}
             onChange={handleShelfChange}
             required
           >
-            <option value="">Select Shelf</option>
+            <option value="">ជ្រើសរើសធ្នើរ</option>
             {filteredShelves.map((shelf) => (
               <option key={shelf.id} value={shelf.id}>
                 {shelf.shelf_name}
@@ -130,7 +125,7 @@ const EditStockMovement = () => {
             ))}
           </select>
         </div>
-        <button type="submit" className="save-button">Save Changes</button>
+        <button type="submit" className="save-button">រក្សាទុកការផ្លាស់ប្តូរ</button>
       </form>
     </div>
   );

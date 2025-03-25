@@ -24,7 +24,6 @@ import EditShelf from './components/stock/EditShelf.jsx';
 import EditStockMovement from './components/stock/EditStockMovement.jsx';
 import EditWarehouse from './components/stock/EditWarehouse.jsx';
 import Shelves from './components/stock/Shelves.jsx';
-
 import StockMovements from './components/stock/StockMovements.jsx';
 import Warehouses from './components/stock/Warehouses.jsx';
 import AddPurchase from './components/supplier/AddPurchase.jsx';
@@ -65,16 +64,15 @@ function App() {
               <Route path="/add-variant/:productId" element={<ProtectedRoute><AddProductVariant /></ProtectedRoute>} />
               <Route path="/edit-variant/:variantId" element={<ProtectedRoute><EditProductVariant /></ProtectedRoute>} />
               <Route path="/edit-product/:productId" element={<ProtectedRoute><EditProduct /></ProtectedRoute>} />
-              <Route path="/stock-movements" element={<ProtectedRoute><StockMovements  /></ProtectedRoute>} />
-             
+              <Route path="/stock-movements" element={<ProtectedRoute><StockMovements /></ProtectedRoute>} />
               <Route path="/warehouses" element={<ProtectedRoute><Warehouses /></ProtectedRoute>} />
               <Route path="/add-warehouse" element={<ProtectedRoute><AddWarehouse /></ProtectedRoute>} />
               <Route path="/edit-warehouse/:id" element={<ProtectedRoute><EditWarehouse /></ProtectedRoute>} />
               <Route path="/edit-stock-movement/:id" element={<ProtectedRoute><EditStockMovement /></ProtectedRoute>} />
               <Route path="/invoice" element={<ProtectedRoute><InvoiceForm /></ProtectedRoute>} />
               <Route path="/invoicelist" element={<ProtectedRoute><InvoiceList /></ProtectedRoute>} />
-              <Route path="/shelves" element={<ProtectedRoute><Shelves /></ProtectedRoute>} />
-              <Route path="/add-shelf" element={<ProtectedRoute><AddShelf /></ProtectedRoute>} />
+              <Route path="/shelves/:warehouseId" element={<ProtectedRoute><Shelves /></ProtectedRoute>} /> {/* Updated */}
+              <Route path="/add-shelf/:warehouseId" element={<ProtectedRoute><AddShelf /></ProtectedRoute>} /> {/* Updated */}
               <Route path="/edit-shelf/:id" element={<ProtectedRoute><EditShelf /></ProtectedRoute>} />
               <Route path="/suppliers" element={<ProtectedRoute><SupplierTable /></ProtectedRoute>} />
               <Route path="/add-supplier" element={<ProtectedRoute><AddSupplier /></ProtectedRoute>} />
