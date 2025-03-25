@@ -78,7 +78,7 @@ const MainDash = () => {
             border: "1px solid #2196f3",
             boxShadow: "0 4px 10px rgba(33, 150, 243, 0.3)",
           },
-          barValue: Math.min((totalPurchasePrice / 10000) * 100, 100),
+          barValue: Math.min((totalPurchasePrice / 100000) * 100, 100),
           value: `${khmerNumbers(totalPurchasePrice.toFixed(2))} $`,
           png: "UilMoneyWithdrawal",
           series: [{ name: "សរុប", data: purchases.map((p) => parseFloat(p.purchase_price)) }],
