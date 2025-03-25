@@ -1,7 +1,6 @@
 import { Route, BrowserRouter as Router, Routes } from 'react-router-dom';
 import './App.css';
 import Login from './components/auth/Login';
-import Register from './components/auth/Register';
 import { AuthProvider } from './components/AuthContext';
 import AddCategory from './components/category/AddCategory.jsx';
 import CategoryList from './components/category/Categorylist.jsx';
@@ -49,8 +48,8 @@ function App() {
           <div className="AppGlass">
             <Sidebar />
             <Routes>
-              <Route path="/" element={<Register />} />
-              <Route path="/login" element={<Login />} />
+              {/* <Route path="/" element={<Register />} /> */}
+              <Route path="/" element={<Login />} />
               <Route path="/dashboard" element={<ProtectedRoute><MainDash /></ProtectedRoute>} />
               <Route path="/orders" element={<ProtectedRoute><Orders /></ProtectedRoute>} />
               <Route path="/customers" element={<ProtectedRoute><CustomerList /></ProtectedRoute>} />

@@ -251,3 +251,141 @@ h2 {
   text-align: center;
 }
 
+
+
+/* Container styling */
+.product-form-container {
+  max-width: 800px; /* Wider container for row layout */
+  margin: 40px auto;
+  padding: 30px;
+ 
+  font-family: 'Noto Sans Khmer', 'Arial', sans-serif;
+}
+
+/* Heading styling */
+.product-form-container h2 {
+  text-align: center;
+  color: #2c3e50;
+  margin-bottom: 25px;
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+
+/* Form styling */
+.product-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* Row styling with grid */
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr; /* Two columns per row where applicable */
+  gap: 20px;
+}
+
+/* Adjust single-column rows (e.g., image_url) */
+.form-row:last-of-type {
+  grid-template-columns: 1fr; /* Single column for the last row */
+}
+
+/* Input and select styling */
+.product-input {
+  padding: 12px 15px;
+  font-size: 15px;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  background-color: #f8fafc;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+  width: 100%; /* Full width within grid cell */
+  box-sizing: border-box;
+}
+
+.product-input:focus {
+  outline: none;
+  border-color: #3498db;
+  box-shadow: 0 0 6px rgba(52, 152, 219, 0.3);
+}
+
+/* Disabled input styling */
+.product-input:disabled {
+  background-color: #eef2f7;
+  border-color: #d1d5db;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+/* Button styling */
+.product-button {
+  padding: 14px;
+  font-size: 16px;
+  font-weight: 600;
+  color: #fff;
+  background-color: #3498db;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
+  width: 100%; /* Full width for consistency */
+  box-sizing: border-box;
+}
+
+.product-button:hover {
+  background-color: #2980b9;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px rgba(41, 128, 185, 0.3);
+}
+
+.product-button:disabled {
+  background-color: #95a5a6;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+/* Message styling */
+.product-message {
+  margin-top: 20px;
+  text-align: center;
+  font-size: 15px;
+  padding: 12px;
+  border-radius: 8px;
+  font-weight: 500;
+}
+
+.product-message.success {
+  color: #1a6642;
+  background-color: #d1fae5;
+  border: 1px solid #a7f3d0;
+}
+
+.product-message.error {
+  color: #9b2c2c;
+  background-color: #fee2e2;
+  border: 1px solid #fecaca;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .product-form-container {
+    max-width: 100%;
+    margin: 20px;
+    padding: 20px;
+  }
+
+  .form-row {
+    grid-template-columns: 1fr; /* Stack fields on smaller screens */
+  }
+
+  .product-input,
+  .product-button {
+    font-size: 14px;
+    padding: 10px;
+  }
+
+  .product-form-container h2 {
+    font-size: 24px;
+  }
+}

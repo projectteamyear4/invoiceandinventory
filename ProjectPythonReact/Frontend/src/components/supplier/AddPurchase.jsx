@@ -46,7 +46,7 @@ const AddPurchase = () => {
         setProducts(productRes.data);
         setProductVariants(variantRes.data);
       } catch (err) {
-        setError('Failed to load options. Please try again.');
+        setError('បរាជ័យក្នុងការផ្ទុកជម្រើស។ សូមព្យាយាមម្តងទៀត។'); // "Failed to load options. Please try again."
         console.error(err);
       } finally {
         setLoading(false);
@@ -78,7 +78,7 @@ const AddPurchase = () => {
 
   const removePurchaseRow = (index) => {
     if (formData.length === 1) {
-      setError('You must have at least one purchase entry.');
+      setError('អ្នកត្រូវតែមានយ៉ាងហោចណាស់មួយធាតុទិញ។'); // "You must have at least one purchase entry."
       return;
     }
     const updatedFormData = formData.filter((_, i) => i !== index);
@@ -109,7 +109,9 @@ const AddPurchase = () => {
         !purchaseData.quantity ||
         !purchaseData.purchase_price
       ) {
-        throw new Error(`All required fields must be filled for purchase entry ${index + 1}.`);
+        throw new Error(
+          `ត្រូវបំពេញគ្រប់វាលដែលតម្រូវសម្រាប់ធាតុទិញទី ${index + 1}។` // "All required fields must be filled for purchase entry ${index + 1}."
+        );
       }
 
       return purchaseData;
@@ -118,21 +120,22 @@ const AddPurchase = () => {
     try {
       // Send all purchases in a single request
       const response = await api.post('/api/purchases/bulk/', purchaseDataList);
-      setSuccess('Purchases added successfully! Stock updated.');
+      setSuccess('បានបន្ថែមការទិញដោយជោគជ័យ! ស្តុកត្រូវបានធ្វើបច្ចុប្បន្នភាព។'); // "Purchases added successfully! Stock updated."
       setTimeout(() => navigate('/purchases'), 1000);
     } catch (err) {
-      const errorMsg = err.response?.data || 'Failed to add purchases. Please check your input.';
+      const errorMsg =
+        err.response?.data || 'បរាជ័យក្នុងការបន្ថែមការទិញ។ សូមពិនិត្យមើលទិន្នន័យរបស់អ្នក។'; // "Failed to add purchases. Please check your input."
       setError(JSON.stringify(errorMsg));
       console.error(err.response?.data || err);
     }
   };
 
-  if (loading) return <p>Loading...</p>;
+  if (loading) return <p>កំពុងផ្ទុក...</p>; // "Loading..."
 
   return (
     <div className="product-table-container">
       <div className="product-header">
-        <h2>Add New Purchases</h2>
+        <h2>បន្ថែមការទិញថ្មី</h2> {/* "Add New Purchases" */}
       </div>
       {error && <p className="error-message">{error}</p>}
       {success && <p className="success-message">{success}</p>}
@@ -140,13 +143,13 @@ const AddPurchase = () => {
         <table className="purchase-table">
           <thead>
             <tr>
-              <th>Supplier</th>
-              <th>Product</th>
-              <th>Product Variant (Optional)</th>
-              <th>Batch Number</th>
-              <th>Quantity</th>
-              <th>Purchase Price</th>
-              <th>Actions</th>
+              <th>អ្នកផ្គត់ផ្គង់</th> {/* "Supplier" */}
+              <th>ផលិតផល</th> {/* "Product" */}
+              <th>ប្រភេទផលិតផល (ស្រេចចិត្ត)</th> {/* "Product Variant (Optional)" */}
+              <th>លេខបាច់</th> {/* "Batch Number" */}
+              <th>បរិមាណ</th> {/* "Quantity" */}
+              <th>តម្លៃទិញ</th> {/* "Purchase Price" */}
+              <th>សកម្មភាព</th> {/* "Actions" */}
             </tr>
           </thead>
           <tbody>
@@ -159,7 +162,7 @@ const AddPurchase = () => {
                     onChange={(e) => handleChange(index, e)}
                     required
                   >
-                    <option value="">Select Supplier</option>
+                    <option value="">ជ្រើសរើសអ្នកផ្គត់ផ្គង់</option> {/* "Select Supplier" */}
                     {suppliers.map((supplier) => (
                       <option key={supplier.id} value={supplier.id}>
                         {supplier.name}
@@ -174,7 +177,7 @@ const AddPurchase = () => {
                     onChange={(e) => handleChange(index, e)}
                     required
                   >
-                    <option value="">Select Product</option>
+                    <option value="">ជ្រើសរើសផលិតផល</option> {/* "Select Product" */}
                     {products.map((product) => (
                       <option key={product.id} value={product.id}>
                         {product.name}
@@ -188,7 +191,7 @@ const AddPurchase = () => {
                     value={entry.product_variant}
                     onChange={(e) => handleChange(index, e)}
                   >
-                    <option value="">No Variant</option>
+                    <option value="">គ្មានប្រភេទ</option> {/* "No Variant" */}
                     {productVariants.map((variant) => (
                       <option key={variant.id} value={variant.id}>
                         {variant.product.name} - {variant.size || ''} {variant.color || ''}
@@ -232,7 +235,7 @@ const AddPurchase = () => {
                     onClick={() => removePurchaseRow(index)}
                     className="remove-button"
                   >
-                    Remove
+                    លុប {/* "Remove" */}
                   </button>
                 </td>
               </tr>
@@ -241,9 +244,11 @@ const AddPurchase = () => {
         </table>
         <div className="form-actions">
           <button type="button" onClick={addPurchaseRow} className="add-row-button">
-            Add Another Purchase
+            បន្ថែមការទិញផ្សេងទៀត {/* "Add Another Purchase" */}
           </button>
-          <button type="submit" className="product-add-button">Save All Purchases</button>
+          <button type="submit" className="product-add-button">
+            រក្សាទុកការទិញទាំងអស់ {/* "Save All Purchases" */}
+          </button>
         </div>
       </form>
     </div>
