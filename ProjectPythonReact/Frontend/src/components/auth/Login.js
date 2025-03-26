@@ -2,7 +2,7 @@ import axios from 'axios';
 import React, { useContext, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../AuthContext';
-import './Login.css'; // Ensure this path is correct
+import './Login.css'; // ប្រាកដថា ផ្លូវនេះត្រឹមត្រូវ
 
 const Login = () => {
   const [formData, setFormData] = useState({ username: '', password: '' });
@@ -31,16 +31,16 @@ const Login = () => {
       const response = await api.post('/api/login/', formData);
       const { access, refresh, user } = response.data;
       login(user, access, refresh);
-      setMessage('Login successful! Welcome, ' + user.username);
+      setMessage('ចូលប្រើប្រាស់ជោគជ័យ! ស្វាគមន៍, ' + user.username);
       setFormData({ username: '', password: '' });
       navigate('/dashboard');
     } catch (error) {
       if (error.response) {
-        setMessage(error.response.data.detail || 'Login failed! Check your credentials.');
+        setMessage(error.response.data.detail || 'ចូលបរាជ័យ! សូមពិនិត្យព័ត៌មានរបស់អ្នក។');
       } else if (error.request) {
-        setMessage('Unable to connect to server.');
+        setMessage('មិនអាចភ្ជាប់ទៅម៉ាស៊ីនមេបានទេ។');
       } else {
-        setMessage('Error: ' + error.message);
+        setMessage('កំហុស៖ ' + error.message);
       }
     } finally {
       setIsLoading(false);
@@ -49,13 +49,12 @@ const Login = () => {
 
   return (
     <div className="login-container">
-   
       <form onSubmit={handleSubmit} className="login-form">
-      <h2>Login</h2>
+        <h2>ចូលប្រើ</h2>
         <input
           type="text"
           name="username"
-          placeholder="Username"
+          placeholder="ឈ្មោះអ្នកប្រើ"
           value={formData.username}
           onChange={handleChange}
           required
@@ -65,7 +64,7 @@ const Login = () => {
         <input
           type="password"
           name="password"
-          placeholder="Password"
+          placeholder="ពាក្យសម្ងាត់"
           value={formData.password}
           onChange={handleChange}
           required
@@ -73,13 +72,13 @@ const Login = () => {
           className="login-input"
         />
         <button type="submit" disabled={isLoading} className="login-button">
-          {isLoading ? 'Logging in...' : 'Login'}
+          {isLoading ? 'កំពុងចូល...' : 'ចូល'}
         </button>
       </form>
       {message && (
         <p
           className={`login-message ${
-            message.includes('successful') ? 'success' : 'error'
+            message.includes('ជោគជ័យ') ? 'success' : 'error'
           }`}
         >
           {message}
