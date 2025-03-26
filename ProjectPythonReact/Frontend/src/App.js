@@ -43,6 +43,7 @@ function App() {
   return (
     <Router>
       <AuthProvider>
+    
         <div className="App">
           <Header />
           <div className="AppGlass">

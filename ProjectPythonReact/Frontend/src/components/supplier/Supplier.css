@@ -16,7 +16,7 @@
 
 .supplier-table-container h2 {
   text-align: left;
-  color: #007bff;
+  color:  linear-gradient(90deg, #3f7fc2, #0056b3);
   font-size: 28px;
   margin: 0;
 }
@@ -58,7 +58,7 @@
 }
 
 .supplier-table th {
-  background: #007bff;
+  background: linear-gradient(90deg, #3f7fc2, #0056b3);
   color: white;
   text-transform: uppercase;
   cursor: pointer; /* Indicate sortable columns */
