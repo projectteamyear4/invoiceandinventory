@@ -43,7 +43,7 @@ const Header = () => {
         </h3>
       )}
 
-      <div className="language">EN</div>
+      <div className="language">ខែ្មរ</div>
     </header>
   );
 };

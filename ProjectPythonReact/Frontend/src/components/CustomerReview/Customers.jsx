@@ -1,7 +1,8 @@
 // src/components/CustomerList.jsx
 import axios from 'axios';
 import { motion } from 'framer-motion';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import DataTable from 'react-data-table-component';
 import { useNavigate } from 'react-router-dom';
 import './Customers.css';
 
@@ -11,9 +12,24 @@ const Customers = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
-  const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
-  const [sortConfig, setSortConfig] = useState({ key: 'registration_date', direction: 'desc' });
+  const [visibleColumns, setVisibleColumns] = useState({
+    customer_id: true,
+    first_name: true,
+    last_name: true,
+    email: true,
+    phone_number: true,
+    phone_number2: true,
+    address: true,
+    city: true,
+    country: true,
+    order_history: true,
+    status: true,
+    registration_date: true,
+    actions: true,
+  });
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false); // State for dropdown open/close
+  const dropdownRef = useRef(null); // Ref to handle clicks outside the dropdown
   const navigate = useNavigate();
 
   const api = axios.create({
@@ -50,141 +66,334 @@ const Customers = () => {
           .includes(searchQuery.toLowerCase())
       );
       setFilteredCustomers(filtered);
-      setCurrentPage(1);
-    }, 300); 
+    }, 300);
 
     return () => clearTimeout(timeoutId);
   }, [searchQuery, customers]);
 
-  const handleSort = (key) => {
-    let direction = 'asc';
-    if (sortConfig.key === key && sortConfig.direction === 'asc') {
-      direction = 'desc';
-    }
-    setSortConfig({ key, direction });
-
-    const sorted = [...filteredCustomers].sort((a, b) => {
-      if (key === 'registration_date') {
-        return direction === 'asc'
-          ? new Date(a[key]) - new Date(b[key])
-          : new Date(b[key]) - new Date(a[key]);
+  // Handle clicks outside the dropdown to close it
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsDropdownOpen(false);
       }
-      return direction === 'asc'
-        ? a[key]?.toString().localeCompare(b[key]?.toString())
-        : b[key]?.toString().localeCompare(a[key]?.toString());
-    });
+    };
 
-    setFilteredCustomers(sorted);
-    setCurrentPage(1);
-  };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
 
   const handleDelete = async (customerId) => {
-    if (!window.confirm('Are you sure you want to delete this customer?')) return;
+    if (!window.confirm('តើអ្នកចង់លុបអតិថិជននេះឬ?')) return;
 
     try {
       await api.delete(`/api/customers/${customerId}/`);
       setCustomers(customers.filter((customer) => customer.customer_id !== customerId));
+      setFilteredCustomers(filteredCustomers.filter((customer) => customer.customer_id !== customerId));
     } catch (err) {
       console.error('Delete error:', err);
-      alert('Failed to delete customer.');
+      alert('មិនអាចលុបអតិថិជនបានទេ។');
     }
   };
 
-  const totalPages = Math.ceil(filteredCustomers.length / rowsPerPage);
-  const startIndex = (currentPage - 1) * rowsPerPage;
-  const endIndex = startIndex + rowsPerPage;
-  const paginatedCustomers = filteredCustomers.slice(startIndex, endIndex);
-
-  const handlePageChange = (page) => {
-    if (page >= 1 && page <= totalPages) {
-      setCurrentPage(page);
-    }
+  const toggleColumn = (column) => {
+    setVisibleColumns((prev) => ({
+      ...prev,
+      [column]: !prev[column],
+    }));
   };
 
-  if (loading) return <motion.div className="loading">Loading customers...</motion.div>;
-  if (error) return <p className="error-message">{error}</p>;
+  const handleRowsPerPageChange = (e) => {
+    setRowsPerPage(Number(e.target.value));
+  };
+
+  // Define columns for the DataTable
+  const columns = useMemo(
+    () => [
+      {
+        name: 'ID',
+        selector: (row) => row.customer_id,
+        sortable: true,
+        width: '80px',
+        omit: !visibleColumns.customer_id,
+      },
+      {
+        name: 'ឈ្មោះ',
+        selector: (row) => row.first_name,
+        sortable: true,
+        omit: !visibleColumns.first_name,
+      },
+      {
+        name: 'នាមត្រកូល',
+        selector: (row) => row.last_name,
+        sortable: true,
+        omit: !visibleColumns.last_name,
+      },
+      {
+        name: 'អ៊ីមែល',
+        selector: (row) => row.email,
+        sortable: true,
+        omit: !visibleColumns.email,
+      },
+      {
+        name: 'លេខទូរស័ព្ទ',
+        selector: (row) => row.phone_number || '-',
+        omit: !visibleColumns.phone_number,
+      },
+      {
+        name: 'លេខទូរស័ព្ទ ២',
+        selector: (row) => row.phone_number2 || '-',
+        omit: !visibleColumns.phone_number2,
+      },
+      {
+        name: 'អាសយដ្ឋាន',
+        selector: (row) => row.address || '-',
+        omit: !visibleColumns.address,
+      },
+      {
+        name: 'ទីក្រុង',
+        selector: (row) => row.city || '-',
+        omit: !visibleColumns.city,
+      },
+      {
+        name: 'ប្រទេស',
+        selector: (row) => row.country || '-',
+        omit: !visibleColumns.country,
+      },
+      {
+        name: 'ប្រវត្តិការបញ្ជាទិញ',
+        selector: (row) => row.order_history,
+        sortable: true,
+        omit: !visibleColumns.order_history,
+      },
+      {
+        name: 'ស្ថានភាព',
+        selector: (row) => row.status,
+        sortable: true,
+        omit: !visibleColumns.status,
+      },
+      {
+        name: 'កាលបរិច្ឆេទចុះឈ្មោះ',
+        selector: (row) => new Date(row.registration_date).toLocaleDateString(),
+        sortable: true,
+        omit: !visibleColumns.registration_date,
+      },
+      {
+        name: 'សកម្មភាព',
+        cell: (row) => (
+          <div className="action-buttons">
+            <motion.button
+              className="customer-edit-button"
+              onClick={() => navigate(`/edit-customer/${row.customer_id}`)}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              កែប្រែ
+            </motion.button>
+            <motion.button
+              className="customer-delete-button"
+              onClick={() => handleDelete(row.customer_id)}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              លុប
+            </motion.button>
+          </div>
+        ),
+        ignoreRowClick: true,
+        allowOverflow: true,
+        button: true,
+        omit: !visibleColumns.actions,
+      },
+    ],
+    [navigate, visibleColumns]
+  );
+
+  // Custom styles for the DataTable to match the existing Customers.css
+  const customStyles = {
+    table: {
+      style: {
+        borderRadius: '8px',
+        overflow: 'hidden',
+        boxShadow: '0 2px 10px rgba(0, 0, 0, 0.05)',
+        background: '#fff',
+      },
+    },
+    headRow: {
+      style: {
+        background: 'linear-gradient(90deg, #3f7fc2, #0056b3)',
+        color: 'white',
+        textTransform: 'uppercase',
+        fontSize: '16px',
+      },
+    },
+    headCells: {
+      style: {
+        padding: '12px',
+        '&:hover': {
+          background: '#0056b3',
+          cursor: 'pointer',
+        },
+      },
+    },
+    rows: {
+      style: {
+        fontSize: '16px',
+        color: '#333',
+        borderBottom: '1px solid #ddd',
+        '&:hover': {
+          background: 'rgba(0, 123, 255, 0.1)',
+        },
+      },
+    },
+    cells: {
+      style: {
+        padding: '12px',
+      },
+    },
+    pagination: {
+      style: {
+        marginTop: '25px',
+        padding: '10px',
+        background: '#f9f9f9',
+        borderRadius: '8px',
+        boxShadow: '0 2px 5px rgba(0, 0, 0, 0.05)',
+        border: 'none',
+      },
+      pageButtonsStyle: {
+        padding: '8px 15px',
+        background: 'linear-gradient(90deg, #007bff, #0056b3)',
+        color: 'white',
+        border: 'none',
+        borderRadius: '5px',
+        fontSize: '14px',
+        cursor: 'pointer',
+        transition: 'all 0.3s ease',
+        '&:hover:not(:disabled)': {
+          background: 'linear-gradient(90deg, #0056b3, #007bff)',
+          boxShadow: '0 4px 10px rgba(0, 123, 255, 0.4)',
+          transform: 'translateY(-2px)',
+        },
+        '&:disabled': {
+          background: '#ccc',
+          cursor: 'not-allowed',
+        },
+      },
+    },
+  };
+
+  if (error) return <motion.p className="error-message" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5 }}>{error}</motion.p>;
 
   return (
-    <motion.div className="customer-list-container" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
-      <h1>អតិថិជន</h1>
-
-      <div className="table-controls">
-        <motion.input
-          type="text"
-          placeholder="ស្វែងរកអតិថិជន..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="search-input"
-        />
-        <motion.select value={rowsPerPage} onChange={(e) => setRowsPerPage(Number(e.target.value))}>
-          <option value={10}>10</option>
-          <option value={20}>20</option>
-          <option value={50}>50</option>
-        </motion.select>
-      </div>
-
-      <motion.button className="add-customer-button" onClick={() => navigate('/add-customer')} whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-        បន្ថែមអតិថិជនថ្មី
-      </motion.button>
-
-      <motion.table className="customer-list-table" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5, delay: 0.2 }}>
-        <thead>
-          <tr>
-            {['customer_id', 'first_name', 'last_name', 'email', 'order_history', 'status', 'registration_date'].map((key) => (
-              <th key={key} onClick={() => handleSort(key)}>
-                {key} {sortConfig.key === key && (sortConfig.direction === 'asc' ? '↑' : '↓')}
-              </th>
-            ))}
-            <th>លេខទូរស័ព្ទ</th>
-            <th>លេខទូរស័ព្ទ ២</th>
-            <th>អាសយដ្ឋាន</th>
-            <th>ទីក្រុង</th>
-            <th>ប្រទេស</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {paginatedCustomers.map((customer, index) => (
-            <motion.tr
-              key={customer.customer_id}
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.3, delay: index * 0.1 }}
-              whileHover={{ backgroundColor: '#f0f0f0' }}
-            >
-              <td>{customer.customer_id}</td>
-              <td>{customer.first_name}</td>
-              <td>{customer.last_name}</td>
-              <td>{customer.email}</td>
-              <td>{customer.phone_number || '-'}</td>
-              <td>{customer.phone_number2 || '-'}</td>
-              <td>{customer.address || '-'}</td>
-              <td>{customer.city || '-'}</td>
-              <td>{customer.country || '-'}</td>
-              <td>{customer.order_history}</td>
-              <td>{customer.status}</td>
-              <td>{new Date(customer.registration_date).toLocaleDateString()}</td>
-              <td>
-                <button className="delete-btn" onClick={() => handleDelete(customer.customer_id)}>🗑 Delete</button>
-              </td>
-            </motion.tr>
-          ))}
-        </tbody>
-      </motion.table>
-
-      <motion.div className="pagination">
-        <button onClick={() => handlePageChange(currentPage - 1)} disabled={currentPage === 1}>
-          មុន
-        </button>
-        {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-          <button key={page} onClick={() => handlePageChange(page)} className={currentPage === page ? 'active' : ''}>
-            {page}
-          </button>
-        ))}
-        <button onClick={() => handlePageChange(currentPage + 1)} disabled={currentPage === totalPages}>
-          បន្ទាប់
-        </button>
+    <motion.div
+      className="customer-table-container"
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+    >
+      {/* Header */}
+      <motion.div
+        className="customer-header"
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3, delay: 0.1 }}
+      >
+        <h2>អតិថិជន</h2>
+        <motion.button
+          className="customer-add-button"
+          onClick={() => navigate('/add-customer')}
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+        >
+          បន្ថែមអតិថិជនថ្មី
+        </motion.button>
       </motion.div>
+
+      {/* Controls (Search, Column Selector, Per Page Selector) */}
+      <motion.div
+        className="customer-controls"
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3, delay: 0.2 }}
+      >
+        <div className="customer-search-wrapper">
+         
+          <input
+            type="text"
+            placeholder="ស្វែងរកអតិថិជន..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="customer-search-input"
+          />
+        </div>
+        <div className="column-selector" ref={dropdownRef}>
+          <label>ជ្រើសរើសជួរឈរ: </label>
+          <div className="custom-dropdown">
+            <button
+              className="dropdown-toggle"
+              onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+            >
+              ជ្រើសរើសជួរឈរ {isDropdownOpen ? '▲' : '▼'}
+            </button>
+            {isDropdownOpen && (
+              <motion.div
+                className="dropdown-menu"
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.2 }}
+              >
+                {Object.keys(visibleColumns).map((column) => (
+                  <label key={column} className="dropdown-item">
+                    <input
+                      type="checkbox"
+                      checked={visibleColumns[column]}
+                      onChange={() => toggleColumn(column)}
+                    />
+                    {column === 'customer_id' ? 'ID' :
+                     column === 'first_name' ? 'ឈ្មោះ' :
+                     column === 'last_name' ? 'នាមត្រកូល' :
+                     column === 'email' ? 'អ៊ីមែល' :
+                     column === 'phone_number' ? 'លេខទូរស័ព្ទ' :
+                     column === 'phone_number2' ? 'លេខទូរស័ព្ទ ២' :
+                     column === 'address' ? 'អាសយដ្ឋាន' :
+                     column === 'city' ? 'ទីក្រុង' :
+                     column === 'country' ? 'ប្រទេស' :
+                     column === 'order_history' ? 'ប្រវត្តិការបញ្ជាទិញ' :
+                     column === 'status' ? 'ស្ថានភាព' :
+                     column === 'registration_date' ? 'កាលបរិច្ឆេទចុះឈ្មោះ' :
+                     column === 'actions' ? 'សកម្មភាព' : column}
+                  </label>
+                ))}
+              </motion.div>
+            )}
+          </div>
+        </div>
+        <div className="per-page-selector">
+          <label>បង្ហាញក្នុងមួយទំព័រ: </label>
+          <select value={rowsPerPage} onChange={handleRowsPerPageChange}>
+            <option value={10}>10</option>
+            <option value={20}>20</option>
+            <option value={50}>50</option>
+          </select>
+        </div>
+      </motion.div>
+
+      {/* DataTable */}
+      <DataTable
+        columns={columns}
+        data={filteredCustomers}
+        pagination
+        paginationPerPage={rowsPerPage}
+        paginationRowsPerPageOptions={[10, 20, 50]}
+        customStyles={customStyles}
+        noDataComponent={<div className="no-results">គ្មានអតិថិជនត្រូវនឹងលក្ខខណ្ឌស្វែងរក។</div>}
+        highlightOnHover
+        responsive
+        progressPending={loading}
+        progressComponent={<div className="loading">កំពុងផ្ទុកអតិថិជន...</div>}
+      />
     </motion.div>
   );
 };

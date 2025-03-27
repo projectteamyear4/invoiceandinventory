@@ -1,6 +1,8 @@
 // src/components/Products.jsx
 import axios from 'axios';
-import React, { useContext, useEffect, useState } from 'react';
+import { motion } from 'framer-motion';
+import React, { useContext, useEffect, useMemo, useRef, useState } from 'react';
+import DataTable from 'react-data-table-component';
 import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../AuthContext';
 import './Product.css';
@@ -8,11 +10,26 @@ import './Product.css';
 const Products = () => {
   const [products, setProducts] = useState([]);
   const [filteredProducts, setFilteredProducts] = useState([]);
+  const [flattenedData, setFlattenedData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
-  const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
-  const [currentPage, setCurrentPage] = useState(1);
-  const productsPerPage = 7;
+  const [visibleColumns, setVisibleColumns] = useState({
+    image: true,
+    name: true,
+    barcode: true,
+    category: true,
+    description: true,
+    brand: true,
+    size: true,
+    color: true,
+    stock_quantity: true,
+    purchase_price: true,
+    selling_price: true,
+    product_actions: true,
+    variant_actions: true,
+  });
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const dropdownRef = useRef(null);
   const { user } = useContext(AuthContext);
   const navigate = useNavigate();
 
@@ -21,7 +38,7 @@ const Products = () => {
     timeout: 5000,
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
+      Authorization: `Bearer ${localStorage.getItem('access_token')}`,
     },
   });
 
@@ -42,57 +59,52 @@ const Products = () => {
     fetchProducts();
   }, []);
 
+  // Flatten the product and variant data for the table
+  useEffect(() => {
+    const flattened = filteredProducts.flatMap((product) => {
+      if (product.variants && product.variants.length > 0) {
+        return product.variants.map((variant, index) => ({
+          ...product,
+          variant,
+          isFirstVariant: index === 0,
+          variantCount: product.variants.length,
+        }));
+      } else {
+        return [{ ...product, variant: null, isFirstVariant: true, variantCount: 1 }];
+      }
+    });
+    setFlattenedData(flattened);
+  }, [filteredProducts]);
+
   // Search and filter functionality
   useEffect(() => {
-    const filtered = products.filter((product) =>
-      product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      product.barcode.toLowerCase().includes(searchTerm.toLowerCase())
+    const filtered = products.filter(
+      (product) =>
+        product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        product.barcode.toLowerCase().includes(searchTerm.toLowerCase())
     );
     setFilteredProducts(filtered);
-    setCurrentPage(1);
   }, [searchTerm, products]);
 
-  // Sort functionality
-  const handleSort = (key) => {
-    let direction = 'asc';
-    if (sortConfig.key === key && sortConfig.direction === 'asc') {
-      direction = 'desc';
-    }
-    setSortConfig({ key, direction });
-
-    const sorted = [...filteredProducts].sort((a, b) => {
-      if (key === 'name' || key === 'barcode') {
-        const aValue = a[key] || '';
-        const bValue = b[key] || '';
-        return direction === 'asc'
-          ? aValue.localeCompare(bValue)
-          : bValue.localeCompare(aValue);
-      } else if (key === 'stock_quantity' || key === 'purchase_price' || key === 'selling_price') {
-        const aValue = key === 'stock_quantity'
-          ? (a.variants[0]?.purchases?.reduce((sum, p) => sum + p.quantity, 0) || 0)
-          : key === 'purchase_price'
-          ? (a.variants[0]?.purchases?.sort((x, y) => new Date(y.purchase_date) - new Date(x.purchase_date))[0]?.purchase_price || 0)
-          : (a.variants[0]?.selling_price || 0);
-        const bValue = key === 'stock_quantity'
-          ? (b.variants[0]?.purchases?.reduce((sum, p) => sum + p.quantity, 0) || 0)
-          : key === 'purchase_price'
-          ? (b.variants[0]?.purchases?.sort((x, y) => new Date(y.purchase_date) - new Date(x.purchase_date))[0]?.purchase_price || 0)
-          : (b.variants[0]?.selling_price || 0);
-        return direction === 'asc' ? aValue - bValue : bValue - aValue;
+  // Handle clicks outside the dropdown to close it
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsDropdownOpen(false);
       }
-      return 0;
-    });
-    setFilteredProducts(sorted);
-  };
+    };
 
-  // Pagination logic
-  const indexOfLastProduct = currentPage * productsPerPage;
-  const indexOfFirstProduct = indexOfLastProduct - productsPerPage;
-  const currentProducts = filteredProducts.slice(indexOfFirstProduct, indexOfLastProduct);
-  const totalPages = Math.ceil(filteredProducts.length / productsPerPage);
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
 
-  const handlePageChange = (pageNumber) => {
-    setCurrentPage(pageNumber);
+  const toggleColumn = (column) => {
+    setVisibleColumns((prev) => ({
+      ...prev,
+      [column]: !prev[column],
+    }));
   };
 
   const handleAddProduct = () => {
@@ -117,9 +129,6 @@ const Products = () => {
         await api.delete(`/api/products/${productId}/`);
         setProducts(products.filter((p) => p.id !== productId));
         setFilteredProducts(filteredProducts.filter((p) => p.id !== productId));
-        if (currentProducts.length === 1 && currentPage > 1) {
-          setCurrentPage(currentPage - 1);
-        }
       } catch (error) {
         console.error('កំហុសក្នុងការលុបផលិតផល៖', error);
       }
@@ -147,13 +156,279 @@ const Products = () => {
     }
   };
 
-  if (loading) return <p>កំពុងទាញយកផលិតផល...</p>;
+  // Define columns for the DataTable
+  const columns = useMemo(
+    () => [
+      {
+        name: 'រូបភាព',
+        cell: (row) =>
+          row.isFirstVariant ? (
+            <div style={{ textAlign: 'center' }}>
+              {row.image_url ? (
+                <img
+                  src={row.image_url}
+                  alt={row.name}
+                  className="product-image"
+                  onError={(e) => (e.target.src = 'https://via.placeholder.com/50')}
+                />
+              ) : (
+                '-'
+              )}
+            </div>
+          ) : null,
+        width: '80px',
+        omit: !visibleColumns.image,
+      },
+      {
+        name: 'ឈ្មោះ',
+        selector: (row) => (row.isFirstVariant ? row.name : ''),
+        sortable: true,
+        omit: !visibleColumns.name,
+      },
+      {
+        name: 'បាកូដ',
+        cell: (row) =>
+          row.isFirstVariant ? (
+            <div className="barcode-cell">
+              <div className="barcode-display">{row.barcode}</div>
+              <div className="barcode-number">{row.barcode}</div>
+            </div>
+          ) : null,
+        sortable: true,
+        omit: !visibleColumns.barcode,
+      },
+      {
+        name: 'ប្រភេទ',
+        selector: (row) => (row.isFirstVariant ? row.category?.name || '-' : ''),
+        omit: !visibleColumns.category,
+      },
+      {
+        name: 'ការពិពណ៌នា',
+        selector: (row) => (row.isFirstVariant ? row.description || '-' : ''),
+        omit: !visibleColumns.description,
+      },
+      {
+        name: 'ម៉ាក',
+        selector: (row) => (row.isFirstVariant ? row.brand || '-' : ''),
+        omit: !visibleColumns.brand,
+      },
+      {
+        name: 'ទំហំ',
+        selector: (row) => (row.variant ? row.variant.size || '-' : 'គ្មានវ៉ារីយ៉ង់'),
+        omit: !visibleColumns.size,
+      },
+      {
+        name: 'ពណ៌',
+        selector: (row) => (row.variant ? row.variant.color || '-' : 'គ្មានវ៉ារីយ៉ង់'),
+        omit: !visibleColumns.color,
+      },
+      {
+        name: 'បរិមាណស្តុក',
+        selector: (row) =>
+          row.variant
+            ? row.variant.purchases
+              ? row.variant.purchases.reduce((sum, p) => sum + p.quantity, 0)
+              : 0
+            : 'គ្មានវ៉ារីយ៉ង់',
+        sortable: true,
+        omit: !visibleColumns.stock_quantity,
+      },
+      {
+        name: 'តម្លៃទិញ',
+        selector: (row) =>
+          row.variant && row.variant.purchases && row.variant.purchases.length > 0
+            ? row.variant.purchases.sort(
+                (a, b) => new Date(b.purchase_date) - new Date(a.purchase_date)
+              )[0].purchase_price
+            : '-',
+        sortable: true,
+        omit: !visibleColumns.purchase_price,
+      },
+      {
+        name: 'តម្លៃលក់',
+        selector: (row) => (row.variant ? row.variant.selling_price || '-' : 'គ្មានវ៉ារីយ៉ង់'),
+        sortable: true,
+        omit: !visibleColumns.selling_price,
+      },
+      {
+        name: 'សកម្មភាព (ផលិតផល)',
+        cell: (row) =>
+          row.isFirstVariant ? (
+            <div className="action-buttons">
+              <button
+                className="product-add-variant-button"
+                onClick={() => handleAddVariant(row.id)}
+              >
+                បន្ថែមវ៉ារីយ៉ង់
+              </button>
+              <button className="product-edit-button" onClick={() => handleEditProduct(row.id)}>
+                កែសម្រួល
+              </button>
+              <button
+                className="product-delete-button"
+                onClick={() => handleDeleteProduct(row.id)}
+              >
+                លុប
+              </button>
+            </div>
+          ) : null,
+        ignoreRowClick: true,
+        allowOverflow: true,
+        button: true,
+        omit: !visibleColumns.product_actions,
+      },
+      {
+        name: 'សកម្មភាព (វ៉ារីយ៉ង់)',
+        cell: (row) =>
+          row.variant ? (
+            <div className="action-buttons">
+              <button
+                className="variant-edit-button"
+                onClick={() => handleEditVariant(row.variant.id)}
+              >
+                កែ
+              </button>
+              <button
+                className="variant-delete-button"
+                onClick={() => handleDeleteVariant(row.id, row.variant.id)}
+              >
+                លុប
+              </button>
+            </div>
+          ) : null,
+        ignoreRowClick: true,
+        allowOverflow: true,
+        button: true,
+        omit: !visibleColumns.variant_actions,
+      },
+    ],
+    [visibleColumns]
+  );
+
+  // Custom styles for the DataTable to match Product.css
+  const customStyles = {
+    table: {
+      style: {
+        borderRadius: '8px',
+        overflow: 'hidden',
+        boxShadow: '0 2px 10px rgba(0, 0, 0, 0.05)',
+        background: '#fff',
+      },
+    },
+    headRow: {
+      style: {
+        background: 'linear-gradient(90deg, #3f7fc2, #0056b3)',
+        color: 'white',
+        textTransform: 'uppercase',
+        fontSize: '16px',
+      },
+    },
+    headCells: {
+      style: {
+        padding: '12px',
+        '&:hover': {
+          background: '#0056b3',
+          cursor: 'pointer',
+        },
+      },
+    },
+    rows: {
+      style: {
+        fontSize: '16px',
+        color: '#333',
+        borderBottom: '1px solid #ddd',
+        '&:hover': {
+          background: 'rgba(0, 123, 255, 0.1)',
+        },
+      },
+    },
+    cells: {
+      style: {
+        padding: '12px',
+      },
+    },
+    pagination: {
+      style: {
+        marginTop: '25px',
+        padding: '10px',
+        background: '#f9f9f9',
+        borderRadius: '8px',
+        boxShadow: '0 2px 5px rgba(0, 0, 0, 0.05)',
+        border: 'none',
+      },
+      pageButtonsStyle: {
+        padding: '8px 15px',
+        background: 'linear-gradient(90deg, #007bff, #0056b3)',
+        color: 'white',
+        border: 'none',
+        borderRadius: '5px',
+        fontSize: '14px',
+        cursor: 'pointer',
+        transition: 'all 0.3s ease',
+        '&:hover:not(:disabled)': {
+          background: 'linear-gradient(90deg, #0056b3, #007bff)',
+          boxShadow: '0 4px 10px rgba(0, 123, 255, 0.4)',
+          transform: 'translateY(-2px)',
+        },
+        '&:disabled': {
+          background: '#ccc',
+          cursor: 'not-allowed',
+        },
+      },
+    },
+  };
+
+  if (loading) return <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5 }}>កំពុងទាញយកផលិតផល...</motion.p>;
 
   return (
-    <div className="product-table-container">
-      <div className="product-header">
+    <motion.div
+      className="product-table-container"
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+    >
+      {/* Header */}
+      <motion.div
+        className="product-header"
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3, delay: 0.1 }}
+      >
         <h2>ផលិតផល</h2>
         <div className="product-controls">
+          <motion.button
+            className="product-add-button"
+            onClick={handleAddProduct}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+          >
+            បន្ថែមផលិតផល
+          </motion.button>
+          <motion.button
+            className="warehouse-shelves-button"
+            onClick={handleViewCategories}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+          >
+            មើលប្រភេទផលិតផល
+          </motion.button>
+        </div>
+      </motion.div>
+
+      {/* Controls (Search Bar and Column Selector) */}
+      <motion.div
+        className="product-controls"
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3, delay: 0.2 }}
+      >
+        <motion.div
+          className="product-search-wrapper"
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3, delay: 0.2 }}
+        >
+        
           <input
             type="text"
             placeholder="ស្វែងរកផលិតផល ឬ បាកូដ..."
@@ -161,193 +436,65 @@ const Products = () => {
             onChange={(e) => setSearchTerm(e.target.value)}
             className="product-search-input"
           />
-          <button className="product-add-button" onClick={handleAddProduct}>
-            បន្ថែមផលិតផល
-          </button>
-          <button className="warehouse-shelves-button" onClick={handleViewCategories}>
-            មើលប្រភេទផលិតផល
-          </button>
-        </div>
-      </div>
-      <table className="product-table">
-        <thead>
-          <tr>
-            <th>រូបភាព</th>
-            <th onClick={() => handleSort('name')}>
-              ឈ្មោះ {sortConfig.key === 'name' ? (sortConfig.direction === 'asc' ? '↑' : '↓') : ''}
-            </th>
-            <th onClick={() => handleSort('barcode')}>
-              បាកូដ {sortConfig.key === 'barcode' ? (sortConfig.direction === 'asc' ? '↑' : '↓') : ''}
-            </th>
-            <th>ប្រភេទ</th>
-            <th>ការពិពណ៌នា</th>
-            <th>ម៉ាក</th>
-            <th>ទំហំ</th>
-            <th>ពណ៌</th>
-            <th onClick={() => handleSort('stock_quantity')}>
-              បរិមាណស្តុក {sortConfig.key === 'stock_quantity' ? (sortConfig.direction === 'asc' ? '↑' : '↓') : ''}
-            </th>
-            <th onClick={() => handleSort('purchase_price')}>
-              តម្លៃទិញ {sortConfig.key === 'purchase_price' ? (sortConfig.direction === 'asc' ? '↑' : '↓') : ''}
-            </th>
-            <th onClick={() => handleSort('selling_price')}>
-              តម្លៃលក់ {sortConfig.key === 'selling_price' ? (sortConfig.direction === 'asc' ? '↑' : '↓') : ''}
-            </th>
-            <th>សកម្មភាព</th>
-            <th>សកម្មភាព</th>
-          </tr>
-        </thead>
-        <tbody>
-          {currentProducts.map((product) =>
-            product.variants.length > 0 ? (
-              product.variants.map((variant, index) => (
-                <tr key={variant.id}>
-                  {index === 0 && (
-                    <>
-                      <td rowSpan={product.variants.length}>
-                        {product.image_url ? (
-                          <img
-                            src={product.image_url}
-                            alt={product.name}
-                            className="product-image"
-                            onError={(e) => (e.target.src = 'https://via.placeholder.com/50')}
-                          />
-                        ) : '-'}
-                      </td>
-                      <td rowSpan={product.variants.length}>{product.name}</td>
-                      <td rowSpan={product.variants.length} className="barcode-cell">
-                        <div className="barcode-display">{product.barcode}</div>
-                        <div className="barcode-number">{product.barcode}</div>
-                      </td>
-                      <td rowSpan={product.variants.length}>{product.category?.name || '-'}</td>
-                      <td rowSpan={product.variants.length}>{product.description || '-'}</td>
-                      <td rowSpan={product.variants.length}>{product.brand || '-'}</td>
-                    </>
-                  )}
-                  <td>{variant.size || '-'}</td>
-                  <td>{variant.color || '-'}</td>
-                  <td>
-                    {variant.purchases ? variant.purchases.reduce((sum, p) => sum + p.quantity, 0) : 0}
-                  </td>
-                  <td>
-                    {variant.purchases && variant.purchases.length > 0
-                      ? variant.purchases.sort((a, b) => new Date(b.purchase_date) - new Date(a.purchase_date))[0].purchase_price
-                      : '-'}
-                  </td>
-                  <td>{variant.selling_price || '-'}</td>
-                  {index === 0 && (
-                    <td rowSpan={product.variants.length}>
-                      <button
-                        className="product-add-variant-button"
-                        onClick={() => handleAddVariant(product.id)}
-                      >
-                        បន្ថែមវ៉ារីយ៉ង់
-                      </button>
-                      <button
-                        className="product-edit-button"
-                        onClick={() => handleEditProduct(product.id)}
-                      >
-                        កែសម្រួល
-                      </button>
-                      <button
-                        className="product-delete-button"
-                        onClick={() => handleDeleteProduct(product.id)}
-                      >
-                        លុប
-                      </button>
-                    </td>
-                  )}
-                  <td>
-                    <button
-                      className="variant-edit-button"
-                      onClick={() => handleEditVariant(variant.id)}
-                    >
-                      កែ
-                    </button>
-                    <button
-                      className="variant-delete-button"
-                      onClick={() => handleDeleteVariant(product.id, variant.id)}
-                    >
-                      លុប
-                    </button>
-                  </td>
-                </tr>
-              ))
-            ) : (
-              <tr key={product.id}>
-                <td>
-                  {product.image_url ? (
-                    <img
-                      src={product.image_url}
-                      alt={product.name}
-                      className="product-image"
-                      onError={(e) => (e.target.src = 'https://via.placeholder.com/50')}
-                    />
-                  ) : '-'}
-                </td>
-                <td>{product.name}</td>
-                <td className="barcode-cell">
-                  <div className="barcode-display">{product.barcode}</div>
-                  <div className="barcode-number">{product.barcode}</div>
-                </td>
-                <td>{product.category?.name || '-'}</td>
-                <td>{product.description || '-'}</td>
-                <td>{product.brand || '-'}</td>
-                <td colSpan={5}>គ្មានវ៉ារីយ៉ង់</td>
-                <td>
-                  <button
-                    className="product-add-variant-button"
-                    onClick={() => handleAddVariant(product.id)}
-                  >
-                    បន្ថែមវ៉ារីយ៉ង់
-                  </button>
-                  <button
-                    className="product-edit-button"
-                    onClick={() => handleEditProduct(product.id)}
-                  >
-                    កែសម្រួល
-                  </button>
-                  <button
-                    className="product-delete-button"
-                    onClick={() => handleDeleteProduct(product.id)}
-                  >
-                    លុប
-                  </button>
-                </td>
-              </tr>
-            )
-          )}
-        </tbody>
-      </table>
-
-      {totalPages > 1 && (
-        <div className="pagination">
-          <button
-            onClick={() => handlePageChange(currentPage - 1)}
-            disabled={currentPage === 1}
-            className="pagination-button"
-          >
-            មុន
-          </button>
-          {Array.from({ length: totalPages }, (_, index) => index + 1).map((page) => (
+        </motion.div>
+        <div className="column-selector" ref={dropdownRef}>
+          <label>ជ្រើសរើសជួរឈរ: </label>
+          <div className="custom-dropdown">
             <button
-              key={page}
-              onClick={() => handlePageChange(page)}
-              className={`pagination-button ${currentPage === page ? 'active' : ''}`}
+              className="dropdown-toggle"
+              onClick={() => setIsDropdownOpen(!isDropdownOpen)}
             >
-              {page}
+              ជ្រើសរើសជួរឈរ {isDropdownOpen ? '▲' : '▼'}
             </button>
-          ))}
-          <button
-            onClick={() => handlePageChange(currentPage + 1)}
-            disabled={currentPage === totalPages}
-            className="pagination-button"
-          >
-            បន្ទាប់
-          </button>
+            {isDropdownOpen && (
+              <motion.div
+                className="dropdown-menu"
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.2 }}
+              >
+                {Object.keys(visibleColumns).map((column) => (
+                  <label key={column} className="dropdown-item">
+                    <input
+                      type="checkbox"
+                      checked={visibleColumns[column]}
+                      onChange={() => toggleColumn(column)}
+                    />
+                    {column === 'image' ? 'រូបភាព' :
+                     column === 'name' ? 'ឈ្មោះ' :
+                     column === 'barcode' ? 'បាកូដ' :
+                     column === 'category' ? 'ប្រភេទ' :
+                     column === 'description' ? 'ការពិពណ៌នា' :
+                     column === 'brand' ? 'ម៉ាក' :
+                     column === 'size' ? 'ទំហំ' :
+                     column === 'color' ? 'ពណ៌' :
+                     column === 'stock_quantity' ? 'បរិមាណស្តុក' :
+                     column === 'purchase_price' ? 'តម្លៃទិញ' :
+                     column === 'selling_price' ? 'តម្លៃលក់' :
+                     column === 'product_actions' ? 'សកម្មភាព (ផលិតផល)' :
+                     column === 'variant_actions' ? 'សកម្មភាព (វ៉ារីយ៉ង់)' : column}
+                  </label>
+                ))}
+              </motion.div>
+            )}
+          </div>
         </div>
-      )}
-    </div>
+      </motion.div>
+
+      {/* DataTable */}
+      <DataTable
+        columns={columns}
+        data={flattenedData}
+        pagination
+        paginationPerPage={7} // Fixed value since per-page selector is removed
+        customStyles={customStyles}
+        noDataComponent={<div className="no-results">គ្មានផលិតផលត្រូវនឹងលក្ខខណ្ឌស្វែងរក។</div>}
+        highlightOnHover
+        responsive
+        progressPending={loading}
+        progressComponent={<div className="loading">កំពុងទាញយកផលិតផល...</div>}
+      />
+    </motion.div>
   );
 };
 

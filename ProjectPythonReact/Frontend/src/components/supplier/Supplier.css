@@ -1,3 +1,4 @@
+/* src/components/Supplier.css */
 .supplier-table-container {
   max-width: 1500px;
   margin: 20px auto;
@@ -5,30 +6,55 @@
   background: #ffffff;
   border-radius: 15px;
   font-family: 'Inter', 'Noto Sans Khmer', sans-serif;
+ 
+  overflow-x: auto;
 }
 
 .supplier-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 20px;
+  margin-bottom: 25px;
+  padding-bottom: 15px;
+  border-bottom: 1px solid #e0e0e0; /* Decorative separator */
 }
 
 .supplier-table-container h2 {
   text-align: left;
-  color:  linear-gradient(90deg, #3f7fc2, #0056b3);
   font-size: 28px;
   margin: 0;
+  background: linear-gradient(90deg, #3f7fc2, #0056b3);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
-.supplier-search {
-  margin-bottom: 20px;
+.supplier-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 25px;
+  flex-wrap: wrap;
+  gap: 15px;
+}
+
+.supplier-search-wrapper {
+  position: relative;
+  flex: 1;
+  max-width: 300px;
+}
+
+.supplier-search-wrapper .search-icon {
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #666;
+  font-size: 16px;
 }
 
 .supplier-search-input {
   width: 100%;
-  max-width: 300px;
-  padding: 10px;
+  padding: 10px 10px 10px 35px; /* Add padding for the icon */
   border: 2px solid #ddd;
   border-radius: 8px;
   font-size: 16px;
@@ -44,10 +70,44 @@
   background: #fff;
 }
 
+.per-page-selector {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.per-page-selector label {
+  font-size: 14px;
+  color: #333;
+  font-weight: 500;
+}
+
+.per-page-selector select {
+  padding: 8px;
+  border: 2px solid #ddd;
+  border-radius: 8px;
+  font-size: 16px;
+  color: #333;
+  transition: all 0.3s ease;
+  background: #f9f9f9;
+  cursor: pointer;
+}
+
+.per-page-selector select:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 8px rgba(0, 123, 255, 0.3);
+  background: #fff;
+}
+
 .supplier-table {
   width: 100%;
   border-collapse: collapse;
   font-size: 16px;
+  background: #fff;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05); /* Subtle shadow for table */
 }
 
 .supplier-table th,
@@ -61,15 +121,22 @@
   background: linear-gradient(90deg, #3f7fc2, #0056b3);
   color: white;
   text-transform: uppercase;
-  cursor: pointer; /* Indicate sortable columns */
+  cursor: pointer;
 }
 
 .supplier-table th:hover {
-  background: #0056b3; /* Darken on hover */
+  background: #0056b3;
 }
 
 .supplier-table tr:hover {
-  background: rgba(0, 123, 255, 0.1);
+  background: #ffffff;
+}
+
+.supplier-table .no-results {
+  text-align: center;
+  padding: 20px;
+  color: #666;
+  font-style: italic;
 }
 
 .supplier-add-button {
@@ -129,8 +196,17 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  margin-top: 20px;
-  gap: 15px;
+  margin-top: 25px;
+  gap: 10px;
+  padding: 10px;
+  background: #f9f9f9;
+  border-radius: 8px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05); /* Subtle shadow for pagination */
+}
+
+.supplier-pagination span {
+  font-size: 14px;
+  color: #333;
 }
 
 .pagination-button {
@@ -153,6 +229,40 @@
   background: linear-gradient(90deg, #0056b3, #007bff);
   box-shadow: 0 4px 10px rgba(0, 123, 255, 0.4);
   transform: translateY(-2px);
+}
+
+.pagination-button.active {
+  background: linear-gradient(90deg, #0056b3, #007bff);
+  font-weight: bold;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .supplier-controls {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .supplier-search-wrapper {
+    max-width: 100%;
+    margin-bottom: 15px;
+  }
+
+  .per-page-selector {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .supplier-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 15px;
+  }
+
+  .supplier-add-button {
+    width: 100%;
+    text-align: center;
+  }
 }
 
 /* Existing form styles remain unchanged */
