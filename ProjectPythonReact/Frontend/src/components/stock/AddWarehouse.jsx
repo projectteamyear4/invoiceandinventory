@@ -12,7 +12,7 @@ const AddWarehouse = () => {
     owner: '',
     contact_person: '',
     contact_number: '',
-    capacity: '', // Added capacity field
+    capacity: '', // ចំនុះ
   });
   const [message, setMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -39,19 +39,19 @@ const AddWarehouse = () => {
 
     try {
       const response = await api.post('/api/warehouses/', formData);
-      setMessage('Warehouse added successfully!');
+      setMessage('បន្ថែមឃ្លាំងដោយជោគជ័យ!');
       setFormData({
         name: '',
         location: '',
         owner: '',
         contact_person: '',
         contact_number: '',
-        capacity: '', // Reset capacity
+        capacity: '', // កែសម្រួល
       });
       setTimeout(() => navigate('/warehouses'), 1000);
     } catch (error) {
-      console.error('Error adding warehouse:', error);
-      setMessage(error.response?.data?.detail || 'Failed to add warehouse.');
+      console.error('កំហុសក្នុងការបន្ថែមឃ្លាំង:', error);
+      setMessage(error.response?.data?.detail || 'បន្ថែមឃ្លាំងមិនបានជោគជ័យ។');
     } finally {
       setIsLoading(false);
     }
@@ -59,12 +59,12 @@ const AddWarehouse = () => {
 
   return (
     <div className="warehouse-form-container">
-      <h2>Add Warehouse</h2>
+      <h2>បន្ថែមឃ្លាំង</h2>
       <form onSubmit={handleSubmit} className="warehouse-form">
         <input
           type="text"
           name="name"
-          placeholder="Warehouse Name"
+          placeholder="ឈ្មោះឃ្លាំង"
           value={formData.name}
           onChange={handleChange}
           required
@@ -74,7 +74,7 @@ const AddWarehouse = () => {
         <input
           type="text"
           name="location"
-          placeholder="Location"
+          placeholder="ទីតាំង"
           value={formData.location}
           onChange={handleChange}
           required
@@ -84,7 +84,7 @@ const AddWarehouse = () => {
         <input
           type="text"
           name="owner"
-          placeholder="Owner"
+          placeholder="ម្ចាស់"
           value={formData.owner}
           onChange={handleChange}
           disabled={isLoading}
@@ -93,7 +93,7 @@ const AddWarehouse = () => {
         <input
           type="text"
           name="contact_person"
-          placeholder="Contact Person"
+          placeholder="អ្នកទំនាក់ទំនង"
           value={formData.contact_person}
           onChange={handleChange}
           disabled={isLoading}
@@ -102,7 +102,7 @@ const AddWarehouse = () => {
         <input
           type="text"
           name="contact_number"
-          placeholder="Contact Number"
+          placeholder="លេខទំនាក់ទំនង"
           value={formData.contact_number}
           onChange={handleChange}
           disabled={isLoading}
@@ -110,20 +110,20 @@ const AddWarehouse = () => {
         />
         <input
           type="number"
-          name="capacity" // Added capacity input
-          placeholder="Capacity (e.g., 1000.50)"
+          name="capacity" // ចំនុះ
+          placeholder="ចំនុះ (ឧ. 1000.50)"
           value={formData.capacity}
           onChange={handleChange}
-          step="0.01" // Allow two decimal places
+          step="0.01" // អាចបញ្ចូលខ្សែសង្វាក់ទសភាគ
           disabled={isLoading}
           className="warehouse-input"
         />
         <button type="submit" disabled={isLoading} className="warehouse-button">
-          {isLoading ? 'Adding...' : 'Add Warehouse'}
+          {isLoading ? 'កំពុងបន្ថែម...' : 'បន្ថែមឃ្លាំង'}
         </button>
       </form>
       {message && (
-        <p className={`warehouse-message ${message.includes('successfully') ? 'success' : 'error'}`}>
+        <p className={`warehouse-message ${message.includes('ជោគជ័យ') ? 'success' : 'error'}`}>
           {message}
         </p>
       )}

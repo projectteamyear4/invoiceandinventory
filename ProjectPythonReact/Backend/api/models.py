@@ -125,3 +125,26 @@ class StockMovement(models.Model):
 
     def __str__(self):
         return f"{self.movement_type} - {self.product.name} - {self.quantity}"
+#customer model
+class Customer(models.Model):
+    STATUS_CHOICES = [
+        ('active', 'Active'),
+        ('inactive', 'Inactive'),
+        ('suspended', 'Suspended'),
+    ]
+
+    customer_id = models.AutoField(primary_key=True)
+    first_name = models.CharField(max_length=50, null=False)
+    last_name = models.CharField(max_length=50, null=False)
+    email = models.EmailField(max_length=100, unique=True)
+    phone_number = models.CharField(max_length=15, blank=True, null=True)
+    phone_number2 = models.CharField(max_length=15, blank=True, null=True)  # Add this field
+    address = models.CharField(max_length=255, blank=True, null=True)
+    city = models.CharField(max_length=50, blank=True, null=True)
+    country = models.CharField(max_length=50, blank=True, null=True)
+    order_history = models.IntegerField(default=0)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='active')
+    registration_date = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.first_name} {self.last_name}"

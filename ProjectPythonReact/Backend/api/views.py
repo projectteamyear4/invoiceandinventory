@@ -5,8 +5,8 @@ from rest_framework.permissions import IsAuthenticated
 from .serializers import RegisterSerializer, UserDetailSerializer, LoginSerializer
 from django.contrib.auth.models import User
 from rest_framework import viewsets
-from .models import Supplier, Product, ProductVariant, Category, Warehouse,Shelf,Purchase,StockMovement
-from .serializers import SupplierSerializer, ProductSerializer, ProductVariantSerializer, CategorySerializer, WarehouseSerializer,ShelfSerializer,PurchaseSerializer,StockMovementSerializer,StockMovementSerializer
+from .models import Supplier, Product, ProductVariant, Category, Warehouse,Shelf,Purchase,StockMovement,Customer
+from .serializers import SupplierSerializer, ProductSerializer, ProductVariantSerializer, CategorySerializer, WarehouseSerializer,ShelfSerializer,PurchaseSerializer,StockMovementSerializer,StockMovementSerializer,CustomerSerializer
 import logging
 
 logger = logging.getLogger(__name__)
@@ -317,3 +317,38 @@ def stock_movement_detail(request, pk):
             serializer.save()
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    # Customer Views (New)
+@api_view(['GET', 'POST'])
+@permission_classes([IsAuthenticated])
+def customer_list_create(request):
+    if request.method == 'GET':
+        customers = Customer.objects.all()
+        serializer = CustomerSerializer(customers, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    elif request.method == 'POST':
+        serializer = CustomerSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['GET', 'PUT', 'DELETE'])
+@permission_classes([IsAuthenticated])
+def customer_detail(request, pk):
+    try:
+        customer = Customer.objects.get(pk=pk)
+    except Customer.DoesNotExist:
+        return Response({'detail': 'Customer not found'}, status=status.HTTP_404_NOT_FOUND)
+
+    if request.method == 'GET':
+        serializer = CustomerSerializer(customer)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    elif request.method == 'PUT':
+        serializer = CustomerSerializer(customer, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    elif request.method == 'DELETE':
+        customer.delete()
+        return Response({'detail': 'Customer deleted'}, status=status.HTTP_204_NO_CONTENT)

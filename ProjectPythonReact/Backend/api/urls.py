@@ -1,7 +1,7 @@
 # inventory/urls.py
 from django.urls import path
 from .views import register, get_user, login
-from . import views
+from . import views 
 
 urlpatterns = [
     path('api/register/', register, name='register'),
@@ -24,4 +24,6 @@ urlpatterns = [
     path('api/purchases/<int:pk>/', views.purchase_detail, name='purchase_detail'),
     path('api/stock-movements/', views.stock_movement_list, name='stock_movement_list'),
     path('api/stock-movements/<int:pk>/', views.stock_movement_detail, name='stock_movement_detail'),
+    path('api/customers/', views.customer_list_create, name='customer_list_create'),  # Add this
+    path('api/customers/<int:pk>/', views.customer_detail, name='customer_detail'),  # Add this
 ]

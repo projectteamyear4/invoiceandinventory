@@ -6,7 +6,7 @@ from rest_framework import viewsets
 from rest_framework.validators import UniqueValidator
 from django.contrib.auth.password_validation import validate_password
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
-from .models import Supplier, Product, ProductVariant, Category, Warehouse, Shelf, Purchase, StockMovement
+from .models import Supplier, Product, ProductVariant, Category, Warehouse, Shelf, Purchase, StockMovement, Customer
 
 # Existing RegisterSerializer
 class RegisterSerializer(serializers.ModelSerializer):
@@ -212,3 +212,11 @@ class ShelfViewSet(viewsets.ModelViewSet):
             except (ValueError, TypeError):
                 print(f"Invalid warehouse_id: {warehouse_id}")
         return queryset
+#customer
+class CustomerSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Customer
+        fields = [
+            'customer_id', 'first_name', 'last_name', 'email', 'phone_number','phone_number2',
+            'address', 'city', 'country', 'order_history', 'status', 'registration_date'
+        ]
