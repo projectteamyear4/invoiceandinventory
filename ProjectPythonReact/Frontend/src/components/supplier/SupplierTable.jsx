@@ -288,7 +288,7 @@ const SupplierTable = () => {
         transition={{ duration: 0.3, delay: 0.2 }}
       >
         <div className="supplier-search-wrapper">
-          <span className="search-icon">🔍</span>
+         
           <input
             type="text"
             placeholder="ស្វែងរកតាមឈ្មោះ..."

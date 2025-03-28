@@ -1,5 +1,6 @@
 // src/components/Purchases.jsx
 import axios from 'axios';
+import { motion } from 'framer-motion'; // Import framer-motion
 import html2canvas from 'html2canvas';
 import React, { useContext, useEffect, useRef, useState } from 'react';
 import { CSVLink } from 'react-csv';
@@ -182,26 +183,51 @@ const Purchases = () => {
     navigate('/add-purchase');
   };
 
-  if (loading) return <p>កំពុងផ្ទុកទំនិញ...</p>;
+  if (loading) return <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5 }}>កំពុងផ្ទុកទំនិញ...</motion.p>;
 
   return (
-    <div className="product-table-container">
-      <div className="product-header">
-        <h2>ការទិញទំនិញ</h2>
+    <motion.div
+      className="product-table-container"
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+    >
+      <motion.div
+        className="product-header"
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3, delay: 0.1 }}
+      >
+        <div className="header-content">
+          <h2>ការទិញទំនិញ</h2>
+          <div className="product-search-wrapper">
+          
+            <input
+              type="text"
+              placeholder="ស្វែងរកតាមផលិតផល ឬ លេខបាច់..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="product-search-input"
+            />
+          </div>
+        </div>
         <div className="product-controls">
-          <input
-            type="text"
-            placeholder="ស្វែងរកតាមផលិតផល ឬ លេខបាច់..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="product-search-input"
-          />
-          <button className="product-add-button" onClick={handleAddPurchase}>
+          <motion.button
+            className="product-add-button"
+            onClick={handleAddPurchase}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+          >
             បន្ថែមការទិញ
-          </button>
-          <button onClick={() => navigate('/stock-movements')} className="add-button">
+          </motion.button>
+          <motion.button
+            onClick={() => navigate('/stock-movements')}
+            className="add-button"
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+          >
             ស្តុកផលិតផល
-          </button>
+          </motion.button>
           {/* Export Format Selector */}
           <select
             value={exportFormat}
@@ -214,9 +240,14 @@ const Purchases = () => {
             <option value="png">PNG</option>
             <option value="svg">SVG</option>
           </select>
-          <button onClick={handleExport} className="export-button">
+          <motion.button
+            onClick={handleExport}
+            className="export-button"
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+          >
             ទាញយក
-          </button>
+          </motion.button>
           {/* Hidden CSVLink for triggering CSV download */}
           <CSVLink
             data={exportData}
@@ -226,23 +257,84 @@ const Purchases = () => {
             style={{ display: 'none' }}
           />
         </div>
-      </div>
+      </motion.div>
       <table className="product-table" ref={tableRef}>
         <thead>
           <tr>
-            <th onClick={() => handleSort('supplier_name')}>អ្នកផ្គត់ផ្គង់</th>
-            <th onClick={() => handleSort('product_name')}>ផលិតផល</th>
-            <th onClick={() => handleSort('product_variant_info')}>ប្រភេទ</th>
-            <th onClick={() => handleSort('batch_number')}>លេខបាច់</th>
-            <th onClick={() => handleSort('quantity')}>បរិមាណ</th>
-            <th onClick={() => handleSort('purchase_price')}>តម្លៃទិញ</th>
-            <th onClick={() => handleSort('total')}>តម្លៃសរុប</th>
-            <th onClick={() => handleSort('purchase_date')}>កាលបរិច្ឆេទទិញ</th>
+            <th onClick={() => handleSort('supplier_name')}>
+              អ្នកផ្គត់ផ្គង់
+              {sortConfig.key === 'supplier_name' && (
+                <span className="sort-icon">
+                  {sortConfig.direction === 'asc' ? '▲' : '▼'}
+                </span>
+              )}
+            </th>
+            <th onClick={() => handleSort('product_name')}>
+              ផលិតផល
+              {sortConfig.key === 'product_name' && (
+                <span className="sort-icon">
+                  {sortConfig.direction === 'asc' ? '▲' : '▼'}
+                </span>
+              )}
+            </th>
+            <th onClick={() => handleSort('product_variant_info')}>
+              ប្រភេទ
+              {sortConfig.key === 'product_variant_info' && (
+                <span className="sort-icon">
+                  {sortConfig.direction === 'asc' ? '▲' : '▼'}
+                </span>
+              )}
+            </th>
+            <th onClick={() => handleSort('batch_number')}>
+              លេខបាច់
+              {sortConfig.key === 'batch_number' && (
+                <span className="sort-icon">
+                  {sortConfig.direction === 'asc' ? '▲' : '▼'}
+                </span>
+              )}
+            </th>
+            <th onClick={() => handleSort('quantity')}>
+              បរិមាណ
+              {sortConfig.key === 'quantity' && (
+                <span className="sort-icon">
+                  {sortConfig.direction === 'asc' ? '▲' : '▼'}
+                </span>
+              )}
+            </th>
+            <th onClick={() => handleSort('purchase_price')}>
+              តម្លៃទិញ
+              {sortConfig.key === 'purchase_price' && (
+                <span className="sort-icon">
+                  {sortConfig.direction === 'asc' ? '▲' : '▼'}
+                </span>
+              )}
+            </th>
+            <th onClick={() => handleSort('total')}>
+              តម្លៃសរុប
+              {sortConfig.key === 'total' && (
+                <span className="sort-icon">
+                  {sortConfig.direction === 'asc' ? '▲' : '▼'}
+                </span>
+              )}
+            </th>
+            <th onClick={() => handleSort('purchase_date')}>
+              កាលបរិច្ឆេទទិញ
+              {sortConfig.key === 'purchase_date' && (
+                <span className="sort-icon">
+                  {sortConfig.direction === 'asc' ? '▲' : '▼'}
+                </span>
+              )}
+            </th>
           </tr>
         </thead>
         <tbody>
-          {currentPurchases.map((purchase) => (
-            <tr key={purchase.id}>
+          {currentPurchases.map((purchase, index) => (
+            <motion.tr
+              key={purchase.id}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3, delay: index * 0.05 }}
+            >
               <td>{purchase.supplier_name}</td>
               <td>{purchase.product_name}</td>
               <td>{purchase.product_variant_info || '-'}</td>
@@ -251,40 +343,51 @@ const Purchases = () => {
               <td>{purchase.purchase_price}</td>
               <td>{parseFloat(purchase.total).toFixed(2)}</td>
               <td>{new Date(purchase.purchase_date).toLocaleString()}</td>
-            </tr>
+            </motion.tr>
           ))}
         </tbody>
       </table>
 
       {/* Pagination */}
       {totalPages > 1 && (
-        <div className="pagination">
-          <button
+        <motion.div
+          className="pagination"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.3, delay: 0.5 }}
+        >
+          <motion.button
             onClick={() => handlePageChange(currentPage - 1)}
             disabled={currentPage === 1}
             className="pagination-button"
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
           >
             ថយក្រោយ
-          </button>
+          </motion.button>
           {Array.from({ length: totalPages }, (_, index) => index + 1).map((page) => (
-            <button
+            <motion.button
               key={page}
               onClick={() => handlePageChange(page)}
               className={`pagination-button ${currentPage === page ? 'active' : ''}`}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
             >
               {page}
-            </button>
+            </motion.button>
           ))}
-          <button
+          <motion.button
             onClick={() => handlePageChange(currentPage + 1)}
             disabled={currentPage === totalPages}
             className="pagination-button"
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
           >
             ទៅមុខ
-          </button>
-        </div>
+          </motion.button>
+        </motion.div>
       )}
-    </div>
+    </motion.div>
   );
 };
 
