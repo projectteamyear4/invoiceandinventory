@@ -14,7 +14,17 @@
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
   overflow-x: auto;
 }
+.product-name-link {
+  color: #007bff;
+  cursor: pointer;
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
 
+.product-name-link:hover {
+  color: #0056b3;
+  text-decoration: underline;
+}
 .product-header {
   display: flex;
   justify-content: space-between;

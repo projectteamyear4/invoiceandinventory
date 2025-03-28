@@ -1,143 +1,283 @@
 /* src/components/Warehouse.css */
 .warehouse-container {
-    max-width: 1200px;
-    margin: 20px auto;
-    padding: 20px;
-    background: #ffffff;
-    border-radius: 10px;
-  }
-  
-  .warehouse-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 20px;
-  }
-  
-  .warehouse-header h2 {
-    color: #007bff;
-    font-size: 24px;
-  }
-  
-  .warehouse-table {
-    width: 100%;
-    border-collapse: collapse;
-  }
-  
-  .warehouse-table th,
-  .warehouse-table td {
-    padding: 12px;
-    text-align: left;
-    border-bottom: 1px solid #ddd;
-  }
-  
-  .warehouse-table th {
-    background: #007bff;
-    color: white;
-  }
-  
-  .warehouse-table tr:hover {
-    background: rgba(0, 123, 255, 0.1);
-  }
-  
-  .warehouse-add-button,
-  .warehouse-edit-button,
-  .warehouse-delete-button,
-  .warehouse-button {
-    padding: 8px 16px;
-    margin: 0 5px;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    color: white;
-  }
-  
-  .warehouse-add-button {
-    background: #28a745;
-  }
-  
-  .warehouse-add-button:hover {
-    background: #218838;
-  }
-  
-  .warehouse-edit-button {
-    background: #ffc107;
-  }
-  
-  .warehouse-edit-button:hover {
-    background: #e0a800;
-  }
-  
-  .warehouse-delete-button {
-    background: #dc3545;
-  }
-  
-  .warehouse-delete-button:hover {
-    background: #c82333;
-  }
-  
-  .warehouse-form-container {
-    max-width: 600px;
-    margin: 20px auto;
-    padding: 20px;
-    background: #ffffff;
-    border-radius: 10px;
-  }
-  
-  .warehouse-form-container h2 {
-    color: #007bff;
-    text-align: center;
-    margin-bottom: 20px;
-  }
-  
-  .warehouse-form {
-    display: flex;
+  max-width: 1500px;
+  margin: 20px auto;
+  padding: 20px;
+  background: #ffffff;
+  border-radius: 15px;
+  font-family: 'Inter', 'Noto Sans Khmer', sans-serif;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+  overflow-x: auto;
+}
+
+.warehouse-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start; /* Align items to the top */
+  margin-bottom: 25px;
+  padding-bottom: 15px;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.header-content {
+  display: flex;
+  flex-direction: column;
+  gap: 10px; /* Space between the title and search bar */
+}
+
+.warehouse-container h2 {
+  text-align: left;
+  font-size: 28px;
+  margin: 0;
+  background: linear-gradient(90deg, #3f7fc2, #0056b3);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.warehouse-controls {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px; /* Reduced gap for tighter alignment */
+  padding-top: 10px; /* Add padding to align vertically with the search box */
+}
+
+.warehouse-search-wrapper {
+  position: relative;
+  width: 300px; /* Fixed width for the search bar */
+}
+
+.warehouse-search-wrapper .search-icon {
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #666;
+  font-size: 16px;
+}
+
+.warehouse-search-input {
+  width: 100%;
+  padding: 10px 10px 10px 35px;
+  border: 2px solid #ddd;
+  border-radius: 8px;
+  font-size: 16px;
+  color: #333;
+  transition: all 0.3s ease;
+  background: #f9f9f9;
+}
+
+.warehouse-search-input::placeholder {
+  color: #999;
+}
+
+.warehouse-search-input:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 8px rgba(0, 123, 255, 0.3);
+  background: #fff;
+}
+
+.warehouse-add-button,
+.export-button,
+.warehouse-edit-button,
+.warehouse-delete-button,
+.warehouse-shelves-button {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.warehouse-add-button,
+.export-button {
+  background: linear-gradient(90deg, #007bff, #0056b3);
+  color: white;
+}
+
+.warehouse-add-button:hover,
+.export-button:hover {
+  background: linear-gradient(90deg, #0056b3, #007bff);
+  box-shadow: 0 4px 15px rgba(0, 123, 255, 0.4);
+  transform: translateY(-2px);
+}
+
+.warehouse-edit-button {
+  background: linear-gradient(90deg, #28a745, #218838);
+  color: white;
+  margin-right: 5px;
+}
+
+.warehouse-edit-button:hover {
+  background: linear-gradient(90deg, #218838, #28a745);
+  box-shadow: 0 4px 15px rgba(40, 167, 69, 0.4);
+  transform: translateY(-2px);
+}
+
+.warehouse-delete-button {
+  background: linear-gradient(90deg, #dc3545, #c82333);
+  color: white;
+  margin-right: 5px;
+}
+
+.warehouse-delete-button:hover {
+  background: linear-gradient(90deg, #c82333, #dc3545);
+  box-shadow: 0 4px 15px rgba(220, 53, 69, 0.4);
+  transform: translateY(-2px);
+}
+
+.warehouse-shelves-button {
+  background: linear-gradient(90deg, #6f42c1, #5a32a3);
+  color: white;
+}
+
+.warehouse-shelves-button:hover {
+  background: linear-gradient(90deg, #5a32a3, #6f42c1);
+  box-shadow: 0 4px 15px rgba(111, 66, 193, 0.4);
+  transform: translateY(-2px);
+}
+
+.export-select {
+  padding: 10px;
+  border: 2px solid #ddd;
+  border-radius: 8px;
+  font-size: 16px;
+  color: #333;
+  background: #f9f9f9;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  width: 200px;
+}
+
+.export-select:hover,
+.export-select:focus {
+  border-color: #007bff;
+  background: #fff;
+  outline: none;
+}
+
+.warehouse-message {
+  padding: 10px;
+  margin-bottom: 20px;
+  border-radius: 5px;
+  text-align: center;
+  font-size: 16px;
+}
+
+.warehouse-message.success {
+  background-color: #d4edda;
+  color: #155724;
+}
+
+.warehouse-message.error {
+  background-color: #f8d7da;
+  color: #721c24;
+}
+
+.no-warehouses {
+  text-align: center;
+  padding: 20px;
+  background: #f9f9f9;
+  border-radius: 8px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+
+.no-warehouses p {
+  font-size: 18px;
+  color: #666;
+  margin-bottom: 15px;
+}
+
+.warehouse-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 20px;
+  background: #fff;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+}
+
+.warehouse-table thead {
+  background: linear-gradient(90deg, #3f7fc2, #0056b3);
+  color: white;
+  text-transform: uppercase;
+  font-size: 16px;
+}
+
+.warehouse-table th {
+  padding: 12px;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.3s ease;
+  position: relative; /* For positioning the sort icon */
+}
+
+.warehouse-table th:hover {
+  background: #0056b3;
+}
+
+.sort-icon {
+  margin-left: 5px;
+  font-size: 12px;
+  vertical-align: middle;
+  color: #fff; /* Match the header text color */
+}
+
+.warehouse-table tbody tr {
+  border-bottom: 1px solid #ddd;
+  transition: background 0.3s ease;
+}
+
+.warehouse-table tbody tr:hover {
+  background: rgba(0, 123, 255, 0.1);
+}
+
+.warehouse-table td {
+  padding: 12px;
+  font-size: 16px;
+  color: #333;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .warehouse-controls {
     flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .warehouse-search-wrapper,
+  .export-select,
+  .warehouse-add-button,
+  .export-button {
+    width: 100%;
+    margin-top: 10px;
+  }
+
+  .warehouse-header {
+    flex-direction: column;
+    align-items: flex-start;
     gap: 15px;
   }
-  
-  .warehouse-input {
-    padding: 10px;
-    border: 1px solid #ddd;
-    border-radius: 5px;
-    font-size: 16px;
+
+  .warehouse-table th,
+  .warehouse-table td {
+    font-size: 14px;
+    padding: 8px;
   }
-  
-  .warehouse-button {
-    background: #007bff;
+
+  .sort-icon {
+    font-size: 10px; /* Smaller icon on mobile */
   }
-  
-  .warehouse-button:disabled {
-    background: #ccc;
-    cursor: not-allowed;
+
+  .warehouse-edit-button,
+  .warehouse-delete-button,
+  .warehouse-shelves-button {
+    padding: 8px 12px;
+    font-size: 14px;
+    margin-top: 5px;
   }
-  
-  .warehouse-button:hover:not(:disabled) {
-    background: #0056b3;
-  }
-  
-  .warehouse-message {
-    text-align: center;
-    margin-top: 15px;
-  }
-  
-  .warehouse-message.success {
-    color: #28a745;
-  }
-  
-  .warehouse-message.error {
-    color: #dc3545;
-  }
-  .warehouse-shelves-button { /* Added */
-    background: #17a2b8; /* Cyan color for distinction */
-    padding: 8px 16px;
-    margin: 0 5px;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    color: white;
-  }
-  
-  .warehouse-shelves-button:hover { /* Added */
-    background: #138496;
-  }
+}

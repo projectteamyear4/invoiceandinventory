@@ -1,243 +1,277 @@
 /* src/components/Shelf.css */
 .shelf-container {
+  max-width: 1500px;
+  margin: 20px auto;
   padding: 20px;
-  max-width: 1200px;
-  margin: 0 auto;
+  background: #ffffff;
+  border-radius: 15px;
+  font-family: 'Inter', 'Noto Sans Khmer', sans-serif;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+  overflow-x: auto;
 }
 
 .shelf-header {
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  margin-bottom: 20px;
+  align-items: flex-start; /* Align items to the top */
+  margin-bottom: 25px;
+  padding-bottom: 15px;
+  border-bottom: 1px solid #e0e0e0;
 }
 
-.shelf-header h2 {
-  font-size: 24px;
-  color: #333;
+.header-content {
+  display: flex;
+  flex-direction: column;
+  gap: 10px; /* Space between the title and search bar */
+}
+
+.shelf-container h2 {
+  text-align: left;
+  font-size: 28px;
+  margin: 0;
+  background: linear-gradient(90deg, #3f7fc2, #0056b3);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
 .shelf-controls {
   display: flex;
-  gap: 10px;
+  justify-content: flex-end;
   align-items: center;
   flex-wrap: wrap;
+  gap: 10px; /* Reduced gap for tighter alignment */
+  padding-top: 10px; /* Add padding to align vertically with the search box */
 }
 
+.shelf-search-wrapper {
+  position: relative;
+  width: 300px; /* Fixed width for the search bar */
+}
+
+
+
 .shelf-search-input {
-  padding: 8px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  font-size: 14px;
-  width: 200px;
-  transition: border-color 0.3s ease;
+  width: 100%;
+  padding: 10px 10px 10px 35px;
+  border: 2px solid #ddd;
+  border-radius: 8px;
+  font-size: 16px;
+  color: #333;
+  transition: all 0.3s ease;
+  background: #f9f9f9;
+}
+
+.shelf-search-input::placeholder {
+  color: #999;
 }
 
 .shelf-search-input:focus {
   outline: none;
   border-color: #007bff;
+  box-shadow: 0 0 8px rgba(0, 123, 255, 0.3);
+  background: #fff;
 }
 
-.shelf-add-button {
+.shelf-add-button,
+.export-button,
+.shelf-edit-button,
+.shelf-delete-button,
+.back-button {
   padding: 10px 20px;
-  background-color: #007bff;
-  color: white;
   border: none;
-  border-radius: 5px;
-  cursor: pointer;
+  border-radius: 8px;
   font-size: 16px;
-  transition: background-color 0.3s ease;
+  cursor: pointer;
+  transition: all 0.3s ease;
 }
 
-.shelf-add-button:hover {
-  background-color: #0056b3;
+.shelf-add-button,
+.export-button {
+  background: linear-gradient(90deg, #007bff, #0056b3);
+  color: white;
+}
+.back-button{
+  background: linear-gradient(90deg, #cb2d2d, #a21339);
+  color: white;
+}
+.back-button:hover {
+  background: linear-gradient(90deg, #8a0320, #c11313);
+  box-shadow: 0 4px 15px rgba(0, 123, 255, 0.4);
+  transform: translateY(-2px);
+}
+.shelf-add-button:hover,
+.export-button:hover {
+  background: linear-gradient(90deg, #0056b3, #007bff);
+  box-shadow: 0 4px 15px rgba(0, 123, 255, 0.4);
+  transform: translateY(-2px);
+}
+
+.shelf-edit-button {
+  background: linear-gradient(90deg, #28a745, #218838);
+  color: white;
+  margin-right: 5px;
+}
+
+.shelf-edit-button:hover {
+  background: linear-gradient(90deg, #218838, #28a745);
+  box-shadow: 0 4px 15px rgba(40, 167, 69, 0.4);
+  transform: translateY(-2px);
+}
+
+.shelf-delete-button {
+  background: linear-gradient(90deg, #dc3545, #c82333);
+  color: white;
+}
+
+.shelf-delete-button:hover {
+  background: linear-gradient(90deg, #c82333, #dc3545);
+  box-shadow: 0 4px 15px rgba(220, 53, 69, 0.4);
+  transform: translateY(-2px);
 }
 
 .export-select {
-  padding: 8px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  font-size: 14px;
-  background-color: #fff;
+  padding: 10px;
+  border: 2px solid #ddd;
+  border-radius: 8px;
+  font-size: 16px;
+  color: #333;
+  background: #f9f9f9;
   cursor: pointer;
-  transition: border-color 0.3s ease;
+  transition: all 0.3s ease;
+  width: 200px;
 }
 
+.export-select:hover,
 .export-select:focus {
-  outline: none;
   border-color: #007bff;
-}
-
-.export-button {
-  padding: 10px 20px;
-  background-color: #007bff;
-  color: white;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  font-size: 16px;
-  transition: background-color 0.3s ease;
-}
-
-.export-button:hover {
-  background-color: #0056b3;
-}
-
-.back-button {
-  padding: 10px 20px;
-  background-color: #6c757d;
-  color: white;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  font-size: 16px;
-  transition: background-color 0.3s ease;
-}
-
-.back-button:hover {
-  background-color: #5a6268;
+  background: #fff;
+  outline: none;
 }
 
 .shelf-message {
-  font-size: 16px;
-  text-align: center;
+  padding: 10px;
   margin-bottom: 20px;
+  border-radius: 5px;
+  text-align: center;
+  font-size: 16px;
 }
 
 .shelf-message.success {
-  color: #28a745;
+  background-color: #d4edda;
+  color: #155724;
 }
 
 .shelf-message.error {
-  color: #dc3545;
+  background-color: #f8d7da;
+  color: #721c24;
 }
 
 .no-shelves {
   text-align: center;
   padding: 20px;
-  background-color: #f8f9fa;
-  border-radius: 5px;
-  margin-top: 20px;
+  background: #f9f9f9;
+  border-radius: 8px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
 }
 
 .no-shelves p {
-  font-size: 16px;
+  font-size: 18px;
   color: #666;
-  margin-bottom: 10px;
+  margin-bottom: 15px;
 }
 
 .shelf-table {
   width: 100%;
   border-collapse: collapse;
-  background-color: #fff;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-  display: block;
-  overflow-x: auto;
+  margin-bottom: 20px;
+  background: #fff;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
 }
 
-.shelf-table th,
-.shelf-table td {
-  padding: 12px;
-  text-align: left;
-  border-bottom: 1px solid #ddd;
-  white-space: nowrap;
+.shelf-table thead {
+  background: linear-gradient(90deg, #3f7fc2, #0056b3);
+  color: white;
+  text-transform: uppercase;
+  font-size: 16px;
 }
 
 .shelf-table th {
-  background-color: #007bff;
-  font-weight: bold;
-  color: #ffffff;
+  padding: 12px;
+  text-align: left;
   cursor: pointer;
-  position: relative;
-  transition: background-color 0.3s ease;
+  transition: background 0.3s ease;
+  position: relative; /* For positioning the sort icon */
 }
 
 .shelf-table th:hover {
-  background-color: #0056b3;
+  background: #0056b3;
 }
 
-.shelf-table th::after {
-  content: '';
-  display: inline-block;
+.sort-icon {
   margin-left: 5px;
-  width: 0;
-  height: 0;
-  border-left: 5px solid transparent;
-  border-right: 5px solid transparent;
+  font-size: 12px;
   vertical-align: middle;
+  color: #fff; /* Match the header text color */
 }
 
-.shelf-table th.asc::after {
-  border-bottom: 5px solid #ffffff;
+.shelf-table tbody tr {
+  border-bottom: 1px solid #ddd;
+  transition: background 0.3s ease;
 }
 
-.shelf-table th.desc::after {
-  border-top: 5px solid #ffffff;
+.shelf-table tbody tr:hover {
+  background: rgba(0, 123, 255, 0.1);
 }
 
-.shelf-table tr:hover {
-  background-color: #f9f9f9;
-}
-
-.shelf-edit-button {
-  padding: 5px 10px;
-  background-color: #ffc107;
-  color: white;
-  border: none;
-  border-radius: 3px;
-  cursor: pointer;
-  font-size: 14px;
-  margin-right: 5px;
-  transition: background-color 0.3s ease;
-}
-
-.shelf-edit-button:hover {
-  background-color: #e0a800;
-}
-
-.shelf-delete-button {
-  padding: 5px 10px;
-  background-color: #dc3545;
-  color: white;
-  border: none;
-  border-radius: 3px;
-  cursor: pointer;
-  font-size: 14px;
-  margin-right: 5px;
-  transition: background-color 0.3s ease;
-}
-
-.shelf-delete-button:hover {
-  background-color: #c82333;
+.shelf-table td {
+  padding: 12px;
+  font-size: 16px;
+  color: #333;
 }
 
 .loading-spinner {
   text-align: center;
-  font-size: 18px;
-  color: #007bff;
-  margin-top: 20px;
+  padding: 20px;
 }
 
-/* Responsive adjustments */
+/* Responsive Design */
 @media (max-width: 768px) {
-  .shelf-header {
-    flex-direction: column;
-    gap: 10px;
-  }
-
   .shelf-controls {
-    justify-content: center;
-    width: 100%;
+    flex-direction: column;
+    align-items: flex-start;
   }
 
-  .shelf-search-input {
-    width: 150px;
-  }
-
+  .shelf-search-wrapper,
+  .export-select,
   .shelf-add-button,
   .export-button,
   .back-button {
     width: 100%;
-    max-width: 200px;
+    margin-top: 10px;
+  }
+
+  .shelf-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 15px;
+  }
+
+  .shelf-table th,
+  .shelf-table td {
+    font-size: 14px;
+    padding: 8px;
+  }
+
+  .sort-icon {
+    font-size: 10px; /* Smaller icon on mobile */
+  }
+
+  .shelf-edit-button,
+  .shelf-delete-button {
+    padding: 8px 12px;
+    font-size: 14px;
+    margin-top: 5px;
   }
 }

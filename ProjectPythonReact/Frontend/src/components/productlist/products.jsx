@@ -156,6 +156,10 @@ const Products = () => {
     }
   };
 
+  const handleViewProductDetails = (productId) => {
+    navigate(`/product-details/${productId}`);
+  };
+
   // Define columns for the DataTable
   const columns = useMemo(
     () => [
@@ -181,7 +185,15 @@ const Products = () => {
       },
       {
         name: 'ឈ្មោះ',
-        selector: (row) => (row.isFirstVariant ? row.name : ''),
+        cell: (row) =>
+          row.isFirstVariant ? (
+            <span
+              className="product-name-link"
+              onClick={() => handleViewProductDetails(row.id)}
+            >
+              {row.name}
+            </span>
+          ) : '',
         sortable: true,
         omit: !visibleColumns.name,
       },
@@ -428,7 +440,6 @@ const Products = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3, delay: 0.2 }}
         >
-        
           <input
             type="text"
             placeholder="ស្វែងរកផលិតផល ឬ បាកូដ..."
@@ -486,7 +497,7 @@ const Products = () => {
         columns={columns}
         data={flattenedData}
         pagination
-        paginationPerPage={7} // Fixed value since per-page selector is removed
+        paginationPerPage={7}
         customStyles={customStyles}
         noDataComponent={<div className="no-results">គ្មានផលិតផលត្រូវនឹងលក្ខខណ្ឌស្វែងរក។</div>}
         highlightOnHover

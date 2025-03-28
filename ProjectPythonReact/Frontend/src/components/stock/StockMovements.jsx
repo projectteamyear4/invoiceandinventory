@@ -1,5 +1,6 @@
 // src/components/StockMovements.jsx
 import axios from 'axios';
+import { motion } from 'framer-motion'; // Import framer-motion
 import html2canvas from 'html2canvas';
 import React, { useEffect, useRef, useState } from 'react';
 import { CSVLink } from 'react-csv';
@@ -85,7 +86,6 @@ const StockMovements = () => {
 
   // Prepare data for export (CSV and Excel)
   const exportHeaders = [
-   
     { label: 'ផលិតផល', key: 'product_name' },
     { label: 'វ៉ារីយ៉ង់', key: 'variant_info' },
     { label: 'ឃ្លាំង', key: 'warehouse_name' },
@@ -93,11 +93,9 @@ const StockMovements = () => {
     { label: 'ប្រភេទ', key: 'movement_type' },
     { label: 'បរិមាណ', key: 'quantity' },
     { label: 'កាលបរិច្ឆេទ', key: 'movement_date' },
-   
   ];
 
   const exportData = filteredStockMovements.map((movement) => ({
- 
     product_name: movement.product_name,
     variant_info: movement.variant_info || 'មិនមាន',
     warehouse_name: movement.warehouse_name || 'មិនមាន',
@@ -105,7 +103,6 @@ const StockMovements = () => {
     movement_type: movement.movement_type,
     quantity: movement.quantity,
     movement_date: new Date(movement.movement_date).toLocaleString(),
-   
   }));
 
   // Download as PNG
@@ -174,24 +171,53 @@ const StockMovements = () => {
   };
 
   console.log('Stock Movements State:', stockMovements);
-  if (loading) return <p>កំពុងផ្ទុកទិន្នន័យស្តុក...</p>;
-  if (error) return <p className="error-message">{error}</p>;
+  if (loading) return <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5 }}>កំពុងផ្ទុកទិន្នន័យស្តុក...</motion.p>;
+  if (error) return (
+    <motion.p
+      className="error-message"
+      initial={{ opacity: 0, y: -10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3 }}
+    >
+      {error}
+    </motion.p>
+  );
 
   return (
-    <div className="stock-movement-container">
-      <div className="stock-movement-header">
-        <h2>ចលនាស្តុក</h2>
+    <motion.div
+      className="stock-movement-container"
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+    >
+      <motion.div
+        className="stock-movement-header"
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3, delay: 0.1 }}
+      >
+        <div className="header-content">
+          <h2>ចលនាស្តុក</h2>
+          <div className="stock-movement-search-wrapper">
+           
+            <input
+              type="text"
+              placeholder="ស្វែងរកតាមផលិតផល..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="stock-movement-search-input"
+            />
+          </div>
+        </div>
         <div className="stock-movement-controls">
-          <input
-            type="text"
-            placeholder="ស្វែងរកតាមផលិតផល..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="stock-movement-search-input"
-          />
-          <button onClick={() => navigate('/add-purchase')} className="add-button">
+          <motion.button
+            onClick={() => navigate('/add-purchase')}
+            className="add-button"
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+          >
             បន្ថែមការទិញ
-          </button>
+          </motion.button>
           <select
             value={exportFormat}
             onChange={(e) => setExportFormat(e.target.value)}
@@ -203,9 +229,14 @@ const StockMovements = () => {
             <option value="png">PNG</option>
             <option value="svg">SVG</option>
           </select>
-          <button onClick={handleExport} className="export-button">
+          <motion.button
+            onClick={handleExport}
+            className="export-button"
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+          >
             ទាញយក
-          </button>
+          </motion.button>
           <CSVLink
             data={exportData}
             headers={exportHeaders}
@@ -214,29 +245,80 @@ const StockMovements = () => {
             style={{ display: 'none' }}
           />
         </div>
-      </div>
+      </motion.div>
       <table className="stock-movement-table" ref={tableRef}>
         <thead>
           <tr>
-           
-            <th onClick={() => handleSort('product_name')}>ផលិតផល</th>
-            <th onClick={() => handleSort('variant_info')}>វ៉ារីយ៉ង់</th>
-            <th onClick={() => handleSort('warehouse_name')}>ឃ្លាំង</th>
-            <th onClick={() => handleSort('shelf_name')}>ធ្នើរ</th>
-            <th onClick={() => handleSort('movement_type')}>ប្រភេទ</th>
-            <th onClick={() => handleSort('quantity')}>បរិមាណ</th>
-            <th onClick={() => handleSort('movement_date')}>កាលបរិច្ឆេទ</th>
-           
+            <th onClick={() => handleSort('product_name')}>
+              ផលិតផល
+              {sortConfig.key === 'product_name' && (
+                <span className="sort-icon">
+                  {sortConfig.direction === 'asc' ? '▲' : '▼'}
+                </span>
+              )}
+            </th>
+            <th onClick={() => handleSort('variant_info')}>
+              វ៉ារីយ៉ង់
+              {sortConfig.key === 'variant_info' && (
+                <span className="sort-icon">
+                  {sortConfig.direction === 'asc' ? '▲' : '▼'}
+                </span>
+              )}
+            </th>
+            <th onClick={() => handleSort('warehouse_name')}>
+              ឃ្លាំង
+              {sortConfig.key === 'warehouse_name' && (
+                <span className="sort-icon">
+                  {sortConfig.direction === 'asc' ? '▲' : '▼'}
+                </span>
+              )}
+            </th>
+            <th onClick={() => handleSort('shelf_name')}>
+              ធ្នើរ
+              {sortConfig.key === 'shelf_name' && (
+                <span className="sort-icon">
+                  {sortConfig.direction === 'asc' ? '▲' : '▼'}
+                </span>
+              )}
+            </th>
+            <th onClick={() => handleSort('movement_type')}>
+              ប្រភេទ
+              {sortConfig.key === 'movement_type' && (
+                <span className="sort-icon">
+                  {sortConfig.direction === 'asc' ? '▲' : '▼'}
+                </span>
+              )}
+            </th>
+            <th onClick={() => handleSort('quantity')}>
+              បរិមាណ
+              {sortConfig.key === 'quantity' && (
+                <span className="sort-icon">
+                  {sortConfig.direction === 'asc' ? '▲' : '▼'}
+                </span>
+              )}
+            </th>
+            <th onClick={() => handleSort('movement_date')}>
+              កាលបរិច្ឆេទ
+              {sortConfig.key === 'movement_date' && (
+                <span className="sort-icon">
+                  {sortConfig.direction === 'asc' ? '▲' : '▼'}
+                </span>
+              )}
+            </th>
             <th>សកម្មភាព</th>
           </tr>
         </thead>
         <tbody>
-          {filteredStockMovements.map((movement) => {
+          {filteredStockMovements.map((movement, index) => {
             const isMissingStockInfo = !movement.warehouse_name || !movement.shelf_name;
 
             return (
-              <tr key={movement.id}>
-               
+              <motion.tr
+                key={movement.id}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3, delay: index * 0.05 }}
+              >
                 <td>{movement.product_name}</td>
                 <td>{movement.variant_info || 'មិនមាន'}</td>
                 <td>{movement.warehouse_name || 'មិនមាន'}</td>
@@ -244,21 +326,22 @@ const StockMovements = () => {
                 <td>{movement.movement_type}</td>
                 <td>{movement.quantity}</td>
                 <td>{new Date(movement.movement_date).toLocaleString()}</td>
-               
                 <td>
-                  <button
+                  <motion.button
                     onClick={() => navigate(`/edit-stock-movement/${movement.id}`)}
                     className={isMissingStockInfo ? 'join-stock-button' : 'edit-button'}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
                   >
                     {isMissingStockInfo ? 'បញ្ចូលស្តុក' : 'កែសម្រួល'}
-                  </button>
+                  </motion.button>
                 </td>
-              </tr>
+              </motion.tr>
             );
           })}
         </tbody>
       </table>
-    </div>
+    </motion.div>
   );
 };
 

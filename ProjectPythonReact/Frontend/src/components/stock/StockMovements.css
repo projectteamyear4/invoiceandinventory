@@ -1,144 +1,248 @@
 /* src/components/StockMovements.css */
 .stock-movement-container {
+  max-width: 1500px;
+  margin: 20px auto;
   padding: 20px;
-  max-width: 1200px;
-  margin: 0 auto;
+  background: #ffffff;
+  border-radius: 15px;
+  font-family: 'Inter', 'Noto Sans Khmer', sans-serif;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+  overflow-x: auto;
 }
 
 .stock-movement-header {
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  margin-bottom: 20px;
+  align-items: flex-start; /* Align items to the top */
+  margin-bottom: 25px;
+  padding-bottom: 15px;
+  border-bottom: 1px solid #e0e0e0;
 }
 
-.stock-movement-header h2 {
-  font-size: 24px;
-  color: #333;
+.header-content {
+  display: flex;
+  flex-direction: column;
+  gap: 10px; /* Space between the title and search bar */
+}
+
+.stock-movement-container h2 {
+  text-align: left;
+  font-size: 28px;
+  margin: 0;
+  background: linear-gradient(90deg, #3f7fc2, #0056b3);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
 .stock-movement-controls {
   display: flex;
-  gap: 10px;
+  justify-content: flex-end;
   align-items: center;
+  flex-wrap: wrap;
+  gap: 10px; /* Reduced gap for tighter alignment */
+  padding-top: 10px; /* Add padding to align vertically with the search box */
+}
+
+.stock-movement-search-wrapper {
+  position: relative;
+  width: 300px; /* Fixed width for the search bar */
+}
+
+.stock-movement-search-wrapper .search-icon {
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #666;
+  font-size: 16px;
 }
 
 .stock-movement-search-input {
-  padding: 8px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  font-size: 14px;
-  width: 200px;
+  width: 100%;
+  padding: 10px 10px 10px 35px;
+  border: 2px solid #ddd;
+  border-radius: 8px;
+  font-size: 16px;
+  color: #333;
+  transition: all 0.3s ease;
+  background: #f9f9f9;
+}
+
+.stock-movement-search-input::placeholder {
+  color: #999;
 }
 
 .stock-movement-search-input:focus {
   outline: none;
   border-color: #007bff;
+  box-shadow: 0 0 8px rgba(0, 123, 255, 0.3);
+  background: #fff;
 }
 
-.add-button {
+.add-button,
+.export-button,
+.edit-button,
+.join-stock-button {
   padding: 10px 20px;
-  background-color: #007bff;
-  color: white;
   border: none;
-  border-radius: 5px;
-  cursor: pointer;
+  border-radius: 8px;
   font-size: 16px;
+  cursor: pointer;
+  transition: all 0.3s ease;
 }
 
-.add-button:hover {
-  background-color: #0056b3;
+.add-button,
+.export-button {
+  background: linear-gradient(90deg, #007bff, #0056b3);
+  color: white;
+}
+
+.add-button:hover,
+.export-button:hover {
+  background: linear-gradient(90deg, #0056b3, #007bff);
+  box-shadow: 0 4px 15px rgba(0, 123, 255, 0.4);
+  transform: translateY(-2px);
+}
+
+.edit-button {
+  background: linear-gradient(90deg, #28a745, #218838);
+  color: white;
+}
+
+.edit-button:hover {
+  background: linear-gradient(90deg, #218838, #28a745);
+  box-shadow: 0 4px 15px rgba(40, 167, 69, 0.4);
+  transform: translateY(-2px);
+}
+
+.join-stock-button {
+  background: linear-gradient(90deg, #ffca28, #ffb300);
+  color: white;
+}
+
+.join-stock-button:hover {
+  background: linear-gradient(90deg, #ffb300, #ffca28);
+  box-shadow: 0 4px 15px rgba(255, 202, 40, 0.4);
+  transform: translateY(-2px);
 }
 
 .export-select {
-  padding: 8px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  font-size: 14px;
-  background-color: #fff;
-  cursor: pointer;
-}
-
-.export-select:focus {
-  outline: none;
-  border-color: #007bff;
-}
-
-.export-button {
-  padding: 10px 20px;
-  background-color: #007bff;
-  color: white;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
+  padding: 10px;
+  border: 2px solid #ddd;
+  border-radius: 8px;
   font-size: 16px;
+  color: #333;
+  background: #f9f9f9;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  width: 200px;
 }
 
-.export-button:hover {
-  background-color: #0056b3;
+.export-select:hover,
+.export-select:focus {
+  border-color: #007bff;
+  background: #fff;
+  outline: none;
+}
+
+.error-message {
+  padding: 10px;
+  margin-bottom: 20px;
+  border-radius: 5px;
+  text-align: center;
+  font-size: 16px;
+  background-color: #f8d7da;
+  color: #721c24;
 }
 
 .stock-movement-table {
   width: 100%;
   border-collapse: collapse;
-  background-color: #fff;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  margin-bottom: 20px;
+  background: #fff;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
 }
 
-.stock-movement-table th,
-.stock-movement-table td {
-  padding: 12px;
-  text-align: left;
-  border-bottom: 1px solid #ddd;
+.stock-movement-table thead {
+  background: linear-gradient(90deg, #3f7fc2, #0056b3);
+  color: white;
+  text-transform: uppercase;
+  font-size: 16px;
 }
 
 .stock-movement-table th {
-  background-color: #007bff;
-  font-weight: bold;
-  color: #ffffff;
+  padding: 12px;
+  text-align: left;
   cursor: pointer;
+  transition: background 0.3s ease;
+  position: relative; /* For positioning the sort icon */
 }
 
 .stock-movement-table th:hover {
-  background-color: #0056b3;
+  background: #0056b3;
 }
 
-.stock-movement-table tr:hover {
-  background-color: #f9f9f9;
+.sort-icon {
+  margin-left: 5px;
+  font-size: 12px;
+  vertical-align: middle;
+  color: #fff; /* Match the header text color */
 }
 
-.edit-button {
-  padding: 5px 10px;
-  background-color: #ffc107;
-  color: white;
-  border: none;
-  border-radius: 3px;
-  cursor: pointer;
-  font-size: 14px;
+.stock-movement-table tbody tr {
+  border-bottom: 1px solid #ddd;
+  transition: background 0.3s ease;
 }
 
-.edit-button:hover {
-  background-color: #e0a800;
+.stock-movement-table tbody tr:hover {
+  background: rgba(0, 123, 255, 0.1);
 }
 
-.join-stock-button {
-  background-color: #ff9800;
-  color: white;
-  border: none;
-  padding: 5px 10px;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 14px;
-}
-
-.join-stock-button:hover {
-  background-color: #e68900;
-}
-
-.error-message {
-  color: red;
+.stock-movement-table td {
+  padding: 12px;
   font-size: 16px;
-  text-align: center;
+  color: #333;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .stock-movement-controls {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .stock-movement-search-wrapper,
+  .export-select,
+  .add-button,
+  .export-button {
+    width: 100%;
+    margin-top: 10px;
+  }
+
+  .stock-movement-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 15px;
+  }
+
+  .stock-movement-table th,
+  .stock-movement-table td {
+    font-size: 14px;
+    padding: 8px;
+  }
+
+  .sort-icon {
+    font-size: 10px; /* Smaller icon on mobile */
+  }
+
+  .edit-button,
+  .join-stock-button {
+    padding: 8px 12px;
+    font-size: 14px;
+    margin-top: 5px;
+  }
 }
 /* Add more styles as needed */
 /* src/components/EditStockMovement.css */

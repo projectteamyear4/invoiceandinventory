@@ -1,5 +1,6 @@
 // src/components/Shelves.jsx
 import axios from 'axios';
+import { motion } from 'framer-motion'; // Import framer-motion
 import html2canvas from 'html2canvas';
 import React, { useContext, useEffect, useRef, useState } from 'react';
 import { CSVLink } from 'react-csv';
@@ -109,7 +110,7 @@ const Shelves = () => {
     { label: 'ឈ្មោះធ្នើរ', key: 'shelf_name' },
     { label: 'ផ្នែក', key: 'section' },
     { label: 'សមត្ថភាព', key: 'capacity' },
-    { label: 'បរិមាណស្តុក', key: 'total_quantity' }, // New column for total quantity
+    { label: 'បរិមាណស្តុក', key: 'total_quantity' },
     { label: 'បានបង្កើតនៅ', key: 'created_at' },
   ];
 
@@ -119,7 +120,7 @@ const Shelves = () => {
     shelf_name: shelf.shelf_name,
     section: shelf.section || '-',
     capacity: shelf.capacity || '-',
-    total_quantity: `${shelf.total_quantity || 0}/${shelf.capacity || 0}`, // Display as fraction
+    total_quantity: `${shelf.total_quantity || 0}/${shelf.capacity || 0}`,
     created_at: new Date(shelf.created_at).toLocaleDateString(),
   }));
 
@@ -213,39 +214,80 @@ const Shelves = () => {
 
   if (message === 'ឃ្លាំងនេះមិនមានទេ។') {
     return (
-      <div className="shelf-container">
+      <motion.div
+        className="shelf-container"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+      >
         <h2>កំហុស</h2>
-        <p>{message}</p>
-        <button className="back-button" onClick={() => navigate('/warehouses')}>
+        <motion.p
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3 }}
+        >
+          {message}
+        </motion.p>
+        <motion.button
+          className="back-button"
+          onClick={() => navigate('/warehouses')}
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+        >
           ត្រឡប់ទៅឃ្លាំង
-        </button>
-      </div>
+        </motion.button>
+      </motion.div>
     );
   }
 
   if (loading) {
     return (
-      <div className="loading-spinner">
+      <motion.div
+        className="loading-spinner"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.5 }}
+      >
         <p>កំពុងផ្ទុកធ្នើរ...</p>
-      </div>
+      </motion.div>
     );
   }
 
   return (
-    <div className="shelf-container">
-      <div className="shelf-header">
-        <h2>ធ្នើរសម្រាប់ឃ្លាំង: {warehouseName || `ID: ${warehouseId}`}</h2>
+    <motion.div
+      className="shelf-container"
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+    >
+      <motion.div
+        className="shelf-header"
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3, delay: 0.1 }}
+      >
+        <div className="header-content">
+          <h2>ធ្នើរសម្រាប់ឃ្លាំង: {warehouseName || `ID: ${warehouseId}`}</h2>
+          <div className="shelf-search-wrapper">
+          
+            <input
+              type="text"
+              placeholder="ស្វែងរកតាមឈ្មោះធ្នើរ..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="shelf-search-input"
+            />
+          </div>
+        </div>
         <div className="shelf-controls">
-          <input
-            type="text"
-            placeholder="ស្វែងរកតាមឈ្មោះធ្នើរ..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="shelf-search-input"
-          />
-          <button className="shelf-add-button" onClick={handleAddShelf}>
+          <motion.button
+            className="shelf-add-button"
+            onClick={handleAddShelf}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+          >
             បន្ថែមធ្នើរ
-          </button>
+          </motion.button>
           <select
             value={exportFormat}
             onChange={(e) => setExportFormat(e.target.value)}
@@ -257,9 +299,14 @@ const Shelves = () => {
             <option value="png">PNG</option>
             <option value="svg">SVG</option>
           </select>
-          <button onClick={handleExport} className="export-button">
+          <motion.button
+            onClick={handleExport}
+            className="export-button"
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+          >
             ទាញយក
-          </button>
+          </motion.button>
           <CSVLink
             data={exportData}
             headers={exportHeaders}
@@ -267,54 +314,114 @@ const Shelves = () => {
             id="csv-link"
             style={{ display: 'none' }}
           />
-          <button className="back-button" onClick={handleBackToWarehouses}>
+          <motion.button
+            className="back-button"
+            onClick={handleBackToWarehouses}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+          >
             ត្រឡប់ទៅឃ្លាំង
-          </button>
+          </motion.button>
         </div>
-      </div>
+      </motion.div>
       {message && (
-        <p className={`shelf-message ${message.includes('ជោគជ័យ') ? 'success' : 'error'}`}>
+        <motion.p
+          className={`shelf-message ${message.includes('ជោគជ័យ') ? 'success' : 'error'}`}
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3 }}
+        >
           {message}
-        </p>
+        </motion.p>
       )}
       {filteredShelves.length === 0 ? (
-        <div className="no-shelves">
+        <motion.div
+          className="no-shelves"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.3 }}
+        >
           <p>មិនមានធ្នើរសម្រាប់ឃ្លាំងនេះទេ។ សូមបន្ថែមធ្នើរថ្មី!</p>
-          <button className="shelf-add-button" onClick={handleAddShelf}>
+          <motion.button
+            className="shelf-add-button"
+            onClick={handleAddShelf}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+          >
             បន្ថែមធ្នើរ
-          </button>
-        </div>
+          </motion.button>
+        </motion.div>
       ) : (
         <table className="shelf-table" ref={tableRef}>
           <thead>
             <tr>
-              <th onClick={() => handleSort('id')} className={sortConfig.key === 'id' ? sortConfig.direction : ''}>
+              <th onClick={() => handleSort('id')}>
                 ID
+                {sortConfig.key === 'id' && (
+                  <span className="sort-icon">
+                    {sortConfig.direction === 'asc' ? '▲' : '▼'}
+                  </span>
+                )}
               </th>
-              <th onClick={() => handleSort('warehouse_name')} className={sortConfig.key === 'warehouse_name' ? sortConfig.direction : ''}>
+              <th onClick={() => handleSort('warehouse_name')}>
                 ឈ្មោះឃ្លាំង
+                {sortConfig.key === 'warehouse_name' && (
+                  <span className="sort-icon">
+                    {sortConfig.direction === 'asc' ? '▲' : '▼'}
+                  </span>
+                )}
               </th>
-              <th onClick={() => handleSort('shelf_name')} className={sortConfig.key === 'shelf_name' ? sortConfig.direction : ''}>
+              <th onClick={() => handleSort('shelf_name')}>
                 ឈ្មោះធ្នើរ
+                {sortConfig.key === 'shelf_name' && (
+                  <span className="sort-icon">
+                    {sortConfig.direction === 'asc' ? '▲' : '▼'}
+                  </span>
+                )}
               </th>
-              <th onClick={() => handleSort('section')} className={sortConfig.key === 'section' ? sortConfig.direction : ''}>
+              <th onClick={() => handleSort('section')}>
                 ផ្នែក
+                {sortConfig.key === 'section' && (
+                  <span className="sort-icon">
+                    {sortConfig.direction === 'asc' ? '▲' : '▼'}
+                  </span>
+                )}
               </th>
-              <th onClick={() => handleSort('capacity')} className={sortConfig.key === 'capacity' ? sortConfig.direction : ''}>
+              <th onClick={() => handleSort('capacity')}>
                 សមត្ថភាព
+                {sortConfig.key === 'capacity' && (
+                  <span className="sort-icon">
+                    {sortConfig.direction === 'asc' ? '▲' : '▼'}
+                  </span>
+                )}
               </th>
-              <th onClick={() => handleSort('total_quantity')} className={sortConfig.key === 'total_quantity' ? sortConfig.direction : ''}>
+              <th onClick={() => handleSort('total_quantity')}>
                 បរិមាណស្តុក
+                {sortConfig.key === 'total_quantity' && (
+                  <span className="sort-icon">
+                    {sortConfig.direction === 'asc' ? '▲' : '▼'}
+                  </span>
+                )}
               </th>
-              <th onClick={() => handleSort('created_at')} className={sortConfig.key === 'created_at' ? sortConfig.direction : ''}>
+              <th onClick={() => handleSort('created_at')}>
                 បានបង្កើតនៅ
+                {sortConfig.key === 'created_at' && (
+                  <span className="sort-icon">
+                    {sortConfig.direction === 'asc' ? '▲' : '▼'}
+                  </span>
+                )}
               </th>
               <th>សកម្មភាព</th>
             </tr>
           </thead>
           <tbody>
-            {filteredShelves.map((shelf) => (
-              <tr key={shelf.id}>
+            {filteredShelves.map((shelf, index) => (
+              <motion.tr
+                key={shelf.id}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3, delay: index * 0.05 }}
+              >
                 <td>{shelf.id}</td>
                 <td>{shelf.warehouse_name || '-'}</td>
                 <td>{shelf.shelf_name}</td>
@@ -323,25 +430,29 @@ const Shelves = () => {
                 <td>{`${shelf.total_quantity || 0}/${shelf.capacity || 0}`}</td>
                 <td>{new Date(shelf.created_at).toLocaleDateString()}</td>
                 <td>
-                  <button
+                  <motion.button
                     className="shelf-edit-button"
                     onClick={() => handleEditShelf(shelf.id)}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
                   >
                     កែប្រែ
-                  </button>
-                  <button
+                  </motion.button>
+                  <motion.button
                     className="shelf-delete-button"
                     onClick={() => handleDeleteShelf(shelf.id)}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
                   >
                     លុប
-                  </button>
+                  </motion.button>
                 </td>
-              </tr>
+              </motion.tr>
             ))}
           </tbody>
         </table>
       )}
-    </div>
+    </motion.div>
   );
 };
 

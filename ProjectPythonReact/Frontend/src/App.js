@@ -13,6 +13,7 @@ import MainDash from './components/MainDash/MainDash';
 import Orders from './components/Orderlist/Orders.jsx';
 import AddProduct from './components/productlist/addproduct.jsx';
 import AddProductVariant from './components/productlist/addproductvariant.jsx';
+import DetailProduct from './components/productlist/DetailProduct.jsx';
 import EditProduct from './components/productlist/EditProduct.jsx';
 import EditProductVariant from './components/productlist/EditProductVariant.jsx';
 import Products from './components/productlist/products.jsx';
@@ -56,6 +57,7 @@ function App() {
               <Route path="/customers" element={<ProtectedRoute>< Customers /></ProtectedRoute>} />
               <Route path="/add-customer" element={<ProtectedRoute><AddCustomer /></ProtectedRoute>} />
               <Route path="/products" element={<ProtectedRoute><Products /></ProtectedRoute>} />
+              <Route path="/product-details/:productId" element={<ProtectedRoute><DetailProduct /></ProtectedRoute>} />
               <Route path="/purchases" element={<ProtectedRoute><Purchases /></ProtectedRoute>} />
               <Route path="/add-purchase" element={<ProtectedRoute><AddPurchase /></ProtectedRoute>} />
               <Route path="/category-list" element={<ProtectedRoute><CategoryList /></ProtectedRoute>} />

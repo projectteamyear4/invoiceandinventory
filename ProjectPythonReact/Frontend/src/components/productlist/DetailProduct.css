@@ -1,0 +1,223 @@
+/* src/components/DetailProduct.css */
+.detail-product-container {
+    max-width: 1200px;
+    margin: 20px auto;
+    padding: 20px;
+    background: #ffffff;
+    border-radius: 15px;
+    font-family: 'Inter', 'Noto Sans Khmer', sans-serif;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+  }
+  
+  .detail-product-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #e0e0e0;
+  }
+  
+  .detail-product-header h2 {
+    font-size: 28px;
+    margin: 0;
+    background: linear-gradient(90deg, #3f7fc2, #0056b3);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  
+  .back-button {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    cursor: pointer;
+    background: linear-gradient(90deg, #007bff, #0056b3);
+    color: white;
+    transition: all 0.3s ease;
+  }
+  
+  .back-button:hover {
+    background: linear-gradient(90deg, #0056b3, #007bff);
+    box-shadow: 0 4px 15px rgba(0, 123, 255, 0.4);
+    transform: translateY(-2px);
+  }
+  
+  .product-info {
+    display: flex;
+    gap: 30px;
+    margin-bottom: 30px;
+    flex-wrap: wrap;
+  }
+  
+  .product-image-info {
+    flex: 1;
+    min-width: 200px;
+    text-align: center;
+  }
+  
+  .product-image {
+    width: 150px;
+    height: 150px;
+    object-fit: cover;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  }
+  
+  .no-image {
+    width: 150px;
+    height: 150px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #f0f0f0;
+    border-radius: 8px;
+    color: #666;
+    font-size: 16px;
+  }
+  
+  .product-details {
+    flex: 2;
+    min-width: 300px;
+  }
+  
+  .product-details p {
+    font-size: 16px;
+    margin: 10px 0;
+    color: #333;
+  }
+  
+  .product-details p strong {
+    color: #0056b3;
+    margin-right: 10px;
+  }
+  
+  .variants-section h3 {
+    font-size: 22px;
+    margin-bottom: 15px;
+    color: #0056b3;
+  }
+  
+  .variants-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: #fff;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  }
+  
+  .variants-table thead {
+    background: linear-gradient(90deg, #3f7fc2, #0056b3);
+    color: white;
+    text-transform: uppercase;
+    font-size: 16px;
+  }
+  
+  .variants-table th {
+    padding: 12px;
+    text-align: left;
+  }
+  
+  .variants-table tbody tr {
+    border-bottom: 1px solid #ddd;
+    transition: background 0.3s ease;
+  }
+  
+  .variants-table tbody tr:hover {
+    background: rgba(0, 123, 255, 0.1);
+  }
+  
+  .variants-table td {
+    padding: 12px;
+    font-size: 16px;
+    color: #333;
+  }
+  
+  .action-buttons {
+    display: flex;
+    gap: 5px;
+  }
+  
+  .variant-edit-button,
+  .variant-delete-button {
+    padding: 8px 12px;
+    border: none;
+    border-radius: 5px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+  
+  .variant-edit-button {
+    background: linear-gradient(90deg, #28a745, #218838);
+    color: white;
+  }
+  
+  .variant-edit-button:hover {
+    background: linear-gradient(90deg, #218838, #28a745);
+    box-shadow: 0 4px 15px rgba(40, 167, 69, 0.4);
+    transform: translateY(-2px);
+  }
+  
+  .variant-delete-button {
+    background: linear-gradient(90deg, #dc3545, #c82333);
+    color: white;
+  }
+  
+  .variant-delete-button:hover {
+    background: linear-gradient(90deg, #c82333, #dc3545);
+    box-shadow: 0 4px 15px rgba(220, 53, 69, 0.4);
+    transform: translateY(-2px);
+  }
+  
+  .error-message {
+    color: #721c24;
+    background-color: #f8d7da;
+    padding: 10px;
+    border-radius: 5px;
+    text-align: center;
+    font-size: 16px;
+    margin-bottom: 20px;
+  }
+  
+  .loading-spinner {
+    text-align: center;
+    padding: 20px;
+  }
+  
+  /* Responsive Design */
+  @media (max-width: 768px) {
+    .detail-product-header {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 15px;
+    }
+  
+    .product-info {
+      flex-direction: column;
+      align-items: center;
+    }
+  
+    .product-image-info,
+    .product-details {
+      width: 100%;
+      text-align: left;
+    }
+  
+    .variants-table th,
+    .variants-table td {
+      font-size: 14px;
+      padding: 8px;
+    }
+  
+    .variant-edit-button,
+    .variant-delete-button {
+      padding: 6px 10px;
+      font-size: 12px;
+    }
+  
+    .detail-product-container {
+      padding: 15px;
+    }
+  }
