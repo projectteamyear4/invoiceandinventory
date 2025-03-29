@@ -1,12 +1,12 @@
 /* src/components/DetailProduct.css */
 .detail-product-container {
-    max-width: 1200px;
+  
     margin: 20px auto;
     padding: 20px;
     background: #ffffff;
     border-radius: 15px;
     font-family: 'Inter', 'Noto Sans Khmer', sans-serif;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+   
   }
   
   .detail-product-header {
@@ -56,7 +56,7 @@
     text-align: center;
   }
   
-  .product-image {
+  .product-imagedetails {
     width: 150px;
     height: 150px;
     object-fit: cover;

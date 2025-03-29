@@ -180,7 +180,7 @@ const Products = () => {
               )}
             </div>
           ) : null,
-        width: '80px',
+        width: '80px ',
         omit: !visibleColumns.image,
       },
       {

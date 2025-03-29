@@ -162,7 +162,7 @@ const DetailProduct = () => {
             <img
               src={product.image_url}
               alt={product.name}
-              className="product-image"
+              className="product-imagedetails"
               onError={(e) => (e.target.src = 'https://via.placeholder.com/150')}
             />
           ) : (
@@ -196,7 +196,7 @@ const DetailProduct = () => {
                 <th>បរិមាណស្តុក</th>
                 <th>តម្លៃទិញ (ចុងក្រោយ)</th>
                 <th>តម្លៃលក់</th>
-                <th>សកម្មភាព</th>
+            
               </tr>
             </thead>
             <tbody>
@@ -223,24 +223,7 @@ const DetailProduct = () => {
                         : '-')}
                   </td>
                   <td>{variant.selling_price || '-'}</td>
-                  <td>
-                    {variant.id && (
-                      <div className="action-buttons">
-                        <button
-                          className="variant-edit-button"
-                          onClick={() => handleEditVariant(variant.id)}
-                        >
-                          កែ
-                        </button>
-                        <button
-                          className="variant-delete-button"
-                          onClick={() => handleDeleteVariant(variant.id)}
-                        >
-                          លុប
-                        </button>
-                      </div>
-                    )}
-                  </td>
+                
                 </motion.tr>
               ))}
             </tbody>
