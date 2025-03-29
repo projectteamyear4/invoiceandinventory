@@ -7,6 +7,7 @@ import './DetailProduct.css';
 
 const DetailProduct = () => {
   const [product, setProduct] = useState(null);
+  const [groupedVariants, setGroupedVariants] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const { productId } = useParams();
@@ -26,17 +27,55 @@ const DetailProduct = () => {
       try {
         const response = await api.get(`/api/products/${productId}/`);
         console.log('Product details fetched:', response.data);
-
-        // For demonstration purposes, adjust the quantities as per your example
-        if (response.data.name === 'The Field Pant') {
-          response.data.variants = [
-            { id: 1, size: 'M', color: 'Red', purchases: [{ quantity: 5 }], purchase_price: 10.00, selling_price: 45.00 },
-            { id: 2, size: 'L', color: 'Red', purchases: [{ quantity: 10 }], purchase_price: null, selling_price: 44.00 },
-            { id: 3, size: 'S', color: 'Red', purchases: [{ quantity: 8 }], purchase_price: null, selling_price: 44.00 },
-          ];
-        }
-
         setProduct(response.data);
+
+        // Group variants by size and color
+        const grouped = response.data.variants.reduce((acc, variant) => {
+          const key = `${variant.size || '-'}_${variant.color || '-'}`;
+          const existingGroup = acc.find((group) => group.key === key);
+
+          if (existingGroup) {
+            // Add the variant to the existing group
+            existingGroup.variants.push(variant);
+            // Sum the stock quantity
+            existingGroup.stock_quantity += variant.purchases && variant.purchases.length > 0
+              ? variant.purchases.reduce((sum, p) => sum + (p.quantity || 0), 0)
+              : 0;
+            // Update the purchase price and selling price based on the most recent purchase
+            const allPurchases = existingGroup.variants.flatMap(v => v.purchases || []);
+            if (allPurchases.length > 0) {
+              const latestPurchase = allPurchases.sort(
+                (a, b) => new Date(b.purchase_date) - new Date(a.purchase_date)
+              )[0];
+              existingGroup.purchase_price = latestPurchase.purchase_price || '-';
+            }
+            // Use the selling price from the most recent variant (by id, assuming higher id means more recent)
+            const latestVariant = existingGroup.variants.sort((a, b) => b.id - a.id)[0];
+            existingGroup.selling_price = latestVariant.selling_price || '-';
+          } else {
+            // Create a new group
+            const stock_quantity = variant.purchases && variant.purchases.length > 0
+              ? variant.purchases.reduce((sum, p) => sum + (p.quantity || 0), 0)
+              : 0;
+            const purchase_price = variant.purchases && variant.purchases.length > 0
+              ? variant.purchases.sort(
+                  (a, b) => new Date(b.purchase_date) - new Date(a.purchase_date)
+                )[0].purchase_price || '-'
+              : '-';
+            acc.push({
+              key,
+              size: variant.size || '-',
+              color: variant.color || '-',
+              stock_quantity,
+              purchase_price,
+              selling_price: variant.selling_price || '-',
+              variants: [variant], // Store all variants in the group for actions
+            });
+          }
+          return acc;
+        }, []);
+
+        setGroupedVariants(grouped);
       } catch (err) {
         console.error('Error fetching product details:', err);
         setError('មិនអាចទាញយកព័ត៌មានផលិតផលបានទេ។');
@@ -51,17 +90,31 @@ const DetailProduct = () => {
     navigate('/products');
   };
 
-  const handleEditVariant = (variantId) => {
-    navigate(`/edit-variant/${variantId}`);
+  const handleEditVariantGroup = (group) => {
+    // Since we're grouping, we'll navigate to edit the first variant in the group
+    // Alternatively, you could create a new route to edit all variants in the group
+    const firstVariantId = group.variants[0].id;
+    navigate(`/edit-variant/${firstVariantId}`);
   };
 
-  const handleDeleteVariant = async (variantId) => {
-    if (window.confirm('តើអ្នកប្រាកដទេថាចង់លុបវ៉ារីយ៉ង់នេះ?')) {
+  const handleDeleteVariantGroup = async (group) => {
+    if (window.confirm(`តើអ្នកប្រាកដទេថាចង់លុបវ៉ារីយ៉ង់ទាំងអស់ដែលមានទំហំ ${group.size} និងពណ៌ ${group.color}?`)) {
       try {
-        await api.delete(`/api/variants/${variantId}/`);
+        // Delete all variants in the group
+        await Promise.all(
+          group.variants.map((variant) =>
+            api.delete(`/api/variants/${variant.id}/`)
+          )
+        );
+        // Update the state to remove the deleted group
+        setGroupedVariants((prev) =>
+          prev.filter((g) => g.key !== group.key)
+        );
         setProduct((prevProduct) => ({
           ...prevProduct,
-          variants: prevProduct.variants.filter((v) => v.id !== variantId),
+          variants: prevProduct.variants.filter(
+            (v) => !group.variants.some((gv) => gv.id === v.id)
+          ),
         }));
       } catch (error) {
         console.error('កំហុសក្នុងការលុបវ៉ារីយ៉ង់៖', error);
@@ -187,43 +240,49 @@ const DetailProduct = () => {
         transition={{ duration: 0.3, delay: 0.3 }}
       >
         <h3>វ៉ារីយ៉ង់នៃផលិតផល</h3>
-        {product.variants && product.variants.length > 0 ? (
+        {groupedVariants && groupedVariants.length > 0 ? (
           <table className="variants-table">
             <thead>
               <tr>
+                <th>លេខសម្គាល់</th>
                 <th>ទំហំ</th>
                 <th>ពណ៌</th>
                 <th>បរិមាណស្តុក</th>
                 <th>តម្លៃទិញ (ចុងក្រោយ)</th>
                 <th>តម្លៃលក់</th>
-            
+                <th>សកម្មភាព</th>
               </tr>
             </thead>
             <tbody>
-              {product.variants.map((variant, index) => (
+              {groupedVariants.map((group, index) => (
                 <motion.tr
-                  key={variant.id || index}
+                  key={group.key}
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.3, delay: 0.4 + index * 0.05 }}
                 >
-                  <td>{variant.size || '-'}</td>
-                  <td>{variant.color || '-'}</td>
+                  <td>{group.variants[0].id}</td>
+                  <td>{group.size}</td>
+                  <td>{group.color}</td>
+                  <td>{group.stock_quantity}</td>
+                  <td>{group.purchase_price}</td>
+                  <td>{group.selling_price}</td>
                   <td>
-                    {variant.purchases
-                      ? variant.purchases.reduce((sum, p) => sum + p.quantity, 0)
-                      : 0}
+                    <div className="action-buttons">
+                      <button
+                        className="variant-edit-button"
+                        onClick={() => handleEditVariantGroup(group)}
+                      >
+                        កែ
+                      </button>
+                      <button
+                        className="variant-delete-button"
+                        onClick={() => handleDeleteVariantGroup(group)}
+                      >
+                        លុប
+                      </button>
+                    </div>
                   </td>
-                  <td>
-                    {variant.purchase_price ||
-                      (variant.purchases && variant.purchases.length > 0
-                        ? variant.purchases.sort(
-                            (a, b) => new Date(b.purchase_date) - new Date(a.purchase_date)
-                          )[0].purchase_price
-                        : '-')}
-                  </td>
-                  <td>{variant.selling_price || '-'}</td>
-                
                 </motion.tr>
               ))}
             </tbody>

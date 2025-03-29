@@ -1,3 +1,4 @@
+// src/components/EditProduct.jsx
 import axios from 'axios';
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -6,7 +7,7 @@ import './Product.css';
 const EditProduct = () => {
   const [formData, setFormData] = useState({
     name: '',
-    category: '',
+    category_id: '', // Use category_id instead of category
     description: '',
     brand: '',
     image_url: '',
@@ -30,7 +31,12 @@ const EditProduct = () => {
     const fetchData = async () => {
       try {
         const productResponse = await api.get(`/api/products/${productId}/`);
-        setFormData(productResponse.data);
+        // Map category object to category_id
+        const productData = {
+          ...productResponse.data,
+          category_id: productResponse.data.category?.id || '', // Extract category ID
+        };
+        setFormData(productData);
 
         const categoryResponse = await api.get('/api/categories/');
         setCategories(categoryResponse.data);
@@ -52,7 +58,12 @@ const EditProduct = () => {
     setMessage('');
 
     try {
-      await api.put(`/api/products/${productId}/`, formData);
+      // Create payload with category_id
+      const payload = {
+        ...formData,
+        category_id: formData.category_id || null, // Ensure category_id is sent
+      };
+      await api.put(`/api/products/${productId}/`, payload);
       setMessage('Product updated successfully!');
       setTimeout(() => navigate('/products'), 1000);
     } catch (error) {
@@ -78,8 +89,8 @@ const EditProduct = () => {
             className="product-input"
           />
           <select
-            name="category"
-            value={formData.category}
+            name="category_id" // Use category_id instead of category
+            value={formData.category_id}
             onChange={handleChange}
             disabled={isLoading}
             className="product-input"

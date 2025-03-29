@@ -3,6 +3,7 @@ from rest_framework import serializers
 from django.db import models
 from django.db.models import Sum
 from rest_framework import viewsets
+from datetime import datetime
 from rest_framework.validators import UniqueValidator
 from django.contrib.auth.password_validation import validate_password
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
@@ -220,3 +221,4 @@ class CustomerSerializer(serializers.ModelSerializer):
             'customer_id', 'first_name', 'last_name', 'email', 'phone_number','phone_number2',
             'address', 'city', 'country', 'order_history', 'status', 'registration_date'
         ]
+# Get the product
