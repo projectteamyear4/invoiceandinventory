@@ -286,7 +286,22 @@
   font-size: 16px;
   padding: 20px;
 }
+/* src/Product.css */
+.delivery-methods-button {
+  padding: 10px 20px;
+  background: linear-gradient(90deg, #28a745, #218838);
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: all 0.3s ease;
+}
 
+.delivery-methods-button:hover {
+  background: linear-gradient(90deg, #218838, #28a745);
+  box-shadow: 0 2px 5px rgba(40, 167, 69, 0.3);
+}
 /* Responsive Design */
 @media (max-width: 768px) {
   .product-controls {

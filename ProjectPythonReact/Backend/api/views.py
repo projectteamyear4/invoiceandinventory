@@ -5,8 +5,8 @@ from rest_framework.permissions import IsAuthenticated
 from .serializers import RegisterSerializer, UserDetailSerializer, LoginSerializer
 from django.contrib.auth.models import User
 from rest_framework import viewsets
-from .models import Supplier, Product, ProductVariant, Category, Warehouse,Shelf,Purchase,StockMovement,Customer
-from .serializers import SupplierSerializer, ProductSerializer, ProductVariantSerializer, CategorySerializer, WarehouseSerializer,ShelfSerializer,PurchaseSerializer,StockMovementSerializer,StockMovementSerializer,CustomerSerializer
+from .models import Supplier, Product, ProductVariant, Category, Warehouse,Shelf,Purchase,StockMovement,Customer,DeliveryMethod
+from .serializers import SupplierSerializer, ProductSerializer, ProductVariantSerializer, CategorySerializer, WarehouseSerializer,ShelfSerializer,PurchaseSerializer,StockMovementSerializer,StockMovementSerializer,CustomerSerializer,DeliveryMethodSerializer
 import logging
 
 logger = logging.getLogger(__name__)
@@ -352,3 +352,38 @@ def customer_detail(request, pk):
     elif request.method == 'DELETE':
         customer.delete()
         return Response({'detail': 'Customer deleted'}, status=status.HTTP_204_NO_CONTENT)
+    # Delivery Method Views (New)
+@api_view(['GET', 'POST'])
+@permission_classes([IsAuthenticated])
+def delivery_method_list_create(request):
+    if request.method == 'GET':
+        delivery_methods = DeliveryMethod.objects.all()
+        serializer = DeliveryMethodSerializer(delivery_methods, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    elif request.method == 'POST':
+        serializer = DeliveryMethodSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['GET', 'PUT', 'DELETE'])
+@permission_classes([IsAuthenticated])
+def delivery_method_detail(request, pk):
+    try:
+        delivery_method = DeliveryMethod.objects.get(pk=pk)
+    except DeliveryMethod.DoesNotExist:
+        return Response({'detail': 'Delivery method not found'}, status=status.HTTP_404_NOT_FOUND)
+
+    if request.method == 'GET':
+        serializer = DeliveryMethodSerializer(delivery_method)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    elif request.method == 'PUT':
+        serializer = DeliveryMethodSerializer(delivery_method, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    elif request.method == 'DELETE':
+        delivery_method.delete()
+        return Response({'detail': 'Delivery method deleted'}, status=status.HTTP_204_NO_CONTENT)

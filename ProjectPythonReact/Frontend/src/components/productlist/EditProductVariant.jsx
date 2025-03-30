@@ -99,14 +99,12 @@ const EditProductVariant = () => {
           disabled={isLoading}
           className="product-input"
         />
-        <input
+            <input
           type="number"
           name="stock_quantity"
           placeholder="Stock Quantity"
           value={formData.stock_quantity}
-          onChange={handleChange}
-          required
-          disabled={isLoading}
+          readOnly
           className="product-input"
         />
         <input
@@ -114,11 +112,11 @@ const EditProductVariant = () => {
           name="purchase_price"
           placeholder="Purchase Price"
           value={formData.purchase_price}
-          onChange={handleChange}
+          readOnly
           step="0.01"
-          disabled={isLoading}
           className="product-input"
         />
+
         <input
           type="number"
           name="selling_price"

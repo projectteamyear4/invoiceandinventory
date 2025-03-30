@@ -1,0 +1,129 @@
+/* src/DeliveryMethods.css */
+.delivery-methods-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+    font-family: 'Khmer', Arial, sans-serif;
+  }
+  
+  .delivery-methods-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+  }
+  
+  .delivery-methods-header h2 {
+    font-size: 24px;
+    color: #333;
+  }
+  
+  .delivery-methods-form {
+    background: #f9f9f9;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+  }
+  
+  .form-row {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 15px;
+    align-items: center;
+  }
+  
+  .delivery-input {
+    flex: 1;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 16px;
+  }
+  
+  .delivery-button {
+    padding: 10px 20px;
+    background: linear-gradient(90deg, #007bff, #0056b3);
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: all 0.3s ease;
+  }
+  
+  .delivery-button:hover {
+    background: linear-gradient(90deg, #0056b3, #007bff);
+    box-shadow: 0 2px 5px rgba(0, 123, 255, 0.3);
+  }
+  
+  .error-message {
+    color: #dc3545;
+    margin-top: 10px;
+  }
+  
+  .delivery-methods-table h3 {
+    font-size: 20px;
+    color: #333;
+    margin-bottom: 15px;
+  }
+  
+  .delivery-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: #fff;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  
+  .delivery-table th,
+  .delivery-table td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+  }
+  
+  .delivery-table th {
+    background: linear-gradient(90deg, #3f7fc2, #0056b3);
+    color: white;
+    text-transform: uppercase;
+    font-size: 14px;
+  }
+  
+  .delivery-table tr:hover {
+    background: rgba(0, 123, 255, 0.1);
+  }
+  
+  .action-buttons {
+    display: flex;
+    gap: 10px;
+  }
+  
+  .delivery-edit-button,
+  .delivery-delete-button {
+    padding: 8px 15px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.3s ease;
+  }
+  
+  .delivery-edit-button {
+    background: #28a745;
+    color: white;
+  }
+  
+  .delivery-edit-button:hover {
+    background: #218838;
+  }
+  
+  .delivery-delete-button {
+    background: #dc3545;
+    color: white;
+  }
+  
+  .delivery-delete-button:hover {
+    background: #c82333;
+  }

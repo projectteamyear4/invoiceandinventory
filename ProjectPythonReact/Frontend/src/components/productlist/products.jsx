@@ -424,6 +424,14 @@ const Products = () => {
           >
             មើលប្រភេទផលិតផល
           </motion.button>
+          <motion.button
+          className="delivery-methods-button"
+          onClick={() => navigate('/delivery-methods')}
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+        >
+          មើលវិធីសាស្ត្រដឹកជញ្ជូន
+        </motion.button>
         </div>
       </motion.div>
 

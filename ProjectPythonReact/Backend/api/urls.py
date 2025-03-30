@@ -26,4 +26,6 @@ urlpatterns = [
     path('api/stock-movements/<int:pk>/', views.stock_movement_detail, name='stock_movement_detail'),
     path('api/customers/', views.customer_list_create, name='customer_list_create'),  # Add this
     path('api/customers/<int:pk>/', views.customer_detail, name='customer_detail'),  # Add this
+    path('api/delivery-methods/', views.delivery_method_list_create, name='delivery_method_list_create'),
+    path('api/delivery-methods/<int:pk>/', views.delivery_method_detail, name='delivery_method_detail'),
 ]

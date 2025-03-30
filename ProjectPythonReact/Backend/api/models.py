@@ -148,3 +148,18 @@ class Customer(models.Model):
 
     def __str__(self):
         return f"{self.first_name} {self.last_name}"
+# delivery model
+class DeliveryMethod(models.Model):
+    delivery_method_id = models.AutoField(primary_key=True)
+    delivery_name = models.CharField(max_length=100, null=False)
+    car_number = models.CharField(max_length=100, null=False)
+    delivery_number = models.IntegerField(null=True, blank=True)
+    estimated_delivery_time = models.DurationField(null=True, blank=True)
+    is_active = models.BooleanField(default=True)
+    date = models.DateTimeField(null=True, blank=True)  # New field for date and time, nullable
+
+    def __str__(self):
+        return self.delivery_name
+
+    class Meta:
+        db_table = 'delivery_methods'

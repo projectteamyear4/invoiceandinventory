@@ -10,6 +10,7 @@ import Header from './components/header/header';
 import InvoiceForm from './components/invoice/invoice.jsx';
 import InvoiceList from './components/invoice/invoicelist.jsx';
 import MainDash from './components/MainDash/MainDash';
+import DeliveryMethods from './components/Orderlist/DeliveryMethods.jsx';
 import Orders from './components/Orderlist/Orders.jsx';
 import AddProduct from './components/productlist/addproduct.jsx';
 import AddProductVariant from './components/productlist/addproductvariant.jsx';
@@ -61,6 +62,7 @@ function App() {
               <Route path="/purchases" element={<ProtectedRoute><Purchases /></ProtectedRoute>} />
               <Route path="/add-purchase" element={<ProtectedRoute><AddPurchase /></ProtectedRoute>} />
               <Route path="/category-list" element={<ProtectedRoute><CategoryList /></ProtectedRoute>} />
+              <Route path="//delivery-methods" element={<ProtectedRoute><DeliveryMethods /></ProtectedRoute>} />
               <Route path="/add-category" element={<ProtectedRoute><AddCategory /></ProtectedRoute>} />
               <Route path="/add-product" element={<ProtectedRoute><AddProduct /></ProtectedRoute>} />
               <Route path="/add-variant/:productId" element={<ProtectedRoute><AddProductVariant /></ProtectedRoute>} />

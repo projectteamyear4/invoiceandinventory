@@ -7,7 +7,7 @@ from datetime import datetime
 from rest_framework.validators import UniqueValidator
 from django.contrib.auth.password_validation import validate_password
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
-from .models import Supplier, Product, ProductVariant, Category, Warehouse, Shelf, Purchase, StockMovement, Customer
+from .models import Supplier, Product, ProductVariant, Category, Warehouse, Shelf, Purchase, StockMovement, Customer, DeliveryMethod
 
 # Existing RegisterSerializer
 class RegisterSerializer(serializers.ModelSerializer):
@@ -222,3 +222,20 @@ class CustomerSerializer(serializers.ModelSerializer):
             'address', 'city', 'country', 'order_history', 'status', 'registration_date'
         ]
 # Get the product
+class DeliveryMethodSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = DeliveryMethod
+        fields = [
+            'delivery_method_id',
+            'delivery_name',
+            'car_number',
+            'delivery_number',
+            'estimated_delivery_time',
+            'is_active',
+            'date',  # Add the new date field
+        ]
+
+    def validate_estimated_delivery_time(self, value):
+        if value and value.total_seconds() < 0:
+            raise serializers.ValidationError("Estimated delivery time cannot be negative.")
+        return value
