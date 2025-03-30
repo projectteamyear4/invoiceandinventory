@@ -1,4 +1,3 @@
-// src/components/AddPurchase.jsx
 import axios from 'axios';
 import React, { useContext, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -22,6 +21,11 @@ const AddPurchase = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
+  const [showProductModal, setShowProductModal] = useState(false);
+  const [selectedRowIndex, setSelectedRowIndex] = useState(null);
+  const [searchTerm, setSearchTerm] = useState('');
   const { user } = useContext(AuthContext);
   const navigate = useNavigate();
 
@@ -34,24 +38,38 @@ const AddPurchase = () => {
     },
   });
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const [supplierRes, productRes, variantRes] = await Promise.all([
-          api.get('/api/suppliers/'),
-          api.get('/api/products/'),
-          api.get('/api/variants/'),
-        ]);
-        setSuppliers(supplierRes.data);
-        setProducts(productRes.data);
-        setProductVariants(variantRes.data);
-      } catch (err) {
-        setError('បរាជ័យក្នុងការផ្ទុកជម្រើស។ សូមព្យាយាមម្តងទៀត។'); // "Failed to load options. Please try again."
-        console.error(err);
-      } finally {
-        setLoading(false);
+  const fetchData = async (retryCount = 0) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const [supplierRes, productRes, variantRes] = await Promise.all([
+        api.get('/api/suppliers/'),
+        api.get('/api/products/'),
+        api.get('/api/variants/'),
+      ]);
+      setSuppliers(supplierRes.data);
+      setProducts(productRes.data);
+      setProductVariants(variantRes.data);
+    } catch (err) {
+      console.error('Fetch Error:', err);
+      if (err.response?.status === 401) {
+        setError('សូមចូលគណនីម្តងទៀត។ ការផ្ទៀងផ្ទាត់បានផុតកំណត់។');
+      } else if (retryCount < 2) {
+        console.log(`Retrying... Attempt ${retryCount + 1}`);
+        setTimeout(() => fetchData(retryCount + 1), 2000);
+      } else {
+        setError(
+          err.message === 'Network Error'
+            ? 'មិនអាចភ្ជាប់ទៅម៉ាស៊ីនបម្រើបានទេ។ សូមពិនិត្យបណ្តាញរបស់អ្នក។'
+            : 'បរាជ័យក្នុងការផ្ទុកជម្រើស។ សូមព្យាយាមម្តងទៀត។'
+        );
       }
-    };
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
     fetchData();
   }, []);
 
@@ -78,19 +96,36 @@ const AddPurchase = () => {
 
   const removePurchaseRow = (index) => {
     if (formData.length === 1) {
-      setError('អ្នកត្រូវតែមានយ៉ាងហោចណាស់មួយធាតុទិញ។'); // "You must have at least one purchase entry."
+      setError('អ្នកត្រូវតែមានយ៉ាងហោចណាស់មួយធាតុទិញ។');
       return;
     }
     const updatedFormData = formData.filter((_, i) => i !== index);
     setFormData(updatedFormData);
   };
 
+  const openProductModal = (index) => {
+    setSelectedRowIndex(index);
+    setShowProductModal(true);
+    setSearchTerm('');
+  };
+
+  const handleSelectProduct = (productId, variantId = '') => {
+    const updatedFormData = [...formData];
+    updatedFormData[selectedRowIndex] = {
+      ...updatedFormData[selectedRowIndex],
+      product: productId,
+      product_variant: variantId,
+    };
+    setFormData(updatedFormData);
+    setShowProductModal(false);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError(null);
     setSuccess(null);
+    setIsSubmitting(true);
 
-    // Validate and prepare data for submission
     const purchaseDataList = formData.map((entry, index) => {
       const purchaseData = {
         supplier: parseInt(entry.supplier) || null,
@@ -101,7 +136,6 @@ const AddPurchase = () => {
         purchase_price: parseFloat(entry.purchase_price) || null,
       };
 
-      // Validate each entry
       if (
         !purchaseData.supplier ||
         !purchaseData.product ||
@@ -109,47 +143,98 @@ const AddPurchase = () => {
         !purchaseData.quantity ||
         !purchaseData.purchase_price
       ) {
-        throw new Error(
-          `ត្រូវបំពេញគ្រប់វាលដែលតម្រូវសម្រាប់ធាតុទិញទី ${index + 1}។` // "All required fields must be filled for purchase entry ${index + 1}."
-        );
+        throw new Error(`ត្រូវបំពេញគ្រប់វាលដែលតម្រូវសម្រាប់ធាតុទិញទី ${index + 1}។`);
       }
 
       return purchaseData;
     });
 
     try {
-      // Send all purchases in a single request
       const response = await api.post('/api/purchases/bulk/', purchaseDataList);
-      setSuccess('បានបន្ថែមការទិញដោយជោគជ័យ! ស្តុកត្រូវបានធ្វើបច្ចុប្បន្នភាព។'); // "Purchases added successfully! Stock updated."
-      setTimeout(() => navigate('/purchases'), 1000);
+      setSuccess('បានបន្ថែមការទិញដោយជោគជ័យ! ស្តុកត្រូវបានធ្វើបច្ចុប្បន្នភាព។');
+      setIsSuccess(true);
+      setTimeout(() => navigate('/purchases', { replace: true }), 1500);
     } catch (err) {
       const errorMsg =
-        err.response?.data || 'បរាជ័យក្នុងការបន្ថែមការទិញ។ សូមពិនិត្យមើលទិន្នន័យរបស់អ្នក។'; // "Failed to add purchases. Please check your input."
-      setError(JSON.stringify(errorMsg));
+        err.response?.data?.detail ||
+        'បរាជ័យក្នុងការបន្ថែមការទិញ។ សូមពិនិត្យមើលទិន្នន័យរបស់អ្នក។';
+      setError(errorMsg);
       console.error(err.response?.data || err);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
-  if (loading) return <p>កំពុងផ្ទុក...</p>; // "Loading..."
+  // Optimized filteredItems: only show variants if they exist
+  const filteredItems = () => {
+    const term = searchTerm.toLowerCase();
+    const allItems = [];
+
+    products.forEach((product) => {
+      const hasVariants = productVariants.some((v) => v.product === product.id);
+      const productName = product.name.toLowerCase();
+
+      // Add product if it matches search term
+      if (productName.includes(term)) {
+        allItems.push({ productId: product.id, variantId: '', name: product.name });
+      }
+
+      // Add variants only if the product has them
+      if (hasVariants) {
+        const matchingVariants = productVariants.filter((v) => v.product === product.id);
+        matchingVariants.forEach((variant) => {
+          const variantDetails = [variant.size, variant.color].filter(Boolean).join(' ');
+          const fullName = variantDetails ? `${product.name} - ${variantDetails}` : product.name;
+          if (fullName.toLowerCase().includes(term)) {
+            allItems.push({ productId: product.id, variantId: variant.id, name: fullName });
+          }
+        });
+      }
+    });
+
+    return allItems;
+  };
+
+  // Display name: show only product name if no variant is selected or no variants exist
+  const getDisplayName = (entry) => {
+    const product = products.find((p) => p.id === parseInt(entry.product));
+    if (!product) return '';
+    
+    const hasVariants = productVariants.some((v) => v.product === product.id);
+    const variant = productVariants.find((v) => v.id === parseInt(entry.product_variant));
+
+    if (!variant || !hasVariants) return product.name; // Only product name if no variant or no variants exist
+    
+    const variantDetails = [variant.size, variant.color].filter(Boolean).join(' ');
+    return variantDetails ? `${product.name} - ${variantDetails}` : product.name;
+  };
+
+  if (loading) return <p className="loading-text">កំពុងផ្ទុក...</p>;
 
   return (
     <div className="product-table-container">
       <div className="product-header">
-        <h2>បន្ថែមការទិញថ្មី</h2> {/* "Add New Purchases" */}
+        <h2>បន្ថែមការទិញថ្មី</h2>
+        {error && !success && (
+          <button className="retry-button" onClick={() => fetchData()}>
+            ព្យាយាមម្តងទៀត
+          </button>
+        )}
       </div>
       {error && <p className="error-message">{error}</p>}
-      {success && <p className="success-message">{success}</p>}
-      <form onSubmit={handleSubmit} className="add-form">
+      {success && (
+        <p className={`success-message ${isSuccess ? 'fade-in' : ''}`}>{success}</p>
+      )}
+      <form onSubmit={handleSubmit} className={`add-form ${isSuccess ? 'fade-out' : ''}`}>
         <table className="purchase-table">
           <thead>
             <tr>
-              <th>អ្នកផ្គត់ផ្គង់</th> {/* "Supplier" */}
-              <th>ផលិតផល</th> {/* "Product" */}
-              <th>ប្រភេទផលិតផល (ស្រេចចិត្ត)</th> {/* "Product Variant (Optional)" */}
-              <th>លេខបាច់</th> {/* "Batch Number" */}
-              <th>បរិមាណ</th> {/* "Quantity" */}
-              <th>តម្លៃទិញ</th> {/* "Purchase Price" */}
-              <th>សកម្មភាព</th> {/* "Actions" */}
+              <th>អ្នកផ្គត់ផ្គង់</th>
+              <th>ផលិតផល/ប្រភេទ</th>
+              <th>លេខបាច់</th>
+              <th>បរិមាណ</th>
+              <th>តម្លៃទិញ</th>
+              <th>សកម្មភាព</th>
             </tr>
           </thead>
           <tbody>
@@ -161,8 +246,9 @@ const AddPurchase = () => {
                     value={entry.supplier}
                     onChange={(e) => handleChange(index, e)}
                     required
+                    disabled={isSubmitting || products.length === 0}
                   >
-                    <option value="">ជ្រើសរើសអ្នកផ្គត់ផ្គង់</option> {/* "Select Supplier" */}
+                    <option value="">ជ្រើសរើសអ្នកផ្គត់ផ្គង់</option>
                     {suppliers.map((supplier) => (
                       <option key={supplier.id} value={supplier.id}>
                         {supplier.name}
@@ -171,33 +257,23 @@ const AddPurchase = () => {
                   </select>
                 </td>
                 <td>
-                  <select
-                    name="product"
-                    value={entry.product}
-                    onChange={(e) => handleChange(index, e)}
-                    required
-                  >
-                    <option value="">ជ្រើសរើសផលិតផល</option> {/* "Select Product" */}
-                    {products.map((product) => (
-                      <option key={product.id} value={product.id}>
-                        {product.name}
-                      </option>
-                    ))}
-                  </select>
-                </td>
-                <td>
-                  <select
-                    name="product_variant"
-                    value={entry.product_variant}
-                    onChange={(e) => handleChange(index, e)}
-                  >
-                    <option value="">គ្មានប្រភេទ</option> {/* "No Variant" */}
-                    {productVariants.map((variant) => (
-                      <option key={variant.id} value={variant.id}>
-                        {variant.product.name} - {variant.size || ''} {variant.color || ''}
-                      </option>
-                    ))}
-                  </select>
+                  <div className="product-select-group">
+                    <input
+                      type="text"
+                      value={getDisplayName(entry)}
+                      readOnly
+                      placeholder="ជ្រើសរើសផលិតផល"
+                      className="product-display-input"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => openProductModal(index)}
+                      className="select-product-button"
+                      disabled={isSubmitting || products.length === 0}
+                    >
+                      ជ្រើសរើស
+                    </button>
+                  </div>
                 </td>
                 <td>
                   <input
@@ -206,6 +282,7 @@ const AddPurchase = () => {
                     value={entry.batch_number}
                     onChange={(e) => handleChange(index, e)}
                     required
+                    disabled={isSubmitting}
                   />
                 </td>
                 <td>
@@ -216,6 +293,7 @@ const AddPurchase = () => {
                     onChange={(e) => handleChange(index, e)}
                     min="1"
                     required
+                    disabled={isSubmitting}
                   />
                 </td>
                 <td>
@@ -227,6 +305,7 @@ const AddPurchase = () => {
                     step="0.01"
                     min="0"
                     required
+                    disabled={isSubmitting}
                   />
                 </td>
                 <td>
@@ -234,8 +313,9 @@ const AddPurchase = () => {
                     type="button"
                     onClick={() => removePurchaseRow(index)}
                     className="remove-button"
+                    disabled={isSubmitting}
                   >
-                    លុប {/* "Remove" */}
+                    លុប
                   </button>
                 </td>
               </tr>
@@ -243,14 +323,84 @@ const AddPurchase = () => {
           </tbody>
         </table>
         <div className="form-actions">
-          <button type="button" onClick={addPurchaseRow} className="add-row-button">
-            បន្ថែមការទិញផ្សេងទៀត {/* "Add Another Purchase" */}
+          <button
+            type="button"
+            onClick={addPurchaseRow}
+            className="add-row-button"
+            disabled={isSubmitting || products.length === 0}
+          >
+            បន្ថែមការទិញផ្សេងទៀត
           </button>
-          <button type="submit" className="product-add-button">
-            រក្សាទុកការទិញទាំងអស់ {/* "Save All Purchases" */}
+          <button
+            type="submit"
+            className="product-add-button"
+            disabled={isSubmitting || products.length === 0}
+          >
+            {isSubmitting ? 'កំពុងរក្សាទុក...' : 'រក្សាទុកការទិញទាំងអស់'}
           </button>
         </div>
       </form>
+
+      {showProductModal && (
+        <div className="modal-overlay">
+          <div className="modal-content">
+            <h2>ជ្រើសរើសផលិតផល</h2>
+            <div className="search-container">
+              <input
+                type="text"
+                className="search-input"
+                placeholder="ស្វែងរកផលិតផល..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+            </div>
+            <div className="modal-table-container">
+              <table className="modal-table">
+                <thead>
+                  <tr>
+                    <th>ឈ្មោះផលិតផល</th>
+                    <th>ប្រភេទ</th>
+                    <th>សកម្មភាព</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredItems().length === 0 ? (
+                    <tr>
+                      <td colSpan="3" className="no-results">
+                        គ្មានផលិតផលត្រូវនឹងការស្វែងរក
+                      </td>
+                    </tr>
+                  ) : (
+                    filteredItems().map((item) => {
+                      const variantPart = item.variantId ? item.name.split(' - ')[1] : '';
+                      return (
+                        <tr key={`${item.productId}-${item.variantId || 'no-variant'}`}>
+                          <td>{item.name.split(' - ')[0]}</td>
+                          <td>{variantPart || '-'}</td>
+                          <td>
+                            <button
+                              className="select-button"
+                              onClick={() => handleSelectProduct(item.productId, item.variantId)}
+                            >
+                              ជ្រើសរើស
+                            </button>
+                          </td>
+                        </tr>
+                      );
+                    })
+                  )}
+                </tbody>
+              </table>
+            </div>
+            <button
+              className="close-button"
+              onClick={() => setShowProductModal(false)}
+            >
+              បិទ
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

@@ -11,6 +11,7 @@ const AddProduct = () => {
   const [categories, setCategories] = useState([]);
   const [message, setMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false); // New state for success animation
   const { user } = useContext(AuthContext);
   const navigate = useNavigate();
 
@@ -62,8 +63,10 @@ const AddProduct = () => {
         products.map((product) => api.post('/api/products/', product))
       );
       setMessage('បានបន្ថែមផលិតផលដោយជោគជ័យ!');
-      setProducts([{ name: '', category_id: '', description: '', brand: '', image_url: '' }]);
-      setTimeout(() => navigate('/products'), 1000);
+      setIsSuccess(true); // Trigger success state for animation
+      setTimeout(() => {
+        navigate('/products', { replace: true }); // Replace history to prevent back navigation
+      }, 1500); // Delay for smooth transition (1.5s)
     } catch (error) {
       if (error.response) {
         setMessage(error.response.data.detail || 'មិនអាចបន្ថែមផលិតផលបានទេ។');
@@ -80,7 +83,10 @@ const AddProduct = () => {
   return (
     <div className="product-form-container">
       <h2>បន្ថែមផលិតផល</h2>
-      <form onSubmit={handleSubmit} className="product-form">
+      <form
+        onSubmit={handleSubmit}
+        className={`product-form ${isSuccess ? 'fade-out' : ''}`} // Add fade-out class on success
+      >
         {products.map((product, index) => (
           <div key={index} className="product-row">
             <input
@@ -145,15 +151,24 @@ const AddProduct = () => {
             )}
           </div>
         ))}
-        <button type="button" onClick={addProductRow} disabled={isLoading} className="product-add-row-button">
-          បន្ថែមផលិតផលផ្សេងទៀត
-        </button>
-        <button type="submit" disabled={isLoading} className="product-button">
-          {isLoading ? 'កំពុងបន្ថែម...' : 'បន្ថែមផលិតផល'}
-        </button>
+        <div className="product-button-group">
+          <button
+            type="button"
+            onClick={addProductRow}
+            disabled={isLoading}
+            className="product-add-row-button"
+          >
+            បន្ថែមផលិតផលផ្សេងទៀត
+          </button>
+          <button type="submit" disabled={isLoading} className="product-button">
+            {isLoading ? 'កំពុងបន្ថែម...' : 'បន្ថែមផលិតផល'}
+          </button>
+        </div>
       </form>
       {message && (
-        <p className={`product-message ${message.includes('ជោគជ័យ') ? 'success' : 'error'}`}>
+        <p
+          className={`product-message ${message.includes('ជោគជ័យ') ? 'success fade-in' : 'error'}`}
+        >
           {message}
         </p>
       )}

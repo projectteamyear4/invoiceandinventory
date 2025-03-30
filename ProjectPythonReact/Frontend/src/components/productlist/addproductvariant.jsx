@@ -121,7 +121,7 @@ const AddProductVariant = () => {
           value={formData.stock_quantity}
           onChange={handleChange}
           required
-          disabled={isLoading}
+         readOnly
           className="product-input"
         />
         <input
@@ -131,7 +131,7 @@ const AddProductVariant = () => {
           value={formData.purchase_price}
           onChange={handleChange}
           step="0.01"
-          disabled={isLoading}
+          readOnly
           className="product-input"
         />
         <input

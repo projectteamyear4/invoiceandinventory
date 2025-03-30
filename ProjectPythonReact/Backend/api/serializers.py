@@ -120,6 +120,7 @@ class ProductVariantSerializer(serializers.ModelSerializer):
     purchases = PurchaseSerializer(source='purchase_set', many=True, read_only=True)
     stock_quantity = serializers.SerializerMethodField()
     purchase_price = serializers.SerializerMethodField()
+   
 
     class Meta:
         model = ProductVariant
@@ -133,6 +134,7 @@ class ProductVariantSerializer(serializers.ModelSerializer):
     def get_purchase_price(self, obj):
         latest_purchase = obj.purchase_set.order_by('-purchase_date').first()
         return latest_purchase.purchase_price if latest_purchase else 0.00
+
 
 # Updated ProductSerializer
 class ProductSerializer(serializers.ModelSerializer):
