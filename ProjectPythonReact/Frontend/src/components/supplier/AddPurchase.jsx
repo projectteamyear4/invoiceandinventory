@@ -165,48 +165,35 @@ const AddPurchase = () => {
     }
   };
 
-  // Optimized filteredItems: only show variants if they exist
   const filteredItems = () => {
     const term = searchTerm.toLowerCase();
     const allItems = [];
 
     products.forEach((product) => {
-      const hasVariants = productVariants.some((v) => v.product === product.id);
-      const productName = product.name.toLowerCase();
-
-      // Add product if it matches search term
-      if (productName.includes(term)) {
-        allItems.push({ productId: product.id, variantId: '', name: product.name });
-      }
-
-      // Add variants only if the product has them
-      if (hasVariants) {
-        const matchingVariants = productVariants.filter((v) => v.product === product.id);
-        matchingVariants.forEach((variant) => {
-          const variantDetails = [variant.size, variant.color].filter(Boolean).join(' ');
-          const fullName = variantDetails ? `${product.name} - ${variantDetails}` : product.name;
+      const matchingVariants = productVariants.filter((v) => v.product === product.id);
+      
+      // Only include variants that have both size and color
+      matchingVariants.forEach((variant) => {
+        if (variant.size && variant.color) { // Ensure both size and color exist
+          const fullName = `${product.name} ${variant.size} ${variant.color}`.trim();
           if (fullName.toLowerCase().includes(term)) {
             allItems.push({ productId: product.id, variantId: variant.id, name: fullName });
           }
-        });
-      }
+        }
+      });
     });
 
     return allItems;
   };
 
-  // Display name: show only product name if no variant is selected or no variants exist
   const getDisplayName = (entry) => {
     const product = products.find((p) => p.id === parseInt(entry.product));
     if (!product) return '';
     
-    const hasVariants = productVariants.some((v) => v.product === product.id);
     const variant = productVariants.find((v) => v.id === parseInt(entry.product_variant));
-
-    if (!variant || !hasVariants) return product.name; // Only product name if no variant or no variants exist
+    if (!variant || !variant.size || !variant.color) return ''; // Return empty if no variant or missing size/color
     
-    const variantDetails = [variant.size, variant.color].filter(Boolean).join(' ');
-    return variantDetails ? `${product.name} - ${variantDetails}` : product.name;
+    return `${product.name} ${variant.size} ${variant.color}`.trim();
   };
 
   if (loading) return <p className="loading-text">កំពុងផ្ទុក...</p>;
@@ -359,24 +346,30 @@ const AddPurchase = () => {
                 <thead>
                   <tr>
                     <th>ឈ្មោះផលិតផល</th>
-                    <th>ប្រភេទ</th>
+                    <th>ទំហំ</th>
+                    <th>ពណ៌</th>
                     <th>សកម្មភាព</th>
                   </tr>
                 </thead>
                 <tbody>
                   {filteredItems().length === 0 ? (
                     <tr>
-                      <td colSpan="3" className="no-results">
+                      <td colSpan="4" className="no-results">
                         គ្មានផលិតផលត្រូវនឹងការស្វែងរក
                       </td>
                     </tr>
                   ) : (
                     filteredItems().map((item) => {
-                      const variantPart = item.variantId ? item.name.split(' - ')[1] : '';
+                      const parts = item.name.split(' ');
+                      const productName = parts[0] + (parts[1] && !['M', 'L', 'S', '39', '40'].includes(parts[1]) ? ' ' + parts[1] : '');
+                      const sizeIndex = parts.findIndex(part => ['M', 'L', 'S', '39', '40'].includes(part));
+                      const size = sizeIndex !== -1 ? parts[sizeIndex] : '';
+                      const color = sizeIndex !== -1 && parts[sizeIndex + 1] ? parts[sizeIndex + 1] : '';
                       return (
                         <tr key={`${item.productId}-${item.variantId || 'no-variant'}`}>
-                          <td>{item.name.split(' - ')[0]}</td>
-                          <td>{variantPart || '-'}</td>
+                          <td>{productName}</td>
+                          <td>{size}</td>
+                          <td>{color}</td>
                           <td>
                             <button
                               className="select-button"

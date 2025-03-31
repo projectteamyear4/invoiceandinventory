@@ -1,5 +1,6 @@
 import axios from "axios";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom"; // Import useNavigate for navigation
 import "./InvoiceForm.css";
 
 const initialProduct = {
@@ -55,8 +56,8 @@ const InvoiceForm = () => {
   const [showProductModal, setShowProductModal] = useState(false);
   const [selectedProductIndex, setSelectedProductIndex] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [searchTerm, setSearchTerm] = useState(""); // For product modal
-  const [customerSearchTerm, setCustomerSearchTerm] = useState(""); // For customer modal
+  const [searchTerm, setSearchTerm] = useState("");
+  const [customerSearchTerm, setCustomerSearchTerm] = useState("");
 
   const [loading, setLoading] = useState({
     customers: true,
@@ -71,6 +72,8 @@ const InvoiceForm = () => {
     variants: null,
     submit: null,
   });
+
+  const navigate = useNavigate(); // Initialize useNavigate for navigation
 
   const api = useMemo(
     () =>
@@ -186,7 +189,7 @@ const InvoiceForm = () => {
       customerPhone: customer.phone_number || "",
     }));
     setShowCustomerModal(false);
-    setCustomerSearchTerm(""); // Reset search term on selection
+    setCustomerSearchTerm("");
   }, []);
 
   const handleSelectDelivery = useCallback((method) => {
@@ -226,7 +229,6 @@ const InvoiceForm = () => {
     [formData.products, selectedProductIndex, products]
   );
 
-  // Filter variants for product modal
   const filteredVariants = useMemo(() => {
     if (!searchTerm) return variants;
 
@@ -239,7 +241,6 @@ const InvoiceForm = () => {
     });
   }, [variants, products, searchTerm]);
 
-  // Filter customers for customer modal
   const filteredCustomers = useMemo(() => {
     if (!customerSearchTerm) return customers;
 
@@ -288,7 +289,7 @@ const InvoiceForm = () => {
     e.preventDefault();
     setIsSubmitting(true);
     setError((prev) => ({ ...prev, submit: null }));
-
+  
     if (!formData.customerName || !formData.dueDate || !formData.paymentMethod) {
       setError((prev) => ({
         ...prev,
@@ -314,7 +315,7 @@ const InvoiceForm = () => {
       setIsSubmitting(false);
       return;
     }
-
+  
     try {
       const invoiceData = {
         type: formData.type,
@@ -350,11 +351,17 @@ const InvoiceForm = () => {
             unit_price: p.unitPrice,
             discount_percentage: p.discount,
             total_price: p.total,
+            name: p.name, // Add product name
+            size: p.size, // Add size
+            color: p.color, // Add color
           })),
       };
-
+  
       const response = await api.post("/api/invoices/", invoiceData);
       alert("វិក្កយបត្របានបង្កើតដោយជោគជ័យ!");
+  
+      // Navigate to InvoiceDetail with the invoice data
+      navigate("/invoice-detail", { state: { invoice: { ...invoiceData, id: response.data.id } } });
       setFormData(initialFormData);
     } catch (err) {
       console.error("Error creating invoice:", err.response?.data || err.message || err);
@@ -390,7 +397,7 @@ const InvoiceForm = () => {
                 <option value="វិក្កយបត្របញ្ជាទិញ">វិក្កយបត្របញ្ជាទិញ</option>
               </select>
               <input
-                type="date"
+                type="datetime-local"
                 className="date-input"
                 name="date"
                 value={formData.date}
@@ -399,7 +406,7 @@ const InvoiceForm = () => {
                 disabled={isSubmitting}
               />
               <input
-                type="date"
+                type="datetime-local"
                 className="date-input"
                 name="dueDate"
                 value={formData.dueDate}
@@ -530,7 +537,7 @@ const InvoiceForm = () => {
               />
               <input
                 className="form-input"
-                placeholder="អាសយដ្ឋាន ១"
+                placeholder="លេខឡាន"
                 name="shippingAddress1"
                 value={formData.shippingAddress1}
                 onChange={handleChange}
@@ -538,25 +545,9 @@ const InvoiceForm = () => {
               />
               <input
                 className="form-input"
-                placeholder="ទីប្រជុំជន"
+                placeholder="លេខអ្នកដឹកជញ្ជូន"
                 name="shippingTown"
                 value={formData.shippingTown}
-                onChange={handleChange}
-                disabled={isSubmitting}
-              />
-              <input
-                className="form-input"
-                placeholder="ប្រទេស"
-                name="shippingCountry"
-                value={formData.shippingCountry}
-                onChange={handleChange}
-                disabled={isSubmitting}
-              />
-              <input
-                className="form-input"
-                placeholder="លេខកូដប្រៃសណីយ៍"
-                name="shippingPostcode"
-                value={formData.shippingPostcode}
                 onChange={handleChange}
                 disabled={isSubmitting}
               />
@@ -677,6 +668,7 @@ const InvoiceForm = () => {
                         onChange={(e) => handleProductChange(index, e)}
                         min="0"
                         step="0.01"
+                        readOnly
                         required={!!product.product_id}
                         disabled={isSubmitting || !product.product_id}
                       />
