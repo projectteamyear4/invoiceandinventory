@@ -18,8 +18,8 @@ const initialProduct = {
 };
 
 const initialFormData = {
-  type: "invoice", // Updated to lowercase to match backend
-  status: "DRAFT", // Updated to match backend
+  type: "invoice",
+  status: "DRAFT",
   date: new Date().toISOString().split("T")[0],
   dueDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split("T")[0],
   customerName: "",
@@ -28,15 +28,14 @@ const initialFormData = {
   customerTown: "",
   customerCountry: "",
   customerPhone: "",
-  customerId: null, // Added to ensure customerId is tracked
   shippingName: "",
   shippingAddress1: "",
   shippingTown: "",
   shippingCountry: "",
   shippingPostcode: "",
-  deliveryMethodId: null,
+  deliveryMethod: null, // Store the full delivery method object
   notes: "",
-  paymentMethod: "CASH", // Updated to match backend
+  paymentMethod: "CASH",
   products: [initialProduct],
   shippingCost: 0,
   overallDiscount: 0,
@@ -189,7 +188,6 @@ const InvoiceForm = () => {
       customerTown: customer.city || "",
       customerCountry: customer.country || "",
       customerPhone: customer.phone_number || "",
-      customerId: customer.id, // Ensure customerId is set
     }));
     setShowCustomerModal(false);
     setCustomerSearchTerm("");
@@ -203,7 +201,7 @@ const InvoiceForm = () => {
       shippingTown: method.delivery_number || "",
       shippingCountry: method.country || "",
       shippingPostcode: method.postcode || "",
-      deliveryMethodId: method.id,
+      deliveryMethod: method,
     }));
     setShowDeliveryModal(false);
   }, []);
@@ -281,7 +279,6 @@ const InvoiceForm = () => {
     };
   }, [formData.products, formData.shippingCost, formData.overallDiscount, formData.deductTax]);
 
-  // Updated to match backend choices
   const typeOptions = [
     { value: "invoice", label: "វិក្កយបត្រ" },
     { value: "quotation", label: "សម្រង់តម្លៃ" },
@@ -346,58 +343,63 @@ const InvoiceForm = () => {
     }
 
     try {
-      // Ensure a customer is selected or created
-      let customerId = formData.customerId;
-      if (!customerId) {
-        const nameParts = formData.customerName.trim().split(" ");
-        const customerData = {
-          first_name: nameParts[0] || formData.customerName.trim(),
-          last_name: nameParts[1] || "",
-          email: formData.customerEmail || null,
-          address: formData.customerAddress1 || "",
-          city: formData.customerTown || "",
-          country: formData.customerCountry || "",
-          phone_number: formData.customerPhone || "",
-          status: "active",
-        };
+      // Prepare customer data
+      const nameParts = formData.customerName.trim().split(" ");
+      const customerData = {
+        first_name: nameParts[0] || formData.customerName.trim(),
+        last_name: nameParts[1] || "",
+        email: formData.customerEmail || null,
+        address: formData.customerAddress1 || "",
+        city: formData.customerTown || "",
+        country: formData.customerCountry || "",
+        phone_number: formData.customerPhone || "",
+        status: "active",
+      };
 
-        // Check if customer already exists
-        const existingCustomer = customers.find(
-          (c) =>
-            c.first_name === customerData.first_name &&
-            c.last_name === customerData.last_name &&
-            c.email === customerData.email
-        );
-
+      // Check if customer already exists by email (if provided)
+      let customerId = null;
+      if (customerData.email) {
+        const existingCustomer = customers.find((c) => c.email && c.email.toLowerCase() === customerData.email.toLowerCase());
         if (existingCustomer) {
-          customerId = existingCustomer.id;
-        } else {
-          const customerResponse = await api.post("/api/customers/", customerData);
-          if (!customerResponse.data.id) {
-            throw new Error("Failed to create customer: No ID returned");
-          }
-          customerId = customerResponse.data.id;
-          setCustomers((prev) => [...prev, customerResponse.data]); // Update customer list
-          setFormData((prev) => ({ ...prev, customerId })); // Update formData with new customerId
+          customerId = existingCustomer.customer_id;
         }
       }
 
+      // If customer doesn't exist, create a new one
       if (!customerId) {
-        throw new Error("Customer ID is required but could not be determined");
+        const customerResponse = await api.post("/api/customers/", customerData);
+        if (!customerResponse.data.customer_id) {
+          throw new Error("Failed to create customer: No customer_id returned");
+        }
+        customerId = customerResponse.data.customer_id;
+        setCustomers((prev) => [...prev, customerResponse.data]); // Update customer list
       }
+
+      // Prepare delivery method data as a dictionary
+      const deliveryMethodData = formData.deliveryMethod
+        ? {
+            delivery_name: formData.shippingName || "",
+            car_number: formData.shippingAddress1 || "",
+            delivery_number: formData.shippingTown || "",
+            country: formData.shippingCountry || "",
+            postcode: formData.shippingPostcode || "",
+            estimated_delivery_time: null,
+            is_active: true,
+          }
+        : null;
 
       const invoiceData = {
         type: formData.type,
         status: formData.status,
         date: formData.date,
-        due_date: formData.dueDate, // Map to snake_case
-        customer: customerId, // Send customer ID
-        delivery_method: formData.deliveryMethodId || null,
+        due_date: formData.dueDate,
+        customer: customerId, // Send customer ID (pk value)
+        delivery_method: deliveryMethodData,
         notes: formData.notes,
-        payment_method: formData.paymentMethod, // Map to snake_case
+        payment_method: formData.paymentMethod,
         shipping_cost: shippingDisplay,
         overall_discount: discountDisplay,
-        deduct_tax: formData.deductTax, // Map to snake_case
+        deduct_tax: formData.deductTax,
         subtotal: subtotal,
         tax: tax,
         total: total,
@@ -636,6 +638,22 @@ const InvoiceForm = () => {
                 placeholder="លេខអ្នកដឹកជញ្ជូន"
                 name="shippingTown"
                 value={formData.shippingTown}
+                onChange={handleChange}
+                disabled={isSubmitting}
+              />
+              <input
+                className="form-input"
+                placeholder="ប្រទេស"
+                name="shippingCountry"
+                value={formData.shippingCountry}
+                onChange={handleChange}
+                disabled={isSubmitting}
+              />
+              <input
+                className="form-input"
+                placeholder="លេខកូដប្រៃសណីយ៍"
+                name="shippingPostcode"
+                value={formData.shippingPostcode}
                 onChange={handleChange}
                 disabled={isSubmitting}
               />
@@ -918,8 +936,8 @@ const InvoiceForm = () => {
                   </thead>
                   <tbody>
                     {filteredCustomers.map((customer) => (
-                      <tr key={customer.id}>
-                        <td>{customer.id}</td>
+                      <tr key={customer.customer_id}>
+                        <td>{customer.customer_id}</td>
                         <td>{customer.first_name}</td>
                         <td>{customer.last_name}</td>
                         <td>{customer.email}</td>
@@ -975,8 +993,8 @@ const InvoiceForm = () => {
                   </thead>
                   <tbody>
                     {deliveryMethods.map((method) => (
-                      <tr key={method.id}>
-                        <td>{method.id}</td>
+                      <tr key={method.delivery_method_id}>
+                        <td>{method.delivery_method_id}</td>
                         <td>{method.delivery_name}</td>
                         <td>{method.car_number}</td>
                         <td>{method.delivery_number}</td>

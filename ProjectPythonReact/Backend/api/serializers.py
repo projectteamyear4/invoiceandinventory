@@ -255,7 +255,7 @@ class InvoiceItemSerializer(serializers.ModelSerializer):
         fields = ['id', 'product_id', 'variant_id', 'quantity', 'unit_price', 'discount_percentage', 'total_price']
         read_only_fields = ['id', 'total_price']
 class InvoiceSerializer(serializers.ModelSerializer):
-    customer = serializers.DictField()  # Use DictField to accept raw customer data
+    customer = serializers.DictField()  # Accept a dictionary for customer data
     delivery_method = DeliveryMethodSerializer(allow_null=True, required=False)
     items = InvoiceItemSerializer(many=True)
 
