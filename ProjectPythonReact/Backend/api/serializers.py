@@ -7,7 +7,7 @@ from datetime import datetime
 from rest_framework.validators import UniqueValidator
 from django.contrib.auth.password_validation import validate_password
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
-from .models import Supplier, Product, ProductVariant, Category, Warehouse, Shelf, Purchase, StockMovement, Customer, DeliveryMethod
+from .models import Supplier, Product, ProductVariant, Category, Warehouse, Shelf, Purchase, StockMovement, Customer, DeliveryMethod, Invoice, InvoiceItem
 
 # Existing RegisterSerializer
 class RegisterSerializer(serializers.ModelSerializer):
@@ -215,14 +215,6 @@ class ShelfViewSet(viewsets.ModelViewSet):
             except (ValueError, TypeError):
                 print(f"Invalid warehouse_id: {warehouse_id}")
         return queryset
-#customer
-class CustomerSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Customer
-        fields = [
-            'customer_id', 'first_name', 'last_name', 'email', 'phone_number','phone_number2',
-            'address', 'city', 'country', 'order_history', 'status', 'registration_date'
-        ]
 # Get the product
 class DeliveryMethodSerializer(serializers.ModelSerializer):
     class Meta:
@@ -234,10 +226,103 @@ class DeliveryMethodSerializer(serializers.ModelSerializer):
             'delivery_number',
             'estimated_delivery_time',
             'is_active',
-            'date',  # Add the new date field
         ]
 
     def validate_estimated_delivery_time(self, value):
         if value and value.total_seconds() < 0:
             raise serializers.ValidationError("Estimated delivery time cannot be negative.")
         return value
+#Customer serializer
+# CustomerSerializer
+class CustomerSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Customer
+        fields = [
+            'customer_id', 'first_name', 'last_name', 'email', 'phone_number', 'phone_number2',
+            'address', 'city', 'country', 'order_history', 'status', 'registration_date'
+        ]
+        read_only_fields = ['customer_id', 'order_history', 'registration_date']
+
+    def validate(self, data):
+        if not data.get('first_name'):
+            raise serializers.ValidationError({"first_name": "This field cannot be blank."})
+        return data
+    # InvoiceSerializer
+    # InvoiceItemSerializer
+class InvoiceItemSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = InvoiceItem
+        fields = ['id', 'product_id', 'variant_id', 'quantity', 'unit_price', 'discount_percentage', 'total_price']
+        read_only_fields = ['id', 'total_price']
+class InvoiceSerializer(serializers.ModelSerializer):
+    customer = serializers.DictField()  # Use DictField to accept raw customer data
+    delivery_method = DeliveryMethodSerializer(allow_null=True, required=False)
+    items = InvoiceItemSerializer(many=True)
+
+    class Meta:
+        model = Invoice
+        fields = [
+            'id', 'type', 'status', 'date', 'due_date', 'customer', 'delivery_method',
+            'notes', 'payment_method', 'shipping_cost', 'overall_discount', 'deduct_tax',
+            'subtotal', 'tax', 'total', 'total_in_riel', 'items'
+        ]
+        read_only_fields = ['id']
+
+    def validate_customer(self, customer_data):
+        serializer = CustomerSerializer(data=customer_data)
+        serializer.is_valid(raise_exception=True)
+        return customer_data
+
+    def validate(self, data):
+        customer_data = data.get('customer')
+        if customer_data:
+            data['customer'] = self.validate_customer(customer_data)
+        return data
+
+    def create(self, validated_data):
+        customer_data = validated_data.pop('customer')
+        delivery_method_data = validated_data.pop('delivery_method', None)
+        items_data = validated_data.pop('items')
+
+        email = customer_data.get('email')
+        customer = None
+        if email:
+            try:
+                customer = Customer.objects.get(email__iexact=email)
+                for key, value in customer_data.items():
+                    if value:
+                        setattr(customer, key, value)
+                customer.save()
+            except Customer.DoesNotExist:
+                customer = Customer.objects.create(**customer_data)
+        else:
+            customer = Customer.objects.create(**customer_data)
+
+        delivery_method = None
+        if delivery_method_data:
+            delivery_method = DeliveryMethod.objects.create(**delivery_method_data)
+
+        invoice = Invoice.objects.create(
+            customer=customer,
+            delivery_method=delivery_method,
+            **validated_data
+        )
+
+        for item_data in items_data:
+            product_id = item_data.pop('product_id')
+            variant_id = item_data.pop('variant_id', None)
+            product = Product.objects.get(id=product_id)
+            variant = ProductVariant.objects.get(id=variant_id) if variant_id else None
+            InvoiceItem.objects.create(
+                invoice=invoice,
+                product=product,
+                variant=variant,
+                **item_data
+            )
+
+        return invoice
+
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        representation['customer'] = CustomerSerializer(instance.customer).data
+        return representation

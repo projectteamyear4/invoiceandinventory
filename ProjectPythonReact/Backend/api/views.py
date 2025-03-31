@@ -318,6 +318,7 @@ def stock_movement_detail(request, pk):
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     # Customer Views (New)
+# Customer Views
 @api_view(['GET', 'POST'])
 @permission_classes([IsAuthenticated])
 def customer_list_create(request):

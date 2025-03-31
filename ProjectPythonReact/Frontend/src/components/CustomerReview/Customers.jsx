@@ -1,4 +1,3 @@
-// src/components/CustomerList.jsx
 import axios from 'axios';
 import { motion } from 'framer-motion';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
@@ -14,7 +13,7 @@ const Customers = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [visibleColumns, setVisibleColumns] = useState({
-    customer_id: true,
+    id: true, // Changed from customer_id to id
     first_name: true,
     last_name: true,
     email: true,
@@ -28,8 +27,8 @@ const Customers = () => {
     registration_date: true,
     actions: true,
   });
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false); // State for dropdown open/close
-  const dropdownRef = useRef(null); // Ref to handle clicks outside the dropdown
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const dropdownRef = useRef(null);
   const navigate = useNavigate();
 
   const api = axios.create({
@@ -71,7 +70,6 @@ const Customers = () => {
     return () => clearTimeout(timeoutId);
   }, [searchQuery, customers]);
 
-  // Handle clicks outside the dropdown to close it
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -90,8 +88,8 @@ const Customers = () => {
 
     try {
       await api.delete(`/api/customers/${customerId}/`);
-      setCustomers(customers.filter((customer) => customer.customer_id !== customerId));
-      setFilteredCustomers(filteredCustomers.filter((customer) => customer.customer_id !== customerId));
+      setCustomers(customers.filter((customer) => customer.id !== customerId)); // Changed customer_id to id
+      setFilteredCustomers(filteredCustomers.filter((customer) => customer.id !== customerId)); // Changed customer_id to id
     } catch (err) {
       console.error('Delete error:', err);
       alert('មិនអាចលុបអតិថិជនបានទេ។');
@@ -109,15 +107,14 @@ const Customers = () => {
     setRowsPerPage(Number(e.target.value));
   };
 
-  // Define columns for the DataTable
   const columns = useMemo(
     () => [
       {
         name: 'ID',
-        selector: (row) => row.customer_id,
+        selector: (row) => row.id, // Changed customer_id to id
         sortable: true,
         width: '80px',
-        omit: !visibleColumns.customer_id,
+        omit: !visibleColumns.id, // Changed customer_id to id
       },
       {
         name: 'ឈ្មោះ',
@@ -186,7 +183,7 @@ const Customers = () => {
           <div className="action-buttons">
             <motion.button
               className="customer-edit-button"
-              onClick={() => navigate(`/edit-customer/${row.customer_id}`)}
+              onClick={() => navigate(`/edit-customer/${row.id}`)} // Changed customer_id to id
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
             >
@@ -194,7 +191,7 @@ const Customers = () => {
             </motion.button>
             <motion.button
               className="customer-delete-button"
-              onClick={() => handleDelete(row.customer_id)}
+              onClick={() => handleDelete(row.id)} // Changed customer_id to id
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
             >
@@ -211,7 +208,6 @@ const Customers = () => {
     [navigate, visibleColumns]
   );
 
-  // Custom styles for the DataTable to match the existing Customers.css
   const customStyles = {
     table: {
       style: {
@@ -293,7 +289,6 @@ const Customers = () => {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
     >
-      {/* Header */}
       <motion.div
         className="customer-header"
         initial={{ opacity: 0, y: -10 }}
@@ -311,7 +306,6 @@ const Customers = () => {
         </motion.button>
       </motion.div>
 
-      {/* Controls (Search, Column Selector, Per Page Selector) */}
       <motion.div
         className="customer-controls"
         initial={{ opacity: 0, y: -10 }}
@@ -319,7 +313,6 @@ const Customers = () => {
         transition={{ duration: 0.3, delay: 0.2 }}
       >
         <div className="customer-search-wrapper">
-         
           <input
             type="text"
             placeholder="ស្វែងរកអតិថិជន..."
@@ -351,12 +344,12 @@ const Customers = () => {
                       checked={visibleColumns[column]}
                       onChange={() => toggleColumn(column)}
                     />
-                    {column === 'customer_id' ? 'ID' :
+                    {column === 'id' ? 'ID' : // Changed customer_id to id
                      column === 'first_name' ? 'ឈ្មោះ' :
                      column === 'last_name' ? 'នាមត្រកូល' :
                      column === 'email' ? 'អ៊ីមែល' :
                      column === 'phone_number' ? 'លេខទូរស័ព្ទ' :
-                     column === 'phone_number2' ? 'លេខទូរស័ព្ទ ២' :
+                     column === 'phone_number2' ? 'លេខទូរ�ส័ព្ទ ២' :
                      column === 'address' ? 'អាសយដ្ឋាន' :
                      column === 'city' ? 'ទីក្រុង' :
                      column === 'country' ? 'ប្រទេស' :
@@ -380,7 +373,6 @@ const Customers = () => {
         </div>
       </motion.div>
 
-      {/* DataTable */}
       <DataTable
         columns={columns}
         data={filteredCustomers}

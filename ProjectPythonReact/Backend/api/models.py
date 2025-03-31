@@ -1,6 +1,7 @@
 from django.db import models
 import uuid
 import random
+from django.utils import timezone
 from django.core.exceptions import ValidationError
 #Supplier model
 class Supplier(models.Model):
@@ -125,29 +126,7 @@ class StockMovement(models.Model):
 
     def __str__(self):
         return f"{self.movement_type} - {self.product.name} - {self.quantity}"
-#customer model
-class Customer(models.Model):
-    STATUS_CHOICES = [
-        ('active', 'Active'),
-        ('inactive', 'Inactive'),
-        ('suspended', 'Suspended'),
-    ]
 
-    customer_id = models.AutoField(primary_key=True)
-    first_name = models.CharField(max_length=50, null=False)
-    last_name = models.CharField(max_length=50, null=False)
-    email = models.EmailField(max_length=100, unique=True)
-    phone_number = models.CharField(max_length=15, blank=True, null=True)
-    phone_number2 = models.CharField(max_length=15, blank=True, null=True)  # Add this field
-    address = models.CharField(max_length=255, blank=True, null=True)
-    city = models.CharField(max_length=50, blank=True, null=True)
-    country = models.CharField(max_length=50, blank=True, null=True)
-    order_history = models.IntegerField(default=0)
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='active')
-    registration_date = models.DateTimeField(auto_now_add=True)
-
-    def __str__(self):
-        return f"{self.first_name} {self.last_name}"
 # delivery model
 class DeliveryMethod(models.Model):
     delivery_method_id = models.AutoField(primary_key=True)
@@ -163,3 +142,90 @@ class DeliveryMethod(models.Model):
 
     class Meta:
         db_table = 'delivery_methods'
+#customer model
+# Customer Model
+class Customer(models.Model):
+    customer_id = models.AutoField(primary_key=True, serialize=False)  # Add customer_id as the primary key
+    first_name = models.CharField(max_length=100)
+    last_name = models.CharField(max_length=100, blank=True, null=True)
+    email = models.EmailField(blank=True, null=True, unique=True)
+    phone_number = models.CharField(max_length=20, blank=True, null=True)
+    phone_number2 = models.CharField(max_length=20, blank=True, null=True)
+    address = models.TextField(blank=True, null=True)
+    city = models.CharField(max_length=100, blank=True, null=True)
+    country = models.CharField(max_length=100, blank=True, null=True)
+    order_history = models.TextField(blank=True, null=True)
+    status = models.CharField(max_length=20, default='active')
+    registration_date = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.first_name} {self.last_name or ''}".strip()
+
+# DeliveryMethod Model
+class DeliveryMethod(models.Model):
+    delivery_method_id = models.AutoField(primary_key=True)
+    delivery_name = models.CharField(max_length=100, null=False)
+    car_number = models.CharField(max_length=100, null=False)
+    delivery_number = models.IntegerField(null=True, blank=True)  # Allowing NULL as per schema
+    estimated_delivery_time = models.DurationField(null=True, blank=True)  # INTERVAL maps to DurationField
+    is_active = models.BooleanField(default=True)
+
+    def __str__(self):
+        return self.delivery_name
+
+    class Meta:
+        db_table = 'delivery_methods'
+
+# Invoice Model
+class Invoice(models.Model):
+    INVOICE_TYPES = (
+        ('invoice', 'Invoice'),
+        ('quotation', 'Quotation'),
+    )
+    STATUS_CHOICES = (
+        ('DRAFT', 'Draft'),
+        ('PENDING', 'Pending'),
+        ('PAID', 'Paid'),
+        ('CANCELLED', 'Cancelled'),
+    )
+    PAYMENT_METHODS = (
+        ('CASH', 'Cash'),
+        ('CREDIT', 'Credit'),
+        ('BANK_TRANSFER', 'Bank Transfer'),
+    )
+    type = models.CharField(max_length=20, choices=INVOICE_TYPES, default='SALE')
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='DRAFT')
+    date = models.DateField(default=timezone.now)
+    due_date = models.DateField()
+    customer = models.ForeignKey(Customer, on_delete=models.SET_NULL, null=True, related_name='invoices')
+    delivery_method = models.ForeignKey(DeliveryMethod, on_delete=models.SET_NULL, null=True, related_name='invoices')
+    notes = models.TextField(blank=True, null=True)
+    payment_method = models.CharField(max_length=20, choices=PAYMENT_METHODS, default='CASH')
+    shipping_cost = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+    overall_discount = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+    deduct_tax = models.BooleanField(default=False)
+    subtotal = models.DecimalField(max_digits=12, decimal_places=2, default=0.00)
+    tax = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+    total = models.DecimalField(max_digits=12, decimal_places=2, default=0.00)
+    total_in_riel = models.DecimalField(max_digits=15, decimal_places=2, default=0.00)
+
+    def __str__(self):
+        return f"Invoice {self.id} - {self.customer}"
+
+# InvoiceItem Model
+class InvoiceItem(models.Model):
+    invoice = models.ForeignKey(Invoice, on_delete=models.CASCADE, related_name='items')
+    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+    variant = models.ForeignKey(ProductVariant, on_delete=models.SET_NULL, null=True)
+    quantity = models.PositiveIntegerField()
+    unit_price = models.DecimalField(max_digits=10, decimal_places=2)
+    discount_percentage = models.DecimalField(max_digits=5, decimal_places=2, default=0.00)
+    total_price = models.DecimalField(max_digits=12, decimal_places=2)
+
+    def save(self, *args, **kwargs):
+        discount = self.unit_price * (self.discount_percentage / 100)
+        self.total_price = (self.unit_price - discount) * self.quantity
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"Item {self.id} - {self.product.name} - Invoice {self.invoice.id}"

@@ -18,23 +18,25 @@ const initialProduct = {
 };
 
 const initialFormData = {
-  type: "វិក្កយបត្រ",
-  status: "Unpaid", // Updated to match the backend ENUM-like values
+  type: "invoice", // Updated to lowercase to match backend
+  status: "DRAFT", // Updated to match backend
   date: new Date().toISOString().split("T")[0],
-  dueDate: "",
+  dueDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split("T")[0],
   customerName: "",
   customerEmail: "",
   customerAddress1: "",
   customerTown: "",
   customerCountry: "",
   customerPhone: "",
+  customerId: null, // Added to ensure customerId is tracked
   shippingName: "",
   shippingAddress1: "",
   shippingTown: "",
   shippingCountry: "",
   shippingPostcode: "",
+  deliveryMethodId: null,
   notes: "",
-  paymentMethod: "",
+  paymentMethod: "CASH", // Updated to match backend
   products: [initialProduct],
   shippingCost: 0,
   overallDiscount: 0,
@@ -101,13 +103,13 @@ const InvoiceForm = () => {
         ]);
 
         if (customersRes.status === "fulfilled") setCustomers(customersRes.value.data);
-        else setError((prev) => ({ ...prev, customers: "បរាជ័យក្នុងការផ្ទុកអតិថិជន" }));
+        else setError((prev) => ({ ...prev, customers: "Failed to load customers" }));
 
         if (deliveryRes.status === "fulfilled") setDeliveryMethods(deliveryRes.value.data);
-        else setError((prev) => ({ ...prev, delivery: "បរាជ័យក្នុងការផ្ទុកវិធីដឹកជញ្ជូន" }));
+        else setError((prev) => ({ ...prev, delivery: "Failed to load delivery methods" }));
 
         if (productsRes.status === "fulfilled") setProducts(productsRes.value.data);
-        else setError((prev) => ({ ...prev, products: "បរាជ័យក្នុងការផ្ទុកផលិតផល" }));
+        else setError((prev) => ({ ...prev, products: "Failed to load products" }));
 
         if (variantsRes.status === "fulfilled") {
           const fetchedVariants = variantsRes.value.data.map((variant) => ({
@@ -117,15 +119,15 @@ const InvoiceForm = () => {
           }));
           setVariants(fetchedVariants);
         } else {
-          setError((prev) => ({ ...prev, variants: "បរាជ័យក្នុងការផ្ទុកវ៉ារីយ៉ង់ផលិតផល" }));
+          setError((prev) => ({ ...prev, variants: "Failed to load product variants" }));
         }
       } catch (err) {
         console.error("API Fetch Error:", err);
         setError({
-          customers: "បរាជ័យក្នុងការផ្ទុកទិន្នន័យ",
-          delivery: "បរាជ័យក្នុងការផ្ទុកទិន្នន័យ",
-          products: "បរាជ័យក្នុងការផ្ទុកទិន្នន័យ",
-          variants: "បរាជ័យក្នុងការផ្ទុកទិន្នន័យ",
+          customers: "Failed to load data",
+          delivery: "Failed to load data",
+          products: "Failed to load data",
+          variants: "Failed to load data",
           submit: null,
         });
       } finally {
@@ -187,6 +189,7 @@ const InvoiceForm = () => {
       customerTown: customer.city || "",
       customerCountry: customer.country || "",
       customerPhone: customer.phone_number || "",
+      customerId: customer.id, // Ensure customerId is set
     }));
     setShowCustomerModal(false);
     setCustomerSearchTerm("");
@@ -200,6 +203,7 @@ const InvoiceForm = () => {
       shippingTown: method.delivery_number || "",
       shippingCountry: method.country || "",
       shippingPostcode: method.postcode || "",
+      deliveryMethodId: method.id,
     }));
     setShowDeliveryModal(false);
   }, []);
@@ -277,39 +281,32 @@ const InvoiceForm = () => {
     };
   }, [formData.products, formData.shippingCost, formData.overallDiscount, formData.deductTax]);
 
-  const paymentMethods = useMemo(
-    () => [
-      { value: "សាច់ប្រាក់", label: "សាច់ប្រាក់" },
-      { value: "ផ្ទេរប្រាក់", label: "ផ្ទេរប្រាក់" },
-      { value: "កាតឥណទាន", label: "កាតឥណទាន" },
-      { value: "អេឡិចត្រូនិច", label: "ការទូទាត់អេឡិចត្រូនិច" },
-    ],
-    []
-  );
+  // Updated to match backend choices
+  const typeOptions = [
+    { value: "invoice", label: "វិក្កយបត្រ" },
+    { value: "quotation", label: "សម្រង់តម្លៃ" },
+  ];
 
-  // Add status options for the dropdown
   const statusOptions = [
-    { value: "Unpaid", label: "មិនទាន់បង់" },
-    { value: "Paid", label: "បានបង់" },
-    { value: "Cancelled", label: "បានលុបចោល" },
+    { value: "DRAFT", label: "ព្រាង" },
+    { value: "PENDING", label: "មិនទាន់បង់" },
+    { value: "PAID", label: "បានបង់" },
+    { value: "CANCELLED", label: "បានលុបចោល" },
+  ];
+
+  const paymentMethods = [
+    { value: "CASH", label: "សាច់ប្រាក់" },
+    { value: "CREDIT", label: "ឥណទាន" },
+    { value: "BANK_TRANSFER", label: "ផ្ទេរប្រាក់" },
   ];
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
     setError((prev) => ({ ...prev, submit: null }));
-  
-    if (!formData.customerName || !formData.dueDate || !formData.paymentMethod) {
-      setError((prev) => ({
-        ...prev,
-        submit: "សូមបំពេញគ្រប់វាលដែលត្រូវការ (ឈ្មោះ, កាលបរិច្ឆេទផុតកំណត់, វិធីបង់ប្រាក់)",
-      }));
-      setIsSubmitting(false);
-      return;
-    }
-  
-    const trimmedCustomerName = formData.customerName.trim();
-    if (!trimmedCustomerName) {
+
+    // Validate required fields
+    if (!formData.customerName) {
       setError((prev) => ({
         ...prev,
         submit: "សូមបញ្ចូលឈ្មោះអតិថិជន",
@@ -317,7 +314,17 @@ const InvoiceForm = () => {
       setIsSubmitting(false);
       return;
     }
-  
+
+    if (!formData.dueDate || !formData.paymentMethod) {
+      setError((prev) => ({
+        ...prev,
+        submit: "សូមបំពេញគ្រប់វាលដែលត្រូវការ (កាលបរិច្ឆេទផុតកំណត់, វិធីបង់ប្រាក់)",
+      }));
+      setIsSubmitting(false);
+      return;
+    }
+
+    // Validate products
     if (formData.products.length === 0 || formData.products.some((p) => !p.product_id)) {
       setError((prev) => ({
         ...prev,
@@ -326,6 +333,8 @@ const InvoiceForm = () => {
       setIsSubmitting(false);
       return;
     }
+
+    // Check stock
     const outOfStockItems = formData.products.filter((p) => p.quantity > p.stock && p.product_id);
     if (outOfStockItems.length > 0) {
       const itemNames = outOfStockItems
@@ -335,85 +344,60 @@ const InvoiceForm = () => {
       setIsSubmitting(false);
       return;
     }
-  
+
     try {
-      const nameParts = trimmedCustomerName.split(" ");
-      const apiInvoiceData = {
-        type: formData.type,
-        status: formData.status,
-        date: new Date(formData.date).toISOString(),
-        due_date: new Date(formData.dueDate).toISOString(),
-        customer: {
-          first_name: nameParts[0] || trimmedCustomerName,
+      // Ensure a customer is selected or created
+      let customerId = formData.customerId;
+      if (!customerId) {
+        const nameParts = formData.customerName.trim().split(" ");
+        const customerData = {
+          first_name: nameParts[0] || formData.customerName.trim(),
           last_name: nameParts[1] || "",
-          email: formData.customerEmail,
-          address: formData.customerAddress1,
-          city: formData.customerTown,
-          country: formData.customerCountry,
-          phone_number: formData.customerPhone,
-          phone_number2: "",
-          status: "active",  // Changed to lowercase to match the model
-        },
-        delivery_method: formData.shippingName
-          ? {
-              delivery_name: formData.shippingName,
-              car_number: formData.shippingAddress1,
-              delivery_number: formData.shippingTown,
-              country: formData.shippingCountry,
-              postcode: formData.shippingPostcode,
-            }
-          : null,
-        notes: formData.notes,
-        payment_method: formData.paymentMethod,
-        shipping_cost: shippingDisplay,
-        overall_discount: discountDisplay,
-        deduct_tax: formData.deductTax,
-        subtotal: subtotal,
-        tax: tax,
-        total: total,
-        total_in_riel: totalInRiel,
-        items: formData.products
-          .filter((p) => p.product_id)
-          .map((p) => ({
-            product_id: p.product_id,
-            variant_id: p.variant_id || null,
-            quantity: p.quantity,
-            unit_price: p.unitPrice,
-            discount_percentage: p.discount,
-            total_price: p.total,
-          })),
-      };
-  
-      const invoiceDataForDetail = {
+          email: formData.customerEmail || null,
+          address: formData.customerAddress1 || "",
+          city: formData.customerTown || "",
+          country: formData.customerCountry || "",
+          phone_number: formData.customerPhone || "",
+          status: "active",
+        };
+
+        // Check if customer already exists
+        const existingCustomer = customers.find(
+          (c) =>
+            c.first_name === customerData.first_name &&
+            c.last_name === customerData.last_name &&
+            c.email === customerData.email
+        );
+
+        if (existingCustomer) {
+          customerId = existingCustomer.id;
+        } else {
+          const customerResponse = await api.post("/api/customers/", customerData);
+          if (!customerResponse.data.id) {
+            throw new Error("Failed to create customer: No ID returned");
+          }
+          customerId = customerResponse.data.id;
+          setCustomers((prev) => [...prev, customerResponse.data]); // Update customer list
+          setFormData((prev) => ({ ...prev, customerId })); // Update formData with new customerId
+        }
+      }
+
+      if (!customerId) {
+        throw new Error("Customer ID is required but could not be determined");
+      }
+
+      const invoiceData = {
         type: formData.type,
         status: formData.status,
         date: formData.date,
-        due_date: formData.dueDate,
-        customer: {
-          first_name: nameParts[0] || trimmedCustomerName,
-          last_name: nameParts[1] || "",
-          email: formData.customerEmail,
-          address: formData.customerAddress1,
-          city: formData.customerTown,
-          country: formData.customerCountry,
-          phone_number: formData.customerPhone,
-          phone_number2: "",
-          status: "active",  // Changed to lowercase to match the model
-        },
-        delivery_method: formData.shippingName
-          ? {
-              delivery_name: formData.shippingName,
-              car_number: formData.shippingAddress1,
-              delivery_number: formData.shippingTown,
-              country: formData.shippingCountry,
-              postcode: formData.shippingPostcode,
-            }
-          : null,
+        due_date: formData.dueDate, // Map to snake_case
+        customer: customerId, // Send customer ID
+        delivery_method: formData.deliveryMethodId || null,
         notes: formData.notes,
-        payment_method: formData.paymentMethod,
+        payment_method: formData.paymentMethod, // Map to snake_case
         shipping_cost: shippingDisplay,
         overall_discount: discountDisplay,
-        deduct_tax: formData.deductTax,
+        deduct_tax: formData.deductTax, // Map to snake_case
         subtotal: subtotal,
         tax: tax,
         total: total,
@@ -427,47 +411,40 @@ const InvoiceForm = () => {
             unit_price: p.unitPrice,
             discount_percentage: p.discount,
             total_price: p.total,
-            name: p.name,
-            size: p.size,
-            color: p.color,
           })),
       };
-  
-      console.log("Request URL:", `${API_BASE_URL}/api/invoices/`);
-      console.log("Request Data:", apiInvoiceData);
-  
-      const response = await api.post("/api/invoices/", apiInvoiceData);
+
+      console.log("Submitting invoice data:", invoiceData);
+
+      const response = await api.post("/api/invoices/", invoiceData);
       alert("វិក្កយបត្របានបង្កើតដោយជោគជ័យ!");
-  
-      navigate("/invoice-detail", { state: { invoice: { ...invoiceDataForDetail, id: response.data.id } } });
+
+      navigate("/invoice-detail", { state: { invoice: response.data } });
       setFormData(initialFormData);
     } catch (err) {
       console.error("Error creating invoice:", err.response?.data || err.message || err);
       let errorMsg = "មានបញ្ហាក្នុងការបង្កើតវិក្កយបត្រ";
-  
-      const parseError = (error, prefix = "") => {
-        if (typeof error === "string") return `${prefix}${error}`;
-        if (Array.isArray(error)) return error.map((e, i) => parseError(e, `${prefix}[${i}] `)).join(", ");
-        if (typeof error === "object" && error !== null) {
-          return Object.entries(error)
-            .map(([key, value]) => parseError(value, `${prefix}${key}: `))
-            .join(", ");
-        }
-        return `${prefix}${String(error)}`;
-      };
-  
+
       if (err.response?.data) {
-        errorMsg = parseError(err.response.data);
+        const backendErrors = err.response.data;
+        if (typeof backendErrors === "object") {
+          errorMsg = Object.entries(backendErrors)
+            .map(([field, errors]) => `${field}: ${Array.isArray(errors) ? errors.join(", ") : errors}`)
+            .join("; ");
+        } else {
+          errorMsg = backendErrors.toString();
+        }
       } else if (err.message) {
         errorMsg = err.message;
       }
-  
+
       setError((prev) => ({ ...prev, submit: errorMsg }));
       alert(`មានបញ្ហាក្នុងការបង្កើតវិក្កយបត្រ៖ ${errorMsg}`);
     } finally {
       setIsSubmitting(false);
     }
   };
+
   return (
     <div className="invoice-container">
       <h1 className="invoice-title">
@@ -487,8 +464,11 @@ const InvoiceForm = () => {
                 required
                 disabled={isSubmitting}
               >
-                <option value="វិក្កយបត្រ">វិក្កយបត្រ</option>
-                <option value="វិក្កយបត្របញ្ជាទិញ">វិក្កយបត្របញ្ជាទិញ</option>
+                {typeOptions.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
               </select>
               <select
                 className="select-input"
@@ -505,7 +485,7 @@ const InvoiceForm = () => {
                 ))}
               </select>
               <input
-                type="datetime-local"
+                type="date"
                 className="date-input"
                 name="date"
                 value={formData.date}
@@ -514,7 +494,7 @@ const InvoiceForm = () => {
                 disabled={isSubmitting}
               />
               <input
-                type="datetime-local"
+                type="date"
                 className="date-input"
                 name="dueDate"
                 value={formData.dueDate}
@@ -920,7 +900,7 @@ const InvoiceForm = () => {
             ) : filteredCustomers.length === 0 ? (
               <div className="info-message">
                 {customerSearchTerm
-                  ? "គ្មានអតិថិជនត្រូវនឹងលក្ខខណ្ឌស្វែង�ក"
+                  ? "គ្មានអតិថិជនត្រូវនឹងលក្ខខណ្ឌស្វែងរក"
                   : "មិនមានអតិថិជនទេ"}
               </div>
             ) : (
