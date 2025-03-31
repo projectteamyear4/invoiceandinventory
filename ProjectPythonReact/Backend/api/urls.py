@@ -28,4 +28,9 @@ urlpatterns = [
     path('api/customers/<int:pk>/', views.customer_detail, name='customer_detail'),  # Add this
     path('api/delivery-methods/', views.delivery_method_list_create, name='delivery_method_list_create'),
     path('api/delivery-methods/<int:pk>/', views.delivery_method_detail, name='delivery_method_detail'),
+    path('api/invoices/', views.invoice_list_create, name='invoice_list_create'),
+    path('api/invoices/<int:pk>/', views.invoice_detail, name='invoice_detail'),
+
+    # Invoice Item (New)
+    path('api/invoice-items/<int:pk>/', views.invoice_item_detail, name='invoice_item_detail'),
 ]

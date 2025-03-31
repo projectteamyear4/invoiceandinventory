@@ -5,8 +5,8 @@ from rest_framework.permissions import IsAuthenticated
 from .serializers import RegisterSerializer, UserDetailSerializer, LoginSerializer
 from django.contrib.auth.models import User
 from rest_framework import viewsets
-from .models import Supplier, Product, ProductVariant, Category, Warehouse,Shelf,Purchase,StockMovement,Customer,DeliveryMethod
-from .serializers import SupplierSerializer, ProductSerializer, ProductVariantSerializer, CategorySerializer, WarehouseSerializer,ShelfSerializer,PurchaseSerializer,StockMovementSerializer,StockMovementSerializer,CustomerSerializer,DeliveryMethodSerializer
+from .models import Supplier, Product, ProductVariant, Category, Warehouse,Shelf,Purchase,StockMovement,Customer,DeliveryMethod,Invoice,InvoiceItem
+from .serializers import SupplierSerializer, ProductSerializer, ProductVariantSerializer, CategorySerializer, WarehouseSerializer,ShelfSerializer,PurchaseSerializer,StockMovementSerializer,StockMovementSerializer,CustomerSerializer,DeliveryMethodSerializer,InvoiceSerializer, InvoiceItemSerializer
 import logging
 
 logger = logging.getLogger(__name__)
@@ -387,3 +387,73 @@ def delivery_method_detail(request, pk):
     elif request.method == 'DELETE':
         delivery_method.delete()
         return Response({'detail': 'Delivery method deleted'}, status=status.HTTP_204_NO_CONTENT)
+# Invoice Views (New)
+@api_view(['GET', 'POST'])
+@permission_classes([IsAuthenticated])
+def invoice_list_create(request):
+    if request.method == 'GET':
+        invoices = Invoice.objects.all()
+        serializer = InvoiceSerializer(invoices, many=True)
+        logger.info(f"User {request.user.username} retrieved list of invoices")
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    elif request.method == 'POST':
+        serializer = InvoiceSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            logger.info(f"User {request.user.username} created invoice {serializer.data.get('id')}")
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        logger.error(f"User {request.user.username} failed to create invoice: {serializer.errors}")
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['GET', 'PUT', 'DELETE'])
+@permission_classes([IsAuthenticated])
+def invoice_detail(request, pk):
+    try:
+        invoice = Invoice.objects.get(pk=pk)
+    except Invoice.DoesNotExist:
+        logger.error(f"User {request.user.username} attempted to access non-existent invoice {pk}")
+        return Response({'detail': 'Invoice not found'}, status=status.HTTP_404_NOT_FOUND)
+
+    if request.method == 'GET':
+        serializer = InvoiceSerializer(invoice)
+        logger.info(f"User {request.user.username} retrieved invoice {pk}")
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    elif request.method == 'PUT':
+        serializer = InvoiceSerializer(invoice, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            logger.info(f"User {request.user.username} updated invoice {pk}")
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        logger.error(f"User {request.user.username} failed to update invoice {pk}: {serializer.errors}")
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    elif request.method == 'DELETE':
+        invoice.delete()
+        logger.info(f"User {request.user.username} deleted invoice {pk}")
+        return Response({'detail': 'Invoice deleted'}, status=status.HTTP_204_NO_CONTENT)
+
+# InvoiceItem Views (New)
+@api_view(['GET', 'PUT', 'DELETE'])
+@permission_classes([IsAuthenticated])
+def invoice_item_detail(request, pk):
+    try:
+        invoice_item = InvoiceItem.objects.get(pk=pk)
+    except InvoiceItem.DoesNotExist:
+        logger.error(f"User {request.user.username} attempted to access non-existent invoice item {pk}")
+        return Response({'detail': 'Invoice item not found'}, status=status.HTTP_404_NOT_FOUND)
+
+    if request.method == 'GET':
+        serializer = InvoiceItemSerializer(invoice_item)
+        logger.info(f"User {request.user.username} retrieved invoice item {pk}")
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    elif request.method == 'PUT':
+        serializer = InvoiceItemSerializer(invoice_item, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            logger.info(f"User {request.user.username} updated invoice item {pk}")
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        logger.error(f"User {request.user.username} failed to update invoice item {pk}: {serializer.errors}")
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    elif request.method == 'DELETE':
+        invoice_item.delete()
+        logger.info(f"User {request.user.username} deleted invoice item {pk}")
+        return Response({'detail': 'Invoice item deleted'}, status=status.HTTP_204_NO_CONTENT)

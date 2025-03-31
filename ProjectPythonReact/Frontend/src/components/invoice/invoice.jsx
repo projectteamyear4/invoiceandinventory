@@ -1,6 +1,6 @@
 import axios from "axios";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom"; // Import useNavigate for navigation
+import { useNavigate } from "react-router-dom";
 import "./InvoiceForm.css";
 
 const initialProduct = {
@@ -19,7 +19,7 @@ const initialProduct = {
 
 const initialFormData = {
   type: "វិក្កយបត្រ",
-  status: "បើក",
+  status: "Unpaid", // Updated to match the backend ENUM-like values
   date: new Date().toISOString().split("T")[0],
   dueDate: "",
   customerName: "",
@@ -73,7 +73,7 @@ const InvoiceForm = () => {
     submit: null,
   });
 
-  const navigate = useNavigate(); // Initialize useNavigate for navigation
+  const navigate = useNavigate();
 
   const api = useMemo(
     () =>
@@ -198,6 +198,8 @@ const InvoiceForm = () => {
       shippingName: method.delivery_name || "",
       shippingAddress1: method.car_number || "",
       shippingTown: method.delivery_number || "",
+      shippingCountry: method.country || "",
+      shippingPostcode: method.postcode || "",
     }));
     setShowDeliveryModal(false);
   }, []);
@@ -285,6 +287,13 @@ const InvoiceForm = () => {
     []
   );
 
+  // Add status options for the dropdown
+  const statusOptions = [
+    { value: "Unpaid", label: "មិនទាន់បង់" },
+    { value: "Paid", label: "បានបង់" },
+    { value: "Cancelled", label: "បានលុបចោល" },
+  ];
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
@@ -298,6 +307,17 @@ const InvoiceForm = () => {
       setIsSubmitting(false);
       return;
     }
+  
+    const trimmedCustomerName = formData.customerName.trim();
+    if (!trimmedCustomerName) {
+      setError((prev) => ({
+        ...prev,
+        submit: "សូមបញ្ចូលឈ្មោះអតិថិជន",
+      }));
+      setIsSubmitting(false);
+      return;
+    }
+  
     if (formData.products.length === 0 || formData.products.some((p) => !p.product_id)) {
       setError((prev) => ({
         ...prev,
@@ -317,22 +337,32 @@ const InvoiceForm = () => {
     }
   
     try {
-      const invoiceData = {
+      const nameParts = trimmedCustomerName.split(" ");
+      const apiInvoiceData = {
         type: formData.type,
         status: formData.status,
-        date: formData.date,
-        due_date: formData.dueDate,
-        customer_name: formData.customerName,
-        customer_email: formData.customerEmail,
-        customer_address1: formData.customerAddress1,
-        customer_town: formData.customerTown,
-        customer_country: formData.customerCountry,
-        customer_phone: formData.customerPhone,
-        shipping_name: formData.shippingName,
-        shipping_address1: formData.shippingAddress1,
-        shipping_town: formData.shippingTown,
-        shipping_country: formData.shippingCountry,
-        shipping_postcode: formData.shippingPostcode,
+        date: new Date(formData.date).toISOString(),
+        due_date: new Date(formData.dueDate).toISOString(),
+        customer: {
+          first_name: nameParts[0] || trimmedCustomerName,
+          last_name: nameParts[1] || "",
+          email: formData.customerEmail,
+          address: formData.customerAddress1,
+          city: formData.customerTown,
+          country: formData.customerCountry,
+          phone_number: formData.customerPhone,
+          phone_number2: "",
+          status: "active",  // Changed to lowercase to match the model
+        },
+        delivery_method: formData.shippingName
+          ? {
+              delivery_name: formData.shippingName,
+              car_number: formData.shippingAddress1,
+              delivery_number: formData.shippingTown,
+              country: formData.shippingCountry,
+              postcode: formData.shippingPostcode,
+            }
+          : null,
         notes: formData.notes,
         payment_method: formData.paymentMethod,
         shipping_cost: shippingDisplay,
@@ -351,29 +381,93 @@ const InvoiceForm = () => {
             unit_price: p.unitPrice,
             discount_percentage: p.discount,
             total_price: p.total,
-            name: p.name, // Add product name
-            size: p.size, // Add size
-            color: p.color, // Add color
           })),
       };
   
-      const response = await api.post("/api/invoices/", invoiceData);
+      const invoiceDataForDetail = {
+        type: formData.type,
+        status: formData.status,
+        date: formData.date,
+        due_date: formData.dueDate,
+        customer: {
+          first_name: nameParts[0] || trimmedCustomerName,
+          last_name: nameParts[1] || "",
+          email: formData.customerEmail,
+          address: formData.customerAddress1,
+          city: formData.customerTown,
+          country: formData.customerCountry,
+          phone_number: formData.customerPhone,
+          phone_number2: "",
+          status: "active",  // Changed to lowercase to match the model
+        },
+        delivery_method: formData.shippingName
+          ? {
+              delivery_name: formData.shippingName,
+              car_number: formData.shippingAddress1,
+              delivery_number: formData.shippingTown,
+              country: formData.shippingCountry,
+              postcode: formData.shippingPostcode,
+            }
+          : null,
+        notes: formData.notes,
+        payment_method: formData.paymentMethod,
+        shipping_cost: shippingDisplay,
+        overall_discount: discountDisplay,
+        deduct_tax: formData.deductTax,
+        subtotal: subtotal,
+        tax: tax,
+        total: total,
+        total_in_riel: totalInRiel,
+        items: formData.products
+          .filter((p) => p.product_id)
+          .map((p) => ({
+            product_id: p.product_id,
+            variant_id: p.variant_id || null,
+            quantity: p.quantity,
+            unit_price: p.unitPrice,
+            discount_percentage: p.discount,
+            total_price: p.total,
+            name: p.name,
+            size: p.size,
+            color: p.color,
+          })),
+      };
+  
+      console.log("Request URL:", `${API_BASE_URL}/api/invoices/`);
+      console.log("Request Data:", apiInvoiceData);
+  
+      const response = await api.post("/api/invoices/", apiInvoiceData);
       alert("វិក្កយបត្របានបង្កើតដោយជោគជ័យ!");
   
-      // Navigate to InvoiceDetail with the invoice data
-      navigate("/invoice-detail", { state: { invoice: { ...invoiceData, id: response.data.id } } });
+      navigate("/invoice-detail", { state: { invoice: { ...invoiceDataForDetail, id: response.data.id } } });
       setFormData(initialFormData);
     } catch (err) {
       console.error("Error creating invoice:", err.response?.data || err.message || err);
-      const errorMsg =
-        err.response?.data?.detail || err.message || "មានបញ្ហាក្នុងការបង្កើតវិក្កយបត្រ";
+      let errorMsg = "មានបញ្ហាក្នុងការបង្កើតវិក្កយបត្រ";
+  
+      const parseError = (error, prefix = "") => {
+        if (typeof error === "string") return `${prefix}${error}`;
+        if (Array.isArray(error)) return error.map((e, i) => parseError(e, `${prefix}[${i}] `)).join(", ");
+        if (typeof error === "object" && error !== null) {
+          return Object.entries(error)
+            .map(([key, value]) => parseError(value, `${prefix}${key}: `))
+            .join(", ");
+        }
+        return `${prefix}${String(error)}`;
+      };
+  
+      if (err.response?.data) {
+        errorMsg = parseError(err.response.data);
+      } else if (err.message) {
+        errorMsg = err.message;
+      }
+  
       setError((prev) => ({ ...prev, submit: errorMsg }));
       alert(`មានបញ្ហាក្នុងការបង្កើតវិក្កយបត្រ៖ ${errorMsg}`);
     } finally {
       setIsSubmitting(false);
     }
   };
-
   return (
     <div className="invoice-container">
       <h1 className="invoice-title">
@@ -395,6 +489,20 @@ const InvoiceForm = () => {
               >
                 <option value="វិក្កយបត្រ">វិក្កយបត្រ</option>
                 <option value="វិក្កយបត្របញ្ជាទិញ">វិក្កយបត្របញ្ជាទិញ</option>
+              </select>
+              <select
+                className="select-input"
+                name="status"
+                value={formData.status}
+                onChange={handleChange}
+                required
+                disabled={isSubmitting}
+              >
+                {statusOptions.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
               </select>
               <input
                 type="datetime-local"
@@ -812,7 +920,7 @@ const InvoiceForm = () => {
             ) : filteredCustomers.length === 0 ? (
               <div className="info-message">
                 {customerSearchTerm
-                  ? "គ្មានអតិថិជនត្រូវនឹងលក្ខខណ្ឌស្វែងរក"
+                  ? "គ្មានអតិថិជនត្រូវនឹងលក្ខខណ្ឌស្វែង�ក"
                   : "មិនមានអតិថិជនទេ"}
               </div>
             ) : (
@@ -830,8 +938,8 @@ const InvoiceForm = () => {
                   </thead>
                   <tbody>
                     {filteredCustomers.map((customer) => (
-                      <tr key={customer.customer_id}>
-                        <td>{customer.customer_id}</td>
+                      <tr key={customer.id}>
+                        <td>{customer.id}</td>
                         <td>{customer.first_name}</td>
                         <td>{customer.last_name}</td>
                         <td>{customer.email}</td>
@@ -887,8 +995,8 @@ const InvoiceForm = () => {
                   </thead>
                   <tbody>
                     {deliveryMethods.map((method) => (
-                      <tr key={method.delivery_method_id}>
-                        <td>{method.delivery_method_id}</td>
+                      <tr key={method.id}>
+                        <td>{method.id}</td>
                         <td>{method.delivery_name}</td>
                         <td>{method.car_number}</td>
                         <td>{method.delivery_number}</td>
