@@ -1,135 +1,79 @@
 .invoice-detail-container {
-    max-width: 900px;
-    margin: 20px auto;
-    padding: 20px;
-    font-family: Arial, sans-serif;
-  }
-  
-  .invoice-paper {
-    background: #fff;
-    border: 1px solid #ddd;
-    padding: 30px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    border-radius: 8px;
-  }
-  
-  .invoice-header {
-    text-align: center;
-    border-bottom: 2px solid #000;
-    padding-bottom: 10px;
-    margin-bottom: 20px;
-  }
-  
-  .invoice-header h1 {
-    margin: 0;
-    font-size: 28px;
-    color: #333;
-  }
-  
-  .invoice-header p {
-    margin: 5px 0;
-    font-size: 14px;
-    color: #555;
-  }
-  
-  .invoice-section {
-    margin-bottom: 20px;
-  }
-  
-  .invoice-section h2 {
-    font-size: 18px;
-    color: #333;
-    border-bottom: 1px solid #ddd;
-    padding-bottom: 5px;
-    margin-bottom: 10px;
-  }
-  
-  .invoice-section p {
-    margin: 5px 0;
-    font-size: 14px;
-    color: #555;
-  }
-  
-  .invoice-items-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 10px;
-  }
-  
-  .invoice-items-table th,
-  .invoice-items-table td {
-    border: 1px solid #ddd;
-    padding: 8px;
-    text-align: left;
-    font-size: 14px;
-  }
-  
-  .invoice-items-table th {
-    background-color: #f4f4f4;
-    font-weight: bold;
-    color: #333;
-  }
-  
-  .invoice-items-table td {
-    color: #555;
-  }
-  
-  .summary p {
-    font-size: 16px;
-    font-weight: bold;
-  }
-  
-  .invoice-footer {
-    text-align: center;
-    margin-top: 20px;
-    padding-top: 10px;
-    border-top: 2px solid #000;
-  }
-  
-  .invoice-footer p {
-    font-size: 14px;
-    color: #555;
-    font-style: italic;
-  }
-  
-  .invoice-actions {
-    margin-top: 20px;
-    text-align: center;
-  }
-  
-  .print-button,
-  .back-button {
-    padding: 10px 20px;
-    margin: 0 10px;
-    font-size: 16px;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-  }
-  
-  .print-button {
-    background-color: #4CAF50;
-    color: white;
-  }
-  
-  .back-button {
-    background-color: #2196F3;
-    color: white;
-  }
-  
-  @media print {
-    .invoice-actions {
-      display: none;
-    }
-  
-    .invoice-detail-container {
-      margin: 0;
-      padding: 0;
-    }
-  
-    .invoice-paper {
-      box-shadow: none;
-      border: none;
-      padding: 20px;
-    }
-  }
+  padding: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.invoice-detail-container h1 {
+  font-size: 2rem;
+  margin-bottom: 20px;
+  color: #333;
+}
+
+.invoice-detail-container h2 {
+  font-size: 1.5rem;
+  margin-top: 20px;
+  margin-bottom: 10px;
+  color: #555;
+}
+
+.invoice-info {
+  background-color: #f9f9f9;
+  padding: 15px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  border: 1px solid #ddd;
+}
+
+.invoice-info p {
+  margin: 5px 0;
+  font-size: 1rem;
+  color: #333;
+}
+
+.invoice-info p strong {
+  display: inline-block;
+  width: 150px;
+  font-weight: 600;
+}
+
+.items-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 20px;
+}
+
+.items-table th,
+.items-table td {
+  padding: 10px;
+  border: 1px solid #ddd;
+  text-align: left;
+}
+
+.items-table th {
+  background-color: #f0f0f0;
+  font-weight: 600;
+}
+
+.items-table td {
+  background-color: #fff;
+}
+
+.summary {
+  background-color: #f9f9f9;
+  padding: 15px;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+}
+
+.summary p {
+  margin: 5px 0;
+  font-size: 1rem;
+  color: #333;
+}
+
+.summary p strong {
+  display: inline-block;
+  width: 150px;
+  font-weight: 600;
+}

@@ -1,8 +1,10 @@
 from django.contrib.auth.models import User
 from rest_framework import serializers
+from decimal import Decimal
 from django.db import models
 from django.db.models import Sum
 from rest_framework import viewsets
+from django.utils import timezone
 from datetime import datetime
 from rest_framework.validators import UniqueValidator
 from django.contrib.auth.password_validation import validate_password
@@ -247,101 +249,101 @@ class CustomerSerializer(serializers.ModelSerializer):
         if not data.get('first_name'):
             raise serializers.ValidationError({"first_name": "This field cannot be blank."})
         return data
-    # InvoiceSerializer
-    # InvoiceItemSerializer
+
 class InvoiceItemSerializer(serializers.ModelSerializer):
+    product_id = serializers.IntegerField(write_only=True)
+    variant_id = serializers.IntegerField(write_only=True, allow_null=True)
+    product_name = serializers.CharField(source='product.name', read_only=True)
+    variant_size = serializers.CharField(source='variant.size', read_only=True, allow_null=True)
+    variant_color = serializers.CharField(source='variant.color', read_only=True, allow_null=True)
+    quantity = serializers.IntegerField(min_value=0)
+    unit_price = serializers.DecimalField(max_digits=10, decimal_places=2)
+    discount_percentage = serializers.DecimalField(max_digits=5, decimal_places=2, default=0, required=False)
+    total_price = serializers.DecimalField(max_digits=12, decimal_places=2, read_only=True)
+
     class Meta:
         model = InvoiceItem
-        fields = ['id', 'product_id', 'variant_id', 'quantity', 'unit_price', 'discount_percentage', 'total_price']
-        read_only_fields = ['id', 'total_price']
+        fields = [
+            'id', 'product_id', 'variant_id', 'product_name', 'variant_size',
+            'variant_color', 'quantity', 'unit_price', 'discount_percentage', 'total_price'
+        ]
+
 class InvoiceSerializer(serializers.ModelSerializer):
-    customer = serializers.PrimaryKeyRelatedField(queryset=Customer.objects.all())  # Expect a customer ID
+    customer = CustomerSerializer(read_only=True)  # Serialize full customer object
+    customer_id = serializers.PrimaryKeyRelatedField(
+        queryset=Customer.objects.all(), source='customer', write_only=True
+    )  # Accept customer_id for writing
     delivery_method = DeliveryMethodSerializer(allow_null=True, required=False)
     items = InvoiceItemSerializer(many=True)
+    date = serializers.DateTimeField(format='%Y-%m-%d')  # No source needed
+    due_date = serializers.DateTimeField(format='%Y-%m-%d')  # No source needed
 
     class Meta:
         model = Invoice
         fields = [
-            'id', 'type', 'status', 'date', 'due_date', 'customer', 'delivery_method',
-            'notes', 'payment_method', 'shipping_cost', 'overall_discount', 'deduct_tax',
-            'subtotal', 'tax', 'total', 'total_in_riel', 'items'
+            'id', 'type', 'status', 'date', 'due_date', 'customer', 'customer_id',
+            'delivery_method', 'notes', 'payment_method', 'shipping_cost',
+            'overall_discount', 'deduct_tax', 'subtotal', 'tax', 'total',
+            'total_in_riel', 'items'
         ]
-        read_only_fields = ['id', 'subtotal', 'tax', 'total', 'total_in_riel']  # Make these read-only
 
     def validate(self, data):
-        # Ensure the items list is not empty
-        if not data.get('items'):
-            raise serializers.ValidationError({"items": "An invoice must have at least one item."})
-        
-        # Validate overall_discount
-        overall_discount = data.get('overall_discount', 0)
-        if overall_discount < 0 or overall_discount > 100:
-            raise serializers.ValidationError({"overall_discount": "Overall discount must be between 0 and 100."})
-
+        items = data.get('items', [])
+        if not items:
+            raise serializers.ValidationError("At least one item is required to create an invoice.")
         return data
 
     def create(self, validated_data):
+        # Extract nested data
         delivery_method_data = validated_data.pop('delivery_method', None)
-        items_data = validated_data.pop('items')
+        items_data = validated_data.pop('items', [])
+        customer = validated_data.pop('customer')  # Pop customer object (set via customer_id)
 
         # Create DeliveryMethod if provided
         delivery_method = None
         if delivery_method_data:
-            delivery_method = DeliveryMethod.objects.create(**delivery_method_data)
+            delivery_method_serializer = DeliveryMethodSerializer(data=delivery_method_data)
+            delivery_method_serializer.is_valid(raise_exception=True)
+            delivery_method = delivery_method_serializer.save()
 
-        # Create the Invoice without subtotal, tax, total, and total_in_riel for now
+        # Create the Invoice
         invoice = Invoice.objects.create(
+            customer=customer,  # Set customer directly
             delivery_method=delivery_method,
             **validated_data
         )
 
         # Create InvoiceItems and calculate subtotal
-        subtotal = 0
+        subtotal = Decimal('0.0')
         for item_data in items_data:
+            if item_data is None:
+                continue
             product_id = item_data.pop('product_id')
             variant_id = item_data.pop('variant_id', None)
             product = Product.objects.get(id=product_id)
             variant = ProductVariant.objects.get(id=variant_id) if variant_id else None
 
             # Calculate total_price for the item
-            quantity = item_data['quantity']
+            quantity = Decimal(str(item_data['quantity']))  # Convert to Decimal
             unit_price = item_data['unit_price']
-            discount_percentage = item_data.get('discount_percentage', 0)
-            total_price = quantity * unit_price * (1 - discount_percentage / 100)
+            discount_percentage = item_data.get('discount_percentage', Decimal('0.0'))
+            total_price = (quantity * unit_price) * (1 - discount_percentage / Decimal('100'))
+            subtotal += total_price
 
             # Create the InvoiceItem
-            invoice_item = InvoiceItem.objects.create(
+            InvoiceItem.objects.create(
                 invoice=invoice,
                 product=product,
                 variant=variant,
-                total_price=total_price,  # Set the calculated total_price
+                total_price=total_price,
                 **item_data
             )
-            subtotal += total_price
 
-        # Calculate overall discount, tax, and totals
-        overall_discount = validated_data.get('overall_discount', 0)
-        discount_amount = subtotal * (overall_discount / 100)
-        discounted_subtotal = subtotal - discount_amount
-
-        shipping_cost = validated_data.get('shipping_cost', 0)
-        tax_rate = 0.10  # 10% tax rate (adjust as needed, possibly from settings)
-        tax = 0 if validated_data.get('deduct_tax', False) else discounted_subtotal * tax_rate
-        total = discounted_subtotal + shipping_cost + tax
-
-        exchange_rate_khr = 4000  # Adjust as needed, possibly from settings
-        total_in_riel = total * exchange_rate_khr
-
-        # Update the invoice with calculated fields
+        # Update invoice totals
         invoice.subtotal = subtotal
-        invoice.tax = tax
-        invoice.total = total
-        invoice.total_in_riel = total_in_riel
+        invoice.tax = subtotal * Decimal('0.1') if invoice.deduct_tax else Decimal('0.0')
+        invoice.total = invoice.subtotal + invoice.tax + invoice.shipping_cost - invoice.overall_discount
+        invoice.total_in_riel = invoice.total * Decimal('4100')  # Example conversion rate
         invoice.save()
 
         return invoice
-
-    def to_representation(self, instance):
-        representation = super().to_representation(instance)
-        representation['customer'] = CustomerSerializer(instance.customer).data
-        return representation

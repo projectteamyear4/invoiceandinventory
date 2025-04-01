@@ -1,205 +1,119 @@
-import React, { useState } from "react";
+import axios from "axios";
+import React, { useEffect, useMemo, useState } from "react";
+import DataTable from "react-data-table-component";
+import { useNavigate } from "react-router-dom";
 import "./InvoiceList.css";
 
+const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || "http://localhost:8000";
+
 const InvoiceList = () => {
-  const initialInvoices = [
-    {
-      id: "INV001",
-      customerName: "សុខ សុភ័ក្ត្រ", // Sok Sophak
-      date: "2025-02-01",
-      dueDate: "2025-03-01",
-      type: "Invoice",
-      status: "Open",
-    },
-    {
-      id: "INV002",
-      customerName: "គឹម សុជាតិ", // Kim Socheat
-      date: "2025-02-10",
-      dueDate: "2025-03-10",
-      type: "Quote",
-      status: "Closed",
-    },
-    {
-      id: "INV003",
-      customerName: "ម៉ី នា", // Mey Na
-      date: "2025-02-15",
-      dueDate: "2025-03-15",
-      type: "Invoice",
-      status: "Open",
-    },
-  ];
+  const [invoices, setInvoices] = useState([]);
+  const [filteredInvoices, setFilteredInvoices] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const navigate = useNavigate();
 
-  const [invoices, setInvoices] = useState(initialInvoices);
-  const [sortField, setSortField] = useState(null);
-  const [sortDirection, setSortDirection] = useState("asc");
-  const [sortOption, setSortOption] = useState("");
-  const [searchTerm, setSearchTerm] = useState("");
+  const api = useMemo(
+    () =>
+      axios.create({
+        baseURL: API_BASE_URL,
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+        },
+      }),
+    []
+  );
 
-  const handleSort = (field, directionFromSelect = null) => {
-    const direction =
-      directionFromSelect !== null
-        ? directionFromSelect
-        : sortField === field && sortDirection === "asc"
-        ? "desc"
-        : "asc";
-
-    setSortField(field);
-    setSortDirection(direction);
-    setSortOption(`${field}-${direction}`); // Sync with select dropdown
-
-    const sortedInvoices = [...invoices].sort((a, b) => {
-      const aValue = field === "date" || field === "dueDate" ? new Date(a[field]) : a[field];
-      const bValue = field === "date" || field === "dueDate" ? new Date(b[field]) : b[field];
-
-      if (direction === "asc") {
-        return typeof aValue === "string"
-          ? aValue.localeCompare(bValue, 'km') // Khmer locale for strings
-          : aValue - bValue;
-      } else {
-        return typeof bValue === "string"
-          ? bValue.localeCompare(aValue, 'km')
-          : bValue - aValue;
-      }
-    });
-    setInvoices(sortedInvoices);
-  };
-
-  const handleSelectSort = (option) => {
-    setSortOption(option);
-    if (!option) {
-      setInvoices(initialInvoices); // Reset to initial order if "Default" is selected
-      setSortField(null);
-      setSortDirection("asc");
+  useEffect(() => {
+    const token = localStorage.getItem("access_token");
+    if (!token) {
+      setError("សូមចូលប្រើប្រាស់ប្រព័ន្ធសិន (No access token found)");
+      setLoading(false);
+      navigate("/login");
       return;
     }
 
-    const [field, direction] = option.split("-");
-    handleSort(field, direction);
-  };
+    const fetchData = async () => {
+      try {
+        const invoiceResponse = await api.get("/api/invoices/list/");
+        console.log("Invoices Response:", invoiceResponse.data);
+        const fetchedInvoices = Array.isArray(invoiceResponse.data) ? invoiceResponse.data : [];
+        setInvoices(fetchedInvoices);
+        setFilteredInvoices(fetchedInvoices);
+      } catch (err) {
+        setError(err.response?.data?.detail || "បញ្ហាក្នុងការទាញយកវិក្កយបត្រ");
+        console.error("Fetch error:", {
+          status: err.response?.status,
+          data: err.response?.data,
+          message: err.message,
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  // Handle status toggle
-  const handleStatusToggle = (id) => {
-    setInvoices(invoices.map(invoice =>
-      invoice.id === id
-        ? { ...invoice, status: invoice.status === "Open" ? "Closed" : "Open" }
-        : invoice
-    ));
-  };
+    fetchData();
+  }, [api, navigate]);
 
-  const filteredInvoices = invoices.filter((invoice) =>
-    Object.values(invoice)
-      .join(" ")
-      .toLowerCase()
-      .includes(searchTerm.toLowerCase())
+  const columns = useMemo(
+    () => [
+      { name: "លេខវិក្កយបត្រ", selector: (row) => row.id || "-", sortable: true, width: "100px" },
+      { name: "ប្រភេទ", selector: (row) => (row.type === "invoice" ? "វិក្កយបត្រ" : "សម្រង់តម្លៃ"), sortable: true, width: "120px" },
+      {
+        name: "ស្ថានភាព",
+        selector: (row) => {
+          switch (row.status) {
+            case "DRAFT": return "ព្រាង";
+            case "PENDING": return "មិនទាន់បង់";
+            case "PAID": return "បានបង់";
+            case "CANCELLED": return "បានលុបចោល";
+            default: return row.status || "-";
+          }
+        },
+        sortable: true,
+        width: "120px",
+      },
+      { name: "កាលបរិច្ឆេទ", selector: (row) => (row.date ? new Date(row.date).toLocaleDateString() : "-"), sortable: true, width: "120px" },
+      { name: "ផុតកំណត់", selector: (row) => (row.due_date ? new Date(row.due_date).toLocaleDateString() : "-"), sortable: true, width: "120px" },
+      {
+        name: "អតិថិជន",
+        selector: (row) => {
+          const customer = row.customer;
+          return customer ? `${customer.first_name || ""} ${customer.last_name || ""}`.trim() : row.customer_id || "-";
+        },
+        sortable: true,
+        width: "150px",
+      },
+      { name: "កំណត់សម្គាល់", selector: (row) => row.notes || "-", sortable: true, width: "150px" },
+      { name: "សរុប (USD)", selector: (row) => `$${parseFloat(row.total || 0).toFixed(2)}`, sortable: true, width: "120px" },
+      { name: "សរុប (KHR)", selector: (row) => `៛${parseInt(row.total_in_riel || 0).toLocaleString()}`, sortable: true, width: "150px" },
+    ],
+    []
   );
 
-  // Sort options for dropdown
-  const sortOptions = [
-    { value: "", label: "លំនាំដើម" }, // Default
-    { value: "id-asc", label: "លេខសម្គាល់ (ក - ហ)" }, // ID (A-Z)
-    { value: "id-desc", label: "លេខសម្គាល់ (ហ - ក)" }, // ID (Z-A)
-    { value: "customerName-asc", label: "ឈ្មោះ (ក - ហ)" }, // Customer Name (A-Z)
-    { value: "customerName-desc", label: "ឈ្មោះ (ហ - ក)" }, // Customer Name (Z-A)
-    { value: "date-asc", label: "កាលបរិច្ឆេទ (ចាស់ - ថ្មី)" }, // Date (Old to New)
-    { value: "date-desc", label: "កាលបរិច្ឆេទ (ថ្មី - ចាស់)" }, // Date (New to Old)
-    { value: "dueDate-asc", label: "កាលបរិច្ឆេទកំណត់ (ចាស់ - ថ្មី)" }, // Due Date (Old to New)
-    { value: "dueDate-desc", label: "កាលបរិច្ឆេទកំណត់ (ថ្មី - ចាស់)" }, // Due Date (New to Old)
-    { value: "type-asc", label: "ប្រភេទ (ក - ហ)" }, // Type (A-Z)
-    { value: "type-desc", label: "ប្រភេទ (ហ - ក)" }, // Type (Z-A)
-    { value: "status-asc", label: "ស្ថានភាព (ក - ហ)" }, // Status (A-Z)
-    { value: "status-desc", label: "ស្ថានភាព (ហ - ក)" }, // Status (Z-A)
-  ];
+  const customStyles = {
+    table: { style: { borderRadius: "8px", overflow: "hidden", boxShadow: "0 2px 10px rgba(0, 0, 0, 0.05)", background: "#fff" } },
+    headRow: { style: { background: "linear-gradient(90deg, #3f7fc2, #0056b3)", color: "white", textTransform: "uppercase", fontSize: "16px" } },
+    headCells: { style: { padding: "12px" } },
+    rows: { style: { fontSize: "16px", color: "#333", borderBottom: "1px solid #ddd", "&:hover": { background: "rgba(0, 123, 255, 0.1)" } } },
+    cells: { style: { padding: "12px" } },
+  };
 
   return (
     <div className="invoice-list-container">
-      <h1 className="invoice-list-title">
-        <span className="title-highlight">វិក្កយបត្រ</span> បញ្ជី
-      </h1>
-      
-      <div className="controls-container">
-        <div className="search-container">
-          <input
-            type="text"
-            className="search-input"
-            placeholder="ស្វែងរកវិក្កយបត្រ..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
-        </div>
-        <select
-          className="sort-select"
-          value={sortOption}
-          onChange={(e) => handleSelectSort(e.target.value)}
-        >
-          {sortOptions.map((option) => (
-            <option key={option.value} value={option.value}>
-              {option.label}
-            </option>
-          ))}
-        </select>
-      </div>
-
-      <div className="invoice-table-card">
-        <table className="invoice-table">
-          <thead>
-            <tr>
-              <th className="table-header" onClick={() => handleSort("id")}>
-                លេខសម្គាល់ {sortField === "id" && (sortDirection === "asc" ? "↑" : "↓")}
-              </th>
-              <th className="table-header" onClick={() => handleSort("customerName")}>
-                អតិថិជន {sortField === "customerName" && (sortDirection === "asc" ? "↑" : "↓")}
-              </th>
-              <th className="table-header" onClick={() => handleSort("date")}>
-                កាលបរិច្ឆេទ {sortField === "date" && (sortDirection === "asc" ? "↑" : "↓")}
-              </th>
-              <th className="table-header" onClick={() => handleSort("dueDate")}>
-                កាលបរិច្ឆេទកំណត់ {sortField === "dueDate" && (sortDirection === "asc" ? "↑" : "↓")}
-              </th>
-              <th className="table-header" onClick={() => handleSort("type")}>
-                ប្រភេទ {sortField === "type" && (sortDirection === "asc" ? "↑" : "↓")}
-              </th>
-              <th className="table-header" onClick={() => handleSort("status")}>
-                ស្ថានភាព {sortField === "status" && (sortDirection === "asc" ? "↑" : "↓")}
-              </th>
-              <th className="table-header">សកម្មភាព</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredInvoices.map((invoice) => (
-              <tr key={invoice.id} className="table-row-hover">
-                <td className="table-cell">{invoice.id}</td>
-                <td className="table-cell">{invoice.customerName}</td>
-                <td className="table-cell">{invoice.date}</td>
-                <td className="table-cell">{invoice.dueDate}</td>
-                <td className="table-cell">{invoice.type}</td>
-                <td className="table-cell">
-                  <button
-                    className={`status-button status-${invoice.status.toLowerCase()}`}
-                    onClick={() => handleStatusToggle(invoice.id)}
-                  >
-                    {invoice.status === "Open" ? "បើក" : "បិទ"}
-                  </button>
-                </td>
-                <td className="table-cell actions-cell">
-                  <button className="action-button edit">កែ</button>
-                  <button className="action-button download">ទាញយក PDF</button>
-                  <button className="action-button delete">លុប</button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-
-        <div className="pagination">
-          <button className="pagination-button" disabled>
-            មុន
-          </button>
-          <span className="pagination-info">ទំព័រ ១ នៃ ៣</span>
-          <button className="pagination-button">
-            បន្ទាប់
-          </button>
-        </div>
-      </div>
+      <h2>បញ្ជីវិក្កយបត្រ</h2>
+      {error && <p className="error-message">{error}</p>}
+      <DataTable
+        columns={columns}
+        data={filteredInvoices}
+        customStyles={customStyles}
+        noDataComponent={<div className="no-results">គ្មានវិក្កយបត្រត្រូវនឹងលក្ខខណ្ឌស្វែងរក។</div>}
+        highlightOnHover
+        responsive
+        progressPending={loading}
+        progressComponent={<div className="loading">កំពុងផ្ទុកវិក្កយបត្រ...</div>}
+      />
     </div>
   );
 };

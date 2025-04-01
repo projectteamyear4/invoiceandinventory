@@ -30,7 +30,7 @@ urlpatterns = [
     path('api/delivery-methods/<int:pk>/', views.delivery_method_detail, name='delivery_method_detail'),
     path('api/invoices/', views.invoice_list_create, name='invoice_list_create'),
     path('api/invoices/<int:pk>/', views.invoice_detail, name='invoice_detail'),
-
+    path('api/invoices/list/', views.invoice_list, name='invoice-list'),
     # Invoice Item (New)
     path('api/invoice-items/<int:pk>/', views.invoice_item_detail, name='invoice_item_detail'),
 ]

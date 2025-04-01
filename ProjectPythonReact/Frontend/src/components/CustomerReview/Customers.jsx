@@ -13,7 +13,7 @@ const Customers = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [visibleColumns, setVisibleColumns] = useState({
-    id: true, // Changed from customer_id to id
+    customer_id: true, // Changed from customer_id to id
     first_name: true,
     last_name: true,
     email: true,
@@ -88,8 +88,8 @@ const Customers = () => {
 
     try {
       await api.delete(`/api/customers/${customerId}/`);
-      setCustomers(customers.filter((customer) => customer.id !== customerId)); // Changed customer_id to id
-      setFilteredCustomers(filteredCustomers.filter((customer) => customer.id !== customerId)); // Changed customer_id to id
+      setCustomers(customers.filter((customer) => customer.customer_id !== customerId)); // Changed customer_id to id
+      setFilteredCustomers(filteredCustomers.filter((customer) => customer.customer_id !== customerId)); // Changed customer_id to id
     } catch (err) {
       console.error('Delete error:', err);
       alert('មិនអាចលុបអតិថិជនបានទេ។');
@@ -111,10 +111,10 @@ const Customers = () => {
     () => [
       {
         name: 'ID',
-        selector: (row) => row.id, // Changed customer_id to id
+        selector: (row) => row.customer_id, // Changed customer_id to id
         sortable: true,
         width: '80px',
-        omit: !visibleColumns.id, // Changed customer_id to id
+        omit: !visibleColumns.customer_id, // Changed customer_id to id
       },
       {
         name: 'ឈ្មោះ',
@@ -183,7 +183,7 @@ const Customers = () => {
           <div className="action-buttons">
             <motion.button
               className="customer-edit-button"
-              onClick={() => navigate(`/edit-customer/${row.id}`)} // Changed customer_id to id
+              onClick={() => navigate(`/edit-customer/${row.customer_id}`)} // Changed customer_id to id
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
             >
@@ -191,7 +191,7 @@ const Customers = () => {
             </motion.button>
             <motion.button
               className="customer-delete-button"
-              onClick={() => handleDelete(row.id)} // Changed customer_id to id
+              onClick={() => handleDelete(row.customer_id)} // Changed customer_id to id
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
             >
@@ -344,7 +344,7 @@ const Customers = () => {
                       checked={visibleColumns[column]}
                       onChange={() => toggleColumn(column)}
                     />
-                    {column === 'id' ? 'ID' : // Changed customer_id to id
+                    {column === 'customer_id' ? 'ID' : // Changed customer_id to id
                      column === 'first_name' ? 'ឈ្មោះ' :
                      column === 'last_name' ? 'នាមត្រកូល' :
                      column === 'email' ? 'អ៊ីមែល' :

@@ -1,117 +1,124 @@
 import React from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import "./InvoiceDetail.css";
 
 const InvoiceDetail = () => {
-  const location = useLocation();
-  const navigate = useNavigate();
-  const { invoice } = location.state || {};
+  const { state } = useLocation();
+  const invoice = state?.invoice;
 
   if (!invoice) {
-    return <div>មិនមានទិន្នន័យវិក្កយបត្រ។ សូមត្រលប់ទៅបង្កើតវិក្កយបត្រថ្មី។</div>;
+    return <div>No invoice data available.</div>;
   }
 
-  const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleString("km-KH", {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
+  // Utility functions to format numbers
+  const formatCurrency = (value) => {
+    const num = parseFloat(value);
+    return isNaN(num) ? "0.00" : num.toFixed(2);
   };
 
-  const handlePrint = () => {
-    window.print();
+  const formatPercentage = (value) => {
+    const num = parseFloat(value);
+    return isNaN(num) ? "0.00" : num.toFixed(2);
+  };
+
+  const formatNumber = (value) => {
+    const num = parseFloat(value);
+    return isNaN(num) ? 0 : num;
   };
 
   return (
     <div className="invoice-detail-container">
-      <div className="invoice-paper">
-        <div className="invoice-header">
-          <h1>វិក្កយបត្រ</h1>
-          <p>លេខវិក្កយបត្រ: {invoice.id || "N/A"}</p>
-          <p>កាលបរិច្ឆេទ: {formatDate(invoice.date)}</p>
-          <p>កាលបរិច្ឆេទផុតកំណត់: {formatDate(invoice.due_date)}</p>
-        </div>
+      <h1>Invoice Details</h1>
 
-        <div className="invoice-section customer-info">
-          <h2>ព័ត៌មានអតិថិជន</h2>
-          <p><strong>ឈ្មោះ:</strong> {invoice.customer_name}</p>
-          {invoice.customer_email && <p><strong>អ៊ីមែល:</strong> {invoice.customer_email}</p>}
-          {invoice.customer_address1 && <p><strong>អាសយដ្ឋាន:</strong> {invoice.customer_address1}</p>}
-          {invoice.customer_town && <p><strong>ទីប្រជុំជន:</strong> {invoice.customer_town}</p>}
-          {invoice.customer_country && <p><strong>ប្រទេស:</strong> {invoice.customer_country}</p>}
-          {invoice.customer_phone && <p><strong>លេខទូរស័ព្ទ:</strong> {invoice.customer_phone}</p>}
-        </div>
-
-        <div className="invoice-section shipping-info">
-          <h2>ព័ត៌មានដឹកជញ្ជូន</h2>
-          {invoice.shipping_name && <p><strong>ឈ្មោះអ្នកទទួល/ក្រុមហ៊ុនដឹក:</strong> {invoice.shipping_name}</p>}
-          {invoice.shipping_address1 && <p><strong>លេខឡាន:</strong> {invoice.shipping_address1}</p>}
-          {invoice.shipping_town && <p><strong>លេខអ្នកដឹកជញ្ជូន:</strong> {invoice.shipping_town}</p>}
-          {invoice.shipping_cost > 0 && <p><strong>ថ្លៃដឹកជញ្ជូន:</strong> ${invoice.shipping_cost.toFixed(2)}</p>}
-        </div>
-
-        <div className="invoice-section">
-          <h2>ផលិតផល</h2>
-          <table className="invoice-items-table">
-            <thead>
-              <tr>
-                <th>ឈ្មោះផលិតផល</th>
-                <th>ទំហំ</th>
-                <th>ពណ៌</th>
-                <th>បរិមាណ</th>
-                <th>តម្លៃឯកតា</th>
-                <th>បញ្ចុះតម្លៃ (%)</th>
-                <th>សរុប</th>
-              </tr>
-            </thead>
-            <tbody>
-              {invoice.items.map((item, index) => (
-                <tr key={index}>
-                  <td>{item.name || "N/A"}</td>
-                  <td>{item.size || "-"}</td>
-                  <td>{item.color || "-"}</td>
-                  <td>{item.quantity}</td>
-                  <td>${item.unit_price.toFixed(2)}</td>
-                  <td>{item.discount_percentage}%</td>
-                  <td>${item.total_price.toFixed(2)}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-
-        <div className="invoice-section summary">
-          <h2>សរុប</h2>
-          <p><strong>សរុបរង:</strong> ${invoice.subtotal.toFixed(2)}</p>
-          {invoice.overall_discount > 0 && (
-            <p><strong>ទឹកប្រាក់បញ្ចុះតម្លៃ:</strong> ${invoice.overall_discount.toFixed(2)}</p>
-          )}
-          {invoice.tax > 0 && <p><strong>ពន្ធ:</strong> ${invoice.tax.toFixed(2)}</p>}
-          <p><strong>សរុប (USD):</strong> ${invoice.total.toFixed(2)}</p>
-          <p><strong>សរុប (KHR):</strong> ៛{invoice.total_in_riel.toLocaleString()}</p>
-        </div>
-
-        <div className="invoice-section">
-          <h2>ព័ត៌មានបន្ថែម</h2>
-          <p><strong>វិធីបង់ប្រាក់:</strong> {invoice.payment_method}</p>
-          {invoice.notes && <p><strong>កំណត់សម្គាល់:</strong> {invoice.notes}</p>}
-        </div>
-
-        <div className="invoice-footer">
-          <p>សូមអរគុណសម្រាប់ការទិញរបស់អ្នក!</p>
-        </div>
+      {/* Customer Information */}
+      <div className="invoice-info">
+        <h2>Customer Information</h2>
+        {invoice.customer ? (
+          <>
+            <p>
+              <strong>Customer ID:</strong> {invoice.customer.customer_id}
+            </p>
+            <p>
+              <strong>Name:</strong> {invoice.customer.first_name} {invoice.customer.last_name}
+            </p>
+            <p>
+              <strong>Address:</strong> {invoice.customer.address || "-"}
+              {invoice.customer.city ? `, ${invoice.customer.city}` : ""}
+              {invoice.customer.country ? `, ${invoice.customer.country}` : ""}
+            </p>
+            <p>
+              <strong>Phone:</strong> {invoice.customer.phone_number || "-"}
+            </p>
+          </>
+        ) : (
+          <p>No customer specified.</p>
+        )}
       </div>
 
-      <div className="invoice-actions">
-        <button className="print-button" onClick={handlePrint}>
-          បោះពុម្ព
-        </button>
-        <button className="back-button" onClick={() => navigate("/invoice-form")}>
-          ត្រលប់ទៅបង្កើតវិក្កយបត្រថ្មី
-        </button>
+      {/* Rest of your component remains the same */}
+      {/* Delivery Method Information */}
+      <div className="invoice-info">
+        <h2>Delivery Method</h2>
+        {invoice.delivery_method ? (
+          <>
+            <p><strong>Delivery ID:</strong> {invoice.delivery_method.delivery_method_id}</p>
+            <p><strong>Delivery Name:</strong> {invoice.delivery_method.delivery_name || "-"}</p>
+            <p><strong>Car Number:</strong> {invoice.delivery_method.car_number || "-"}</p>
+            <p><strong>Delivery Number:</strong> {invoice.delivery_method.delivery_number || "-"}</p>
+          </>
+        ) : (
+          <p>No delivery method specified.</p>
+        )}
+      </div>
+
+      {/* General Invoice Information */}
+      <div className="invoice-info">
+        <h2>Invoice Information</h2>
+        <p><strong>Type:</strong> {invoice.type}</p>
+        <p><strong>Status:</strong> {invoice.status}</p>
+        <p><strong>Date:</strong> {invoice.date}</p>
+        <p><strong>Due Date:</strong> {invoice.due_date}</p>
+        <p><strong>Payment Method:</strong> {invoice.payment_method}</p>
+        <p><strong>Notes:</strong> {invoice.notes || "-"}</p>
+      </div>
+
+      {/* Items Table */}
+      <h2>Items</h2>
+      <table className="items-table">
+        <thead>
+          <tr>
+            <th>Product</th>
+            <th>Size</th>
+            <th>Color</th>
+            <th>Quantity</th>
+            <th>Unit Price</th>
+            <th>Discount (%)</th>
+            <th>Total</th>
+          </tr>
+        </thead>
+        <tbody>
+          {invoice.items.map((item) => (
+            <tr key={item.id}>
+              <td>{item.product_name}</td>
+              <td>{item.variant_size || "-"}</td>
+              <td>{item.variant_color || "-"}</td>
+              <td>{item.quantity}</td>
+              <td>${formatCurrency(item.unit_price)}</td>
+              <td>{formatPercentage(item.discount_percentage)}%</td>
+              <td>${formatCurrency(item.total_price)}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+
+      {/* Summary */}
+      <div className="summary">
+        <p><strong>Subtotal:</strong> ${formatCurrency(invoice.subtotal)}</p>
+        <p><strong>Tax:</strong> ${formatCurrency(invoice.tax)}</p>
+        <p><strong>Shipping Cost:</strong> ${formatCurrency(invoice.shipping_cost)}</p>
+        <p><strong>Overall Discount:</strong> ${formatCurrency(invoice.overall_discount)}</p>
+        <p><strong>Total (USD):</strong> ${formatCurrency(invoice.total)}</p>
+        <p><strong>Total (KHR):</strong> ៛{formatNumber(invoice.total_in_riel).toLocaleString()}</p>
       </div>
     </div>
   );

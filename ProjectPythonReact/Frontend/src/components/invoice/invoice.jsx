@@ -302,7 +302,7 @@ const InvoiceForm = () => {
     e.preventDefault();
     setIsSubmitting(true);
     setError((prev) => ({ ...prev, submit: null }));
-
+  
     // Validate required fields
     if (!formData.customerName) {
       setError((prev) => ({
@@ -312,7 +312,7 @@ const InvoiceForm = () => {
       setIsSubmitting(false);
       return;
     }
-
+  
     if (!formData.dueDate || !formData.paymentMethod) {
       setError((prev) => ({
         ...prev,
@@ -321,9 +321,10 @@ const InvoiceForm = () => {
       setIsSubmitting(false);
       return;
     }
-
+  
     // Validate products
-    if (formData.products.length === 0 || formData.products.some((p) => !p.product_id)) {
+    const validProducts = formData.products.filter((p) => p.product_id);
+    if (validProducts.length === 0) {
       setError((prev) => ({
         ...prev,
         submit: "សូមបន្ថែមផលិតផលត្រឹមត្រូវយ៉ាងហោចណាស់មួយ។",
@@ -331,9 +332,9 @@ const InvoiceForm = () => {
       setIsSubmitting(false);
       return;
     }
-
+  
     // Check stock
-    const outOfStockItems = formData.products.filter((p) => p.quantity > p.stock && p.product_id);
+    const outOfStockItems = validProducts.filter((p) => p.quantity > p.stock);
     if (outOfStockItems.length > 0) {
       const itemNames = outOfStockItems
         .map((p) => `${p.name}${p.size || p.color ? ` (${p.size || ""}/${p.color || ""})` : ""}`)
@@ -342,7 +343,7 @@ const InvoiceForm = () => {
       setIsSubmitting(false);
       return;
     }
-
+  
     try {
       // Prepare customer data
       const nameParts = formData.customerName.trim().split(" ");
@@ -356,7 +357,7 @@ const InvoiceForm = () => {
         phone_number: formData.customerPhone || "",
         status: "active",
       };
-
+  
       // Check if customer already exists by email (if provided)
       let customerId = null;
       if (customerData.email) {
@@ -367,7 +368,7 @@ const InvoiceForm = () => {
           customerId = existingCustomer.customer_id;
         }
       }
-
+  
       // If customer doesn't exist, create a new one
       if (!customerId) {
         const customerResponse = await api.post("/api/customers/", customerData);
@@ -377,7 +378,7 @@ const InvoiceForm = () => {
         customerId = customerResponse.data.customer_id;
         setCustomers((prev) => [...prev, customerResponse.data]); // Update customer list
       }
-
+  
       // Prepare delivery method data as a dictionary
       const deliveryMethodData = formData.deliveryMethod
         ? {
@@ -390,41 +391,39 @@ const InvoiceForm = () => {
             is_active: true,
           }
         : null;
-
+  
       const invoiceData = {
         type: formData.type,
         status: formData.status,
         date: formData.date,
         due_date: formData.dueDate,
-        customer: customerId, // Send customer ID (pk value)
+        customer_id: customerId, // Changed from 'customer' to 'customer_id'
         delivery_method: deliveryMethodData,
         notes: formData.notes,
         payment_method: formData.paymentMethod,
         shipping_cost: shippingDisplay,
         overall_discount: formData.overallDiscount,
         deduct_tax: formData.deductTax,
-        items: formData.products
-          .filter((p) => p.product_id)
-          .map((p) => ({
-            product_id: p.product_id,
-            variant_id: p.variant_id || null,
-            quantity: p.quantity,
-            unit_price: p.unitPrice,
-            discount_percentage: p.discount,
-          })),
+        items: validProducts.map((p) => ({
+          product_id: p.product_id,
+          variant_id: p.variant_id || null,
+          quantity: p.quantity,
+          unit_price: p.unitPrice,
+          discount_percentage: p.discount,
+        })),
       };
-
+  
       console.log("Submitting invoice data:", invoiceData);
-
+  
       const response = await api.post("/api/invoices/", invoiceData);
       alert("វិក្កយបត្របានបង្កើតដោយជោគជ័យ!");
-
+  
       navigate("/invoice-detail", { state: { invoice: response.data } });
       setFormData(initialFormData);
     } catch (err) {
       console.error("Error creating invoice:", err.response?.data || err.message || err);
       let errorMsg = "មានបញ្ហាក្នុងការបង្កើតវិក្កយបត្រ";
-
+  
       if (err.response?.data) {
         const backendErrors = err.response.data;
         if (typeof backendErrors === "object") {
@@ -437,14 +436,13 @@ const InvoiceForm = () => {
       } else if (err.message) {
         errorMsg = err.message;
       }
-
+  
       setError((prev) => ({ ...prev, submit: errorMsg }));
       alert(`មានបញ្ហាក្នុងការបង្កើតវិក្កយបត្រ៖ ${errorMsg}`);
     } finally {
       setIsSubmitting(false);
     }
   };
-
   return (
     <div className="invoice-container">
       <h1 className="invoice-title">

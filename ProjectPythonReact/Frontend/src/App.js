@@ -6,6 +6,7 @@ import AddCategory from './components/category/AddCategory.jsx';
 import CategoryList from './components/category/Categorylist.jsx';
 import { AddCustomer } from './components/CustomerReview/Addcustomer.jsx';
 import Customers from './components/CustomerReview/Customers.jsx';
+import EditCustomer from './components/CustomerReview/EditCustomer.jsx';
 import Header from './components/header/header';
 import InvoiceForm from './components/invoice/invoice.jsx';
 import InvoiceDetail from './components/invoice/InvoiceDetail.jsx';
@@ -58,6 +59,7 @@ function App() {
               <Route path="/orders" element={<ProtectedRoute><Orders /></ProtectedRoute>} />
               <Route path="/customers" element={<ProtectedRoute>< Customers /></ProtectedRoute>} />
               <Route path="/add-customer" element={<ProtectedRoute><AddCustomer /></ProtectedRoute>} />
+              <Route path="/edit-customer/:id" element={<ProtectedRoute><EditCustomer /></ProtectedRoute>} />
               <Route path="/products" element={<ProtectedRoute><Products /></ProtectedRoute>} />
               <Route path="/product-details/:productId" element={<ProtectedRoute><DetailProduct /></ProtectedRoute>} />
               <Route path="/purchases" element={<ProtectedRoute><Purchases /></ProtectedRoute>} />

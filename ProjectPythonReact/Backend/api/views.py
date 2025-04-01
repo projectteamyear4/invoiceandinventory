@@ -458,3 +458,36 @@ def invoice_item_detail(request, pk):
         invoice_item.delete()
         logger.info(f"User {request.user.username} deleted invoice item {pk}")
         return Response({'detail': 'Invoice item deleted'}, status=status.HTTP_204_NO_CONTENT)
+#invoice_item_detail
+@api_view(['GET', 'POST'])
+@permission_classes([IsAuthenticated])
+def invoice_list(request):
+    if request.method == 'GET':
+        try:
+            # Fetch all invoices
+            invoices = Invoice.objects.all()
+            logger.debug(f"Queried invoices: {invoices.count()} found")  # Debug log
+            serializer = InvoiceSerializer(invoices, many=True)
+            logger.info(f"User {request.user.username} retrieved list of invoices")
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except Invoice.DoesNotExist:
+            # This won't typically trigger with .all(), but included for completeness
+            logger.error(f"No invoices exist in the database for user {request.user.username}")
+            return Response({'detail': 'No invoices found'}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            logger.error(f"User {request.user.username} encountered an error while retrieving invoices: {str(e)}", exc_info=True)
+            return Response({'detail': f'Error retrieving invoices: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    elif request.method == 'POST':
+        try:
+            serializer = InvoiceSerializer(data=request.data)
+            if serializer.is_valid():
+                serializer.save()
+                logger.info(f"User {request.user.username} created a new invoice with ID {serializer.data['id']}")
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
+            logger.error(f"User {request.user.username} failed to create invoice: {serializer.errors}")
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            logger.error(f"User {request.user.username} encountered an error while creating invoice: {str(e)}", exc_info=True)
+            return Response({'detail': f'Error creating invoice: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
