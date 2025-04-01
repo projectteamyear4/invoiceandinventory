@@ -406,7 +406,7 @@ def invoice_list_create(request):
         logger.error(f"User {request.user.username} failed to create invoice: {serializer.errors}")
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-@api_view(['GET', 'PUT', 'DELETE'])
+@api_view(['GET', 'PUT', 'PATCH', 'DELETE'])  # Added PATCH
 @permission_classes([IsAuthenticated])
 def invoice_detail(request, pk):
     try:
@@ -420,12 +420,20 @@ def invoice_detail(request, pk):
         logger.info(f"User {request.user.username} retrieved invoice {pk}")
         return Response(serializer.data, status=status.HTTP_200_OK)
     elif request.method == 'PUT':
-        serializer = InvoiceSerializer(invoice, data=request.data, partial=True)
+        serializer = InvoiceSerializer(invoice, data=request.data, partial=True)  # partial=True for flexibility
         if serializer.is_valid():
             serializer.save()
             logger.info(f"User {request.user.username} updated invoice {pk}")
             return Response(serializer.data, status=status.HTTP_200_OK)
         logger.error(f"User {request.user.username} failed to update invoice {pk}: {serializer.errors}")
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    elif request.method == 'PATCH':  # New PATCH handling
+        serializer = InvoiceSerializer(invoice, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            logger.info(f"User {request.user.username} partially updated invoice {pk}")
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        logger.error(f"User {request.user.username} failed to patch invoice {pk}: {serializer.errors}")
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     elif request.method == 'DELETE':
         invoice.delete()
