@@ -5,12 +5,13 @@ from django.db import models
 from django.db.models import Sum
 from rest_framework import viewsets
 from django.utils import timezone
+import logging
 from datetime import datetime
 from rest_framework.validators import UniqueValidator
 from django.contrib.auth.password_validation import validate_password
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from .models import Supplier, Product, ProductVariant, Category, Warehouse, Shelf, Purchase, StockMovement, Customer, DeliveryMethod, Invoice, InvoiceItem
-
+logger = logging.getLogger(__name__)
 # Existing RegisterSerializer
 class RegisterSerializer(serializers.ModelSerializer):
     email = serializers.EmailField(
@@ -269,14 +270,14 @@ class InvoiceItemSerializer(serializers.ModelSerializer):
         ]
 
 class InvoiceSerializer(serializers.ModelSerializer):
-    customer = CustomerSerializer(read_only=True)  # Serialize full customer object
+    customer = CustomerSerializer(read_only=True)
     customer_id = serializers.PrimaryKeyRelatedField(
         queryset=Customer.objects.all(), source='customer', write_only=True
-    )  # Accept customer_id for writing
+    )
     delivery_method = DeliveryMethodSerializer(allow_null=True, required=False)
     items = InvoiceItemSerializer(many=True)
-    date = serializers.DateTimeField(format='%Y-%m-%d')  # No source needed
-    due_date = serializers.DateTimeField(format='%Y-%m-%d')  # No source needed
+    date = serializers.DateField(format='%Y-%m-%d')  # Fixed to match DateField
+    due_date = serializers.DateField(format='%Y-%m-%d')  # Fixed to match DateField
 
     class Meta:
         model = Invoice
@@ -288,32 +289,34 @@ class InvoiceSerializer(serializers.ModelSerializer):
         ]
 
     def validate(self, data):
-        items = data.get('items', [])
-        if not items:
-            raise serializers.ValidationError("At least one item is required to create an invoice.")
+        request_method = self.context.get('request').method if 'request' in self.context else 'Unknown'
+        logger.info(f"Validating invoice with method: {request_method}, data: {data}")
+        if request_method == 'POST':
+            items = data.get('items', [])
+            if not items:
+                logger.error("Validation failed: At least one item required for POST")
+                raise serializers.ValidationError("At least one item is required to create an invoice.")
+        elif request_method == 'PATCH':
+            logger.info("Skipping items validation for PATCH")
         return data
 
     def create(self, validated_data):
-        # Extract nested data
         delivery_method_data = validated_data.pop('delivery_method', None)
         items_data = validated_data.pop('items', [])
-        customer = validated_data.pop('customer')  # Pop customer object (set via customer_id)
+        customer = validated_data.pop('customer')
 
-        # Create DeliveryMethod if provided
         delivery_method = None
         if delivery_method_data:
             delivery_method_serializer = DeliveryMethodSerializer(data=delivery_method_data)
             delivery_method_serializer.is_valid(raise_exception=True)
             delivery_method = delivery_method_serializer.save()
 
-        # Create the Invoice
         invoice = Invoice.objects.create(
-            customer=customer,  # Set customer directly
+            customer=customer,
             delivery_method=delivery_method,
             **validated_data
         )
 
-        # Create InvoiceItems and calculate subtotal
         subtotal = Decimal('0.0')
         for item_data in items_data:
             if item_data is None:
@@ -323,14 +326,12 @@ class InvoiceSerializer(serializers.ModelSerializer):
             product = Product.objects.get(id=product_id)
             variant = ProductVariant.objects.get(id=variant_id) if variant_id else None
 
-            # Calculate total_price for the item
-            quantity = Decimal(str(item_data['quantity']))  # Convert to Decimal
-            unit_price = item_data['unit_price']
-            discount_percentage = item_data.get('discount_percentage', Decimal('0.0'))
+            quantity = Decimal(str(item_data['quantity']))
+            unit_price = Decimal(str(item_data['unit_price']))
+            discount_percentage = Decimal(str(item_data.get('discount_percentage', '0.0')))
             total_price = (quantity * unit_price) * (1 - discount_percentage / Decimal('100'))
             subtotal += total_price
 
-            # Create the InvoiceItem
             InvoiceItem.objects.create(
                 invoice=invoice,
                 product=product,
@@ -339,11 +340,26 @@ class InvoiceSerializer(serializers.ModelSerializer):
                 **item_data
             )
 
-        # Update invoice totals
         invoice.subtotal = subtotal
-        invoice.tax = subtotal * Decimal('0.1') if invoice.deduct_tax else Decimal('0.0')
+        invoice.tax = subtotal * Decimal('0.1') if not invoice.deduct_tax else Decimal('0.0')
         invoice.total = invoice.subtotal + invoice.tax + invoice.shipping_cost - invoice.overall_discount
-        invoice.total_in_riel = invoice.total * Decimal('4100')  # Example conversion rate
+        invoice.total_in_riel = invoice.total * Decimal('4100')
         invoice.save()
 
         return invoice
+
+    def update(self, instance, validated_data):
+        logger.info(f"Updating invoice {instance.id} with validated_data: {validated_data}")
+        if 'delivery_method' in validated_data:
+            delivery_method_data = validated_data.pop('delivery_method')
+            if delivery_method_data:
+                delivery_method_serializer = DeliveryMethodSerializer(instance.delivery_method or None, data=delivery_method_data, partial=True)
+                delivery_method_serializer.is_valid(raise_exception=True)
+                instance.delivery_method = delivery_method_serializer.save()
+            else:
+                instance.delivery_method = None
+
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        instance.save()
+        return instance

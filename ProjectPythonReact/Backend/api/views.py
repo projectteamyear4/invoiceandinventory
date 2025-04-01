@@ -406,7 +406,7 @@ def invoice_list_create(request):
         logger.error(f"User {request.user.username} failed to create invoice: {serializer.errors}")
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-@api_view(['GET', 'PUT', 'PATCH', 'DELETE'])  # Added PATCH
+@api_view(['GET', 'PUT', 'PATCH', 'DELETE'])
 @permission_classes([IsAuthenticated])
 def invoice_detail(request, pk):
     try:
@@ -420,15 +420,16 @@ def invoice_detail(request, pk):
         logger.info(f"User {request.user.username} retrieved invoice {pk}")
         return Response(serializer.data, status=status.HTTP_200_OK)
     elif request.method == 'PUT':
-        serializer = InvoiceSerializer(invoice, data=request.data, partial=True)  # partial=True for flexibility
+        serializer = InvoiceSerializer(invoice, data=request.data, partial=True, context={'request': request})
         if serializer.is_valid():
             serializer.save()
             logger.info(f"User {request.user.username} updated invoice {pk}")
             return Response(serializer.data, status=status.HTTP_200_OK)
         logger.error(f"User {request.user.username} failed to update invoice {pk}: {serializer.errors}")
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    elif request.method == 'PATCH':  # New PATCH handling
-        serializer = InvoiceSerializer(invoice, data=request.data, partial=True)
+    elif request.method == 'PATCH':
+        logger.info(f"PATCH request for invoice {pk} with data: {request.data}")
+        serializer = InvoiceSerializer(invoice, data=request.data, partial=True, context={'request': request})
         if serializer.is_valid():
             serializer.save()
             logger.info(f"User {request.user.username} partially updated invoice {pk}")
@@ -472,23 +473,18 @@ def invoice_item_detail(request, pk):
 def invoice_list(request):
     if request.method == 'GET':
         try:
-            # Fetch all invoices
             invoices = Invoice.objects.all()
-            logger.debug(f"Queried invoices: {invoices.count()} found")  # Debug log
+            logger.debug(f"Queried invoices: {invoices.count()} found")
             serializer = InvoiceSerializer(invoices, many=True)
             logger.info(f"User {request.user.username} retrieved list of invoices")
             return Response(serializer.data, status=status.HTTP_200_OK)
-        except Invoice.DoesNotExist:
-            # This won't typically trigger with .all(), but included for completeness
-            logger.error(f"No invoices exist in the database for user {request.user.username}")
-            return Response({'detail': 'No invoices found'}, status=status.HTTP_404_NOT_FOUND)
         except Exception as e:
             logger.error(f"User {request.user.username} encountered an error while retrieving invoices: {str(e)}", exc_info=True)
             return Response({'detail': f'Error retrieving invoices: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     elif request.method == 'POST':
         try:
-            serializer = InvoiceSerializer(data=request.data)
+            serializer = InvoiceSerializer(data=request.data, context={'request': request})
             if serializer.is_valid():
                 serializer.save()
                 logger.info(f"User {request.user.username} created a new invoice with ID {serializer.data['id']}")
@@ -498,4 +494,3 @@ def invoice_list(request):
         except Exception as e:
             logger.error(f"User {request.user.username} encountered an error while creating invoice: {str(e)}", exc_info=True)
             return Response({'detail': f'Error creating invoice: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-    

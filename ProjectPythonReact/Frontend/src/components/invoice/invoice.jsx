@@ -418,7 +418,7 @@ const InvoiceForm = () => {
       const response = await api.post("/api/invoices/", invoiceData);
       alert("វិក្កយបត្របានបង្កើតដោយជោគជ័យ!");
   
-      navigate("/invoice-detail", { state: { invoice: response.data } });
+      navigate("/invoicelist", { state: { invoice: response.data } });
       setFormData(initialFormData);
     } catch (err) {
       console.error("Error creating invoice:", err.response?.data || err.message || err);

@@ -193,12 +193,12 @@ class Invoice(models.Model):
         ('CREDIT', 'Credit'),
         ('BANK_TRANSFER', 'Bank Transfer'),
     )
-    type = models.CharField(max_length=20, choices=INVOICE_TYPES, default='SALE')
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='DRAFT')
+    type = models.CharField(max_length=20, choices=INVOICE_TYPES, default='invoice')
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, null=True, blank=True)
     date = models.DateField(default=timezone.now)
     due_date = models.DateField()
-    customer = models.ForeignKey(Customer, on_delete=models.SET_NULL, null=True, related_name='invoices')
-    delivery_method = models.ForeignKey(DeliveryMethod, on_delete=models.SET_NULL, null=True, related_name='invoices')
+    customer = models.ForeignKey('Customer', on_delete=models.SET_NULL, null=True, related_name='invoices')
+    delivery_method = models.ForeignKey('DeliveryMethod', on_delete=models.SET_NULL, null=True, related_name='invoices')
     notes = models.TextField(blank=True, null=True)
     payment_method = models.CharField(max_length=20, choices=PAYMENT_METHODS, default='CASH')
     shipping_cost = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
@@ -211,6 +211,11 @@ class Invoice(models.Model):
 
     def __str__(self):
         return f"Invoice {self.id} - {self.customer}"
+
+    def save(self, *args, **kwargs):
+        # Debug to check if save is interfering
+        print(f"Saving invoice {self.id or 'new'} with status {self.status}")
+        super().save(*args, **kwargs)
 
 # InvoiceItem Model
 class InvoiceItem(models.Model):

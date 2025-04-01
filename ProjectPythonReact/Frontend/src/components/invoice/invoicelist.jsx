@@ -4,6 +4,7 @@ import html2canvas from "html2canvas";
 import React, { useEffect, useMemo, useState } from "react";
 import { CSVLink } from "react-csv";
 import DataTable from "react-data-table-component";
+import { FaEye } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import * as XLSX from "xlsx";
 import "./InvoiceList.css";
@@ -17,6 +18,9 @@ const InvoiceList = () => {
   const [error, setError] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [showModal, setShowModal] = useState(false);
+  const [selectedInvoiceId, setSelectedInvoiceId] = useState(null);
+  const [newStatus, setNewStatus] = useState("");
   const navigate = useNavigate();
 
   const api = useMemo(
@@ -33,8 +37,9 @@ const InvoiceList = () => {
 
   useEffect(() => {
     const token = localStorage.getItem("access_token");
+    console.log("Token:", token);
     if (!token) {
-      setError("សូមចូលប្រើប្រាស់ប្រព័ន្ធសិន (No access token found)");
+      setError("Please log in first (No access token found)");
       setLoading(false);
       navigate("/login");
       return;
@@ -48,7 +53,7 @@ const InvoiceList = () => {
         setInvoices(fetchedInvoices);
         setFilteredInvoices(fetchedInvoices);
       } catch (err) {
-        setError(err.response?.data?.detail || "បញ្ហាក្នុងការទាញយកវិក្កយបត្រ");
+        setError(err.response?.data?.detail || "Error fetching invoices");
         console.error("Fetch error:", {
           status: err.response?.status,
           data: err.response?.data,
@@ -62,15 +67,14 @@ const InvoiceList = () => {
     fetchData();
   }, [api, navigate]);
 
-  // Search functionality
   useEffect(() => {
     const filtered = invoices.filter((invoice) => {
       const customer = invoice.customer || {};
       const customerName = `${customer.first_name || ""} ${customer.last_name || ""}`.trim().toLowerCase();
-      const delivery = invoice.delivery_method ? invoice.delivery_method.name : "";
-      const query = searchQuery.toLowerCase();
+      const delivery = invoice.delivery_method && invoice.delivery_method.name ? invoice.delivery_method.name : "";
+      const query = (searchQuery || "").toLowerCase();
       return (
-        invoice.id?.toString().includes(query) ||
+        (invoice.id?.toString() || "").includes(query) ||
         customerName.includes(query) ||
         (invoice.status || "").toLowerCase().includes(query) ||
         (invoice.type || "").toLowerCase().includes(query) ||
@@ -81,51 +85,82 @@ const InvoiceList = () => {
     setFilteredInvoices(filtered);
   }, [searchQuery, invoices]);
 
-  // Update status
-  const handleStatusChange = async (invoiceId, newStatus) => {
+  const handleStatusChange = async () => {
+    if (!selectedInvoiceId || !newStatus) return;
     try {
-      await api.patch(`/api/invoices/${invoiceId}/`, { status: newStatus });
+      const response = await api.patch(`/api/invoices/${selectedInvoiceId}/`, { status: newStatus });
+      console.log("Patch Response:", response.data);
+      const updatedInvoice = response.data;
       const updatedInvoices = invoices.map((inv) =>
-        inv.id === invoiceId ? { ...inv, status: newStatus } : inv
+        inv.id === selectedInvoiceId ? updatedInvoice : inv
       );
+      console.log("Updated Invoices:", updatedInvoices);
       setInvoices(updatedInvoices);
       setFilteredInvoices(updatedInvoices);
+      setError(null);
+      setShowModal(false); // Close modal on success
+      setSelectedInvoiceId(null);
+      setNewStatus("");
     } catch (err) {
-      console.error("Status update error:", err);
-      setError("បញ្ហាក្នុងការកែស្ថានភាព");
+      console.error("Status update error:", {
+        message: err.message,
+        status: err.response?.status,
+        data: err.response?.data,
+      });
+      setError(
+        err.response?.data?.detail ||
+          err.response?.data?.status?.[0] ||
+          "Error updating status"
+      );
+      if (err.response?.status === 401) {
+        navigate("/login");
+      }
     }
   };
 
-  // Delete invoice
+  const openStatusModal = (invoiceId, currentStatus) => {
+    setSelectedInvoiceId(invoiceId);
+    setNewStatus(currentStatus);
+    setShowModal(true);
+  };
+
   const handleDelete = async (invoiceId) => {
-    if (window.confirm("តើអ្នកប្រាកដជាចង់លុបវិក្កយបត្រនេះមែនទេ?")) {
+    if (window.confirm("Are you sure you want to delete this invoice?")) {
       try {
         await api.delete(`/api/invoices/${invoiceId}/`);
         const updatedInvoices = invoices.filter((inv) => inv.id !== invoiceId);
         setInvoices(updatedInvoices);
         setFilteredInvoices(updatedInvoices);
         console.log(`Invoice ${invoiceId} deleted successfully`);
+        setError(null);
       } catch (err) {
-        console.error("Delete error:", err);
-        setError("បញ្ហាក្នុងការលុបវិក្កយបត្រ");
+        console.error("Delete error:", {
+          status: err.response?.status,
+          data: err.response?.data,
+          message: err.message,
+        });
+        setError("Error deleting invoice");
       }
     }
   };
 
-  // Export to Excel
+  const handleView = (invoice) => {
+    navigate(`/invoices/${invoice.id}`, { state: { invoice } });
+  };
+
   const exportToExcel = () => {
     const ws = XLSX.utils.json_to_sheet(
       filteredInvoices.map((inv) => ({
-        "លេខវិក្កយបត្រ": inv.id,
-        "ប្រភេទ": inv.type === "invoice" ? "វិក្កយបត្រ" : "សម្រង់តម្លៃ",
-        "ស្ថានភាព": { DRAFT: "ព្រាង", PENDING: "មិនទាន់បង់", PAID: "បានបង់", CANCELLED: "បានលុបចោល" }[inv.status] || inv.status,
-        "កាលបរិច្ឆេទ": inv.date ? new Date(inv.date).toLocaleDateString() : "-",
-        "ផុតកំណត់": inv.due_date ? new Date(inv.due_date).toLocaleDateString() : "-",
-        "អតិថិជន": inv.customer ? `${inv.customer.first_name || ""} ${inv.customer.last_name || ""}`.trim() : "-",
-        "វិធីដឹកជញ្ជូន": inv.delivery_method ? inv.delivery_method.name : "-",
-        "កំណត់សម្គាល់": inv.notes || "-",
-        "សរុប (USD)": parseFloat(inv.total || 0).toFixed(2),
-        "សរុប (KHR)": parseInt(inv.total_in_riel || 0),
+        "Invoice ID": inv.id,
+        Type: inv.type === "invoice" ? "Invoice" : "Quotation",
+        Status: inv.status || "-",
+        Date: inv.date ? new Date(inv.date).toLocaleDateString() : "-",
+        "Due Date": inv.due_date ? new Date(inv.due_date).toLocaleDateString() : "-",
+        Customer: inv.customer ? `${inv.customer.first_name || ""} ${inv.customer.last_name || ""}`.trim() : "-",
+        "Delivery Method": inv.delivery_method ? inv.delivery_method.name : "-",
+        Notes: inv.notes || "-",
+        "Total (USD)": parseFloat(inv.total || 0).toFixed(2),
+        "Total (KHR)": parseFloat(inv.total_in_riel || 0).toFixed(2),
       }))
     );
     const wb = XLSX.utils.book_new();
@@ -133,7 +168,6 @@ const InvoiceList = () => {
     XLSX.writeFile(wb, "invoices.xlsx");
   };
 
-  // Export to PNG
   const exportToPNG = () => {
     const table = document.querySelector(".rdt_Table");
     if (table) {
@@ -149,54 +183,66 @@ const InvoiceList = () => {
 
   const columns = useMemo(
     () => [
-      { name: "លេខវិក្កយបត្រ", selector: (row) => row.id || "-", sortable: true, width: "100px" },
-      { name: "ប្រភេទ", selector: (row) => (row.type === "invoice" ? "វិក្កយបត្រ" : "សម្រង់តម្លៃ"), sortable: true, width: "120px" },
       {
-        name: "ស្ថានភាព",
+        name: "View",
+        cell: (row) => (
+          <button
+            onClick={() => handleView(row)}
+            style={{ padding: "5px", background: "transparent", border: "none", cursor: "pointer" }}
+            title="View Details"
+          >
+            <FaEye style={{ color: "#007bff", fontSize: "18px" }} />
+          </button>
+        ),
+        ignoreRowClick: true,
+        allowOverflow: true,
+        button: true,
+        width: "60px",
+      },
+      { name: "Invoice ID", selector: (row) => row.id || "-", sortable: true, width: "100px" },
+      { name: "Type", selector: (row) => (row.type === "invoice" ? "Invoice" : "Quotation"), sortable: true, width: "120px" },
+      {
+        name: "Status",
         selector: (row) => row.status,
         cell: (row) => (
-          <select
-            value={row.status}
-            onChange={(e) => handleStatusChange(row.id, e.target.value)}
-            style={{ padding: "5px", borderRadius: "4px" }}
+          <button
+            onClick={() => openStatusModal(row.id, row.status)}
+            style={{ padding: "5px 10px", background: "#007bff", color: "white", borderRadius: "4px", border: "none" }}
           >
-            <option value="DRAFT">ព្រាង</option>
-            <option value="PENDING">មិនទាន់បង់</option>
-            <option value="PAID">បានបង់</option>
-            <option value="CANCELLED">បានលុបចោល</option>
-          </select>
+            {row.status || "DRAFT"}
+          </button>
         ),
         sortable: true,
         width: "150px",
       },
-      { name: "កាលបរិច្ឆេទ", selector: (row) => (row.date ? new Date(row.date).toLocaleDateString() : "-"), sortable: true, width: "120px" },
-      { name: "ផុតកំណត់", selector: (row) => (row.due_date ? new Date(row.due_date).toLocaleDateString() : "-"), sortable: true, width: "120px" },
+      { name: "Date", selector: (row) => (row.date ? new Date(row.date).toLocaleDateString() : "-"), sortable: true, width: "120px" },
+      { name: "Due Date", selector: (row) => (row.due_date ? new Date(row.due_date).toLocaleDateString() : "-"), sortable: true, width: "120px" },
       {
-        name: "អតិថិជន",
+        name: "Customer",
         selector: (row) => {
-          const customer = row.customer;
+          const customer = row.customer || {};
           return customer ? `${customer.first_name || ""} ${customer.last_name || ""}`.trim() : row.customer_id || "-";
         },
         sortable: true,
         width: "150px",
       },
       {
-        name: "វិធីដឹកជញ្ជូន",
-        selector: (row) => (row.delivery_method ? row.delivery_method.name : "-"),
+        name: "Delivery Method",
+        selector: (row) => (row.delivery_method && row.delivery_method.name ? row.delivery_method.name : "-"),
         sortable: true,
         width: "150px",
       },
-      { name: "កំណត់សម្គាល់", selector: (row) => row.notes || "-", sortable: true, width: "150px" },
-      { name: "សរុប (USD)", selector: (row) => `$${parseFloat(row.total || 0).toFixed(2)}`, sortable: true, width: "120px" },
-      { name: "សរុប (KHR)", selector: (row) => `៛${parseInt(row.total_in_riel || 0).toLocaleString()}`, sortable: true, width: "150px" },
+      { name: "Notes", selector: (row) => row.notes || "-", sortable: true, width: "150px" },
+      { name: "Total (USD)", selector: (row) => `$${parseFloat(row.total || 0).toFixed(2)}`, sortable: true, width: "120px" },
+      { name: "Total (KHR)", selector: (row) => `៛${parseFloat(row.total_in_riel || 0).toFixed(2)}`, sortable: true, width: "150px" },
       {
-        name: "សកម្មភាព",
+        name: "Action",
         cell: (row) => (
           <button
             onClick={() => handleDelete(row.id)}
             style={{ padding: "5px 10px", background: "#dc3545", color: "white", borderRadius: "4px", border: "none" }}
           >
-            លុប
+            Delete
           </button>
         ),
         ignoreRowClick: true,
@@ -220,34 +266,33 @@ const InvoiceList = () => {
     },
   };
 
-  // CSV data preparation
   const csvData = filteredInvoices.map((inv) => ({
-    "លេខវិក្កយបត្រ": inv.id,
-    "ប្រភេទ": inv.type === "invoice" ? "វិក្កយបត្រ" : "សម្រង់តម្លៃ",
-    "ស្ថានភាព": { DRAFT: "ព្រាង", PENDING: "មិនទាន់បង់", PAID: "បានបង់", CANCELLED: "បានលុបចោល" }[inv.status] || inv.status,
-    "កាលបរិច្ឆេទ": inv.date ? new Date(inv.date).toLocaleDateString() : "-",
-    "ផុតកំណត់": inv.due_date ? new Date(inv.due_date).toLocaleDateString() : "-",
-    "អតិថិជន": inv.customer ? `${inv.customer.first_name || ""} ${inv.customer.last_name || ""}`.trim() : "-",
-    "វិធីដឹកជញ្ជូន": inv.delivery_method ? inv.delivery_method.name : "-",
-    "កំណត់សម្គាល់": inv.notes || "-",
-    "សរុប (USD)": parseFloat(inv.total || 0).toFixed(2),
-    "សរុប (KHR)": parseInt(inv.total_in_riel || 0),
+    "Invoice ID": inv.id,
+    Type: inv.type === "invoice" ? "Invoice" : "Quotation",
+    Status: inv.status || "-",
+    Date: inv.date ? new Date(inv.date).toLocaleDateString() : "-",
+    "Due Date": inv.due_date ? new Date(inv.due_date).toLocaleDateString() : "-",
+    Customer: inv.customer ? `${inv.customer.first_name || ""} ${inv.customer.last_name || ""}`.trim() : "-",
+    "Delivery Method": inv.delivery_method ? inv.delivery_method.name : "-",
+    Notes: inv.notes || "-",
+    "Total (USD)": parseFloat(inv.total || 0).toFixed(2),
+    "Total (KHR)": parseFloat(inv.total_in_riel || 0).toFixed(2),
   }));
 
   return (
     <div className="invoice-list-container">
-      <h2>បញ្ជីវិក្កយបត្រ</h2>
+      <h2>Invoice List</h2>
       {error && <p className="error-message">{error}</p>}
       <div style={{ marginBottom: "10px", display: "flex", gap: "10px", alignItems: "center" }}>
         <input
           type="text"
-          placeholder="ស្វែងរក (លេខ, អតិថិជន, ស្ថានភាព, កំណត់សម្គាល់...)"
+          placeholder="Search (ID, Customer, Status, Notes...)"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           style={{ padding: "8px", width: "300px", borderRadius: "4px", border: "1px solid #ccc" }}
         />
         <div>
-          <label>បង្ហាញក្នុងមួយទំព័រ: </label>
+          <label>Rows per page: </label>
           <select
             value={rowsPerPage}
             onChange={(e) => setRowsPerPage(Number(e.target.value))}
@@ -286,12 +331,51 @@ const InvoiceList = () => {
         paginationPerPage={rowsPerPage}
         paginationRowsPerPageOptions={[5, 10, 20, 50]}
         customStyles={customStyles}
-        noDataComponent={<div className="no-results">គ្មានវិក្កយបត្រត្រូវនឹងលក្ខខណ្ឌស្វែងរក។</div>}
+        noDataComponent={<div className="no-results">No invoices match the search criteria.</div>}
         highlightOnHover
         responsive
         progressPending={loading}
-        progressComponent={<div className="loading">កំពុងផ្ទុកវិក្កយបត្រ...</div>}
+        progressComponent={<div className="loading">Loading invoices...</div>}
       />
+
+      {/* Modal for Status Change */}
+      {showModal && (
+        <div style={{
+          position: "fixed", top: 0, left: 0, right: 0, bottom: 0,
+          background: "rgba(0, 0, 0, 0.5)", display: "flex", justifyContent: "center", alignItems: "center"
+        }}>
+          <div style={{
+            background: "white", padding: "20px", borderRadius: "8px", width: "300px",
+            boxShadow: "0 2px 10px rgba(0, 0, 0, 0.1)"
+          }}>
+            <h3>Change Status</h3>
+            <select
+              value={newStatus}
+              onChange={(e) => setNewStatus(e.target.value)}
+              style={{ width: "100%", padding: "8px", marginBottom: "10px", borderRadius: "4px" }}
+            >
+              <option value="DRAFT">Draft</option>
+              <option value="PENDING">Pending</option>
+              <option value="PAID">Paid</option>
+              <option value="CANCELLED">Cancelled</option>
+            </select>
+            <div style={{ display: "flex", gap: "10px" }}>
+              <button
+                onClick={handleStatusChange}
+                style={{ padding: "8px 15px", background: "#28a745", color: "white", borderRadius: "4px", border: "none" }}
+              >
+                Save
+              </button>
+              <button
+                onClick={() => setShowModal(false)}
+                style={{ padding: "8px 15px", background: "#dc3545", color: "white", borderRadius: "4px", border: "none" }}
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

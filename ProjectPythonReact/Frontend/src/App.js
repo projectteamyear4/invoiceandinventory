@@ -77,7 +77,8 @@ function App() {
               <Route path="/edit-warehouse/:id" element={<ProtectedRoute><EditWarehouse /></ProtectedRoute>} />
               <Route path="/edit-stock-movement/:id" element={<ProtectedRoute><EditStockMovement /></ProtectedRoute>} />
               <Route path="/invoice" element={<ProtectedRoute><InvoiceForm /></ProtectedRoute>} />
-              <Route path="/invoice-detail" element={<ProtectedRoute><InvoiceDetail /></ProtectedRoute>} />
+              {/* <Route path="/invoice-detail" element={<ProtectedRoute><InvoiceDetail /></ProtectedRoute>} /> */}
+              <Route path="/invoices/:id" element={<ProtectedRoute><InvoiceDetail /></ProtectedRoute>} />
               <Route path="/invoicelist" element={<ProtectedRoute><InvoiceList /></ProtectedRoute>} />
               <Route path="/shelves/:warehouseId" element={<ProtectedRoute><Shelves /></ProtectedRoute>} /> {/* Updated */}
               <Route path="/add-shelf/:warehouseId" element={<ProtectedRoute><AddShelf /></ProtectedRoute>} /> {/* Updated */}
