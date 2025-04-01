@@ -43,8 +43,6 @@ const initialFormData = {
 };
 
 const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || "http://localhost:8000";
-const TAX_RATE_PERCENT = parseFloat(process.env.REACT_APP_TAX_RATE || 10);
-const EXCHANGE_RATE_KHR = parseFloat(process.env.REACT_APP_EXCHANGE_RATE || 4000);
 
 const InvoiceForm = () => {
   const [formData, setFormData] = useState(initialFormData);
@@ -259,15 +257,18 @@ const InvoiceForm = () => {
     });
   }, [customers, customerSearchTerm]);
 
+  // Calculate totals for display purposes only (backend will handle actual calculations)
   const { subtotal, tax, total, totalInRiel, shippingDisplay, discountDisplay } = useMemo(() => {
     const calculatedSubtotal = formData.products.reduce((sum, product) => sum + product.total, 0);
     const discountAmount = calculatedSubtotal * (formData.overallDiscount / 100);
     const discountedSubtotal = calculatedSubtotal - discountAmount;
     const calculatedShipping = parseFloat(formData.shippingCost) || 0;
     const taxableAmount = discountedSubtotal;
-    const calculatedTax = formData.deductTax ? 0 : taxableAmount * (TAX_RATE_PERCENT / 100);
+    const taxRatePercent = 10; // Match backend tax rate
+    const calculatedTax = formData.deductTax ? 0 : taxableAmount * (taxRatePercent / 100);
     const calculatedTotal = taxableAmount + calculatedShipping + calculatedTax;
-    const calculatedTotalInRiel = calculatedTotal * EXCHANGE_RATE_KHR;
+    const exchangeRateKhr = 4000; // Match backend exchange rate
+    const calculatedTotalInRiel = calculatedTotal * exchangeRateKhr;
 
     return {
       subtotal: calculatedSubtotal,
@@ -347,7 +348,7 @@ const InvoiceForm = () => {
       const nameParts = formData.customerName.trim().split(" ");
       const customerData = {
         first_name: nameParts[0] || formData.customerName.trim(),
-        last_name: nameParts[1] || "",
+        last_name: nameParts.length > 1 ? nameParts.slice(1).join(" ") : "",
         email: formData.customerEmail || null,
         address: formData.customerAddress1 || "",
         city: formData.customerTown || "",
@@ -359,7 +360,9 @@ const InvoiceForm = () => {
       // Check if customer already exists by email (if provided)
       let customerId = null;
       if (customerData.email) {
-        const existingCustomer = customers.find((c) => c.email && c.email.toLowerCase() === customerData.email.toLowerCase());
+        const existingCustomer = customers.find(
+          (c) => c.email && c.email.toLowerCase() === customerData.email.toLowerCase()
+        );
         if (existingCustomer) {
           customerId = existingCustomer.customer_id;
         }
@@ -398,12 +401,8 @@ const InvoiceForm = () => {
         notes: formData.notes,
         payment_method: formData.paymentMethod,
         shipping_cost: shippingDisplay,
-        overall_discount: discountDisplay,
+        overall_discount: formData.overallDiscount,
         deduct_tax: formData.deductTax,
-        subtotal: subtotal,
-        tax: tax,
-        total: total,
-        total_in_riel: totalInRiel,
         items: formData.products
           .filter((p) => p.product_id)
           .map((p) => ({
@@ -412,7 +411,6 @@ const InvoiceForm = () => {
             quantity: p.quantity,
             unit_price: p.unitPrice,
             discount_percentage: p.discount,
-            total_price: p.total,
           })),
       };
 
@@ -855,7 +853,7 @@ const InvoiceForm = () => {
                 />
               </div>
               <div className="summary-item">
-                <span className="summary-label">ពន្ធ ({TAX_RATE_PERCENT}%):</span>
+                <span className="summary-label">ពន្ធ (10%):</span>
                 <span className="summary-value">${tax.toFixed(2)}</span>
               </div>
               <div className="summary-item">

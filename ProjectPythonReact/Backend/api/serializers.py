@@ -227,13 +227,13 @@ class DeliveryMethodSerializer(serializers.ModelSerializer):
             'estimated_delivery_time',
             'is_active',
         ]
+        read_only_fields = ['delivery_method_id']  # Add this
 
     def validate_estimated_delivery_time(self, value):
         if value and value.total_seconds() < 0:
             raise serializers.ValidationError("Estimated delivery time cannot be negative.")
         return value
 #Customer serializer
-# CustomerSerializer
 class CustomerSerializer(serializers.ModelSerializer):
     class Meta:
         model = Customer
@@ -255,7 +255,7 @@ class InvoiceItemSerializer(serializers.ModelSerializer):
         fields = ['id', 'product_id', 'variant_id', 'quantity', 'unit_price', 'discount_percentage', 'total_price']
         read_only_fields = ['id', 'total_price']
 class InvoiceSerializer(serializers.ModelSerializer):
-    customer = serializers.DictField()  # Accept a dictionary for customer data
+    customer = serializers.PrimaryKeyRelatedField(queryset=Customer.objects.all())  # Expect a customer ID
     delivery_method = DeliveryMethodSerializer(allow_null=True, required=False)
     items = InvoiceItemSerializer(many=True)
 
@@ -266,59 +266,78 @@ class InvoiceSerializer(serializers.ModelSerializer):
             'notes', 'payment_method', 'shipping_cost', 'overall_discount', 'deduct_tax',
             'subtotal', 'tax', 'total', 'total_in_riel', 'items'
         ]
-        read_only_fields = ['id']
-
-    def validate_customer(self, customer_data):
-        serializer = CustomerSerializer(data=customer_data)
-        serializer.is_valid(raise_exception=True)
-        return customer_data
+        read_only_fields = ['id', 'subtotal', 'tax', 'total', 'total_in_riel']  # Make these read-only
 
     def validate(self, data):
-        customer_data = data.get('customer')
-        if customer_data:
-            data['customer'] = self.validate_customer(customer_data)
+        # Ensure the items list is not empty
+        if not data.get('items'):
+            raise serializers.ValidationError({"items": "An invoice must have at least one item."})
+        
+        # Validate overall_discount
+        overall_discount = data.get('overall_discount', 0)
+        if overall_discount < 0 or overall_discount > 100:
+            raise serializers.ValidationError({"overall_discount": "Overall discount must be between 0 and 100."})
+
         return data
 
     def create(self, validated_data):
-        customer_data = validated_data.pop('customer')
         delivery_method_data = validated_data.pop('delivery_method', None)
         items_data = validated_data.pop('items')
 
-        email = customer_data.get('email')
-        customer = None
-        if email:
-            try:
-                customer = Customer.objects.get(email__iexact=email)
-                for key, value in customer_data.items():
-                    if value:
-                        setattr(customer, key, value)
-                customer.save()
-            except Customer.DoesNotExist:
-                customer = Customer.objects.create(**customer_data)
-        else:
-            customer = Customer.objects.create(**customer_data)
-
+        # Create DeliveryMethod if provided
         delivery_method = None
         if delivery_method_data:
             delivery_method = DeliveryMethod.objects.create(**delivery_method_data)
 
+        # Create the Invoice without subtotal, tax, total, and total_in_riel for now
         invoice = Invoice.objects.create(
-            customer=customer,
             delivery_method=delivery_method,
             **validated_data
         )
 
+        # Create InvoiceItems and calculate subtotal
+        subtotal = 0
         for item_data in items_data:
             product_id = item_data.pop('product_id')
             variant_id = item_data.pop('variant_id', None)
             product = Product.objects.get(id=product_id)
             variant = ProductVariant.objects.get(id=variant_id) if variant_id else None
-            InvoiceItem.objects.create(
+
+            # Calculate total_price for the item
+            quantity = item_data['quantity']
+            unit_price = item_data['unit_price']
+            discount_percentage = item_data.get('discount_percentage', 0)
+            total_price = quantity * unit_price * (1 - discount_percentage / 100)
+
+            # Create the InvoiceItem
+            invoice_item = InvoiceItem.objects.create(
                 invoice=invoice,
                 product=product,
                 variant=variant,
+                total_price=total_price,  # Set the calculated total_price
                 **item_data
             )
+            subtotal += total_price
+
+        # Calculate overall discount, tax, and totals
+        overall_discount = validated_data.get('overall_discount', 0)
+        discount_amount = subtotal * (overall_discount / 100)
+        discounted_subtotal = subtotal - discount_amount
+
+        shipping_cost = validated_data.get('shipping_cost', 0)
+        tax_rate = 0.10  # 10% tax rate (adjust as needed, possibly from settings)
+        tax = 0 if validated_data.get('deduct_tax', False) else discounted_subtotal * tax_rate
+        total = discounted_subtotal + shipping_cost + tax
+
+        exchange_rate_khr = 4000  # Adjust as needed, possibly from settings
+        total_in_riel = total * exchange_rate_khr
+
+        # Update the invoice with calculated fields
+        invoice.subtotal = subtotal
+        invoice.tax = tax
+        invoice.total = total
+        invoice.total_in_riel = total_in_riel
+        invoice.save()
 
         return invoice
 
