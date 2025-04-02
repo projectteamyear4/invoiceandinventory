@@ -1,7 +1,9 @@
 from django.db import models
 import uuid
+from model_utils import FieldTracker
 import random
 from django.utils import timezone
+from django.db.models import Sum, Q
 from django.core.exceptions import ValidationError
 #Supplier model
 class Supplier(models.Model):
@@ -126,6 +128,26 @@ class StockMovement(models.Model):
 
     def __str__(self):
         return f"{self.movement_type} - {self.product.name} - {self.quantity}"
+    #current stock function
+def get_current_stock(product, variant=None, warehouse=None, shelf=None):
+    filters = {'product': product}
+    if variant:
+        filters['product_variant'] = variant
+    if warehouse:
+        filters['warehouse'] = warehouse
+    if shelf:
+        filters['shelf'] = shelf
+
+    movements = StockMovement.objects.filter(**filters).aggregate(
+        total_in=Sum('quantity', filter=Q(movement_type='IN')) or 0,
+        total_out=Sum('quantity', filter=Q(movement_type='OUT')) or 0
+    )
+    
+    # Ensure None is replaced with 0
+    total_in = movements['total_in'] if movements['total_in'] is not None else 0
+    total_out = movements['total_out'] if movements['total_out'] is not None else 0
+    
+    return max(total_in - total_out, 0)
 
 # delivery model
 class DeliveryMethod(models.Model):
@@ -208,6 +230,7 @@ class Invoice(models.Model):
     tax = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
     total = models.DecimalField(max_digits=12, decimal_places=2, default=0.00)
     total_in_riel = models.DecimalField(max_digits=15, decimal_places=2, default=0.00)
+    tracker = FieldTracker(fields=['status'])
 
     def __str__(self):
         return f"Invoice {self.id} - {self.customer}"

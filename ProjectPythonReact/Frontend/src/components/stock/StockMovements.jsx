@@ -1,6 +1,5 @@
-// src/components/StockMovements.jsx
 import axios from 'axios';
-import { motion } from 'framer-motion'; // Import framer-motion
+import { motion } from 'framer-motion';
 import html2canvas from 'html2canvas';
 import React, { useEffect, useRef, useState } from 'react';
 import { CSVLink } from 'react-csv';
@@ -15,9 +14,12 @@ const StockMovements = () => {
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
-  const [exportFormat, setExportFormat] = useState(''); // State for selected export format
+  const [exportFormat, setExportFormat] = useState('');
+  // Pagination states
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10); // Default to 10 items per page
   const navigate = useNavigate();
-  const tableRef = useRef(null); // Reference to the table for capturing as image
+  const tableRef = useRef(null);
 
   const api = axios.create({
     baseURL: 'http://localhost:8000',
@@ -52,6 +54,7 @@ const StockMovements = () => {
       movement.product_name.toLowerCase().includes(searchTerm.toLowerCase())
     );
     setFilteredStockMovements(filtered);
+    setCurrentPage(1); // Reset to first page when search term changes
   }, [searchTerm, stockMovements]);
 
   // Sort stock movements
@@ -82,6 +85,25 @@ const StockMovements = () => {
       }
     });
     setFilteredStockMovements(sorted);
+  };
+
+  // Pagination logic
+  const totalItems = filteredStockMovements.length;
+  const totalPages = Math.ceil(totalItems / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedMovements = filteredStockMovements.slice(startIndex, endIndex);
+
+  const handlePageChange = (page) => {
+    if (page >= 1 && page <= totalPages) {
+      setCurrentPage(page);
+    }
+  };
+
+  const handleItemsPerPageChange = (e) => {
+    const newItemsPerPage = parseInt(e.target.value, 10);
+    setItemsPerPage(newItemsPerPage);
+    setCurrentPage(1); // Reset to first page when items per page changes
   };
 
   // Prepare data for export (CSV and Excel)
@@ -199,7 +221,6 @@ const StockMovements = () => {
         <div className="header-content">
           <h2>ចលនាស្តុក</h2>
           <div className="stock-movement-search-wrapper">
-           
             <input
               type="text"
               placeholder="ស្វែងរកតាមផលិតផល..."
@@ -246,6 +267,9 @@ const StockMovements = () => {
           />
         </div>
       </motion.div>
+
+    
+
       <table className="stock-movement-table" ref={tableRef}>
         <thead>
           <tr>
@@ -309,7 +333,7 @@ const StockMovements = () => {
           </tr>
         </thead>
         <tbody>
-          {filteredStockMovements.map((movement, index) => {
+          {paginatedMovements.map((movement, index) => {
             const isMissingStockInfo = !movement.warehouse_name || !movement.shelf_name;
 
             return (
@@ -341,6 +365,66 @@ const StockMovements = () => {
           })}
         </tbody>
       </table>
+  {/* Items per page selector */}
+  <div className="pagination-controls">
+        <label htmlFor="items-per-page">ចំនួនក្នុងមួយទំព័រ: </label>
+        <select
+          id="items-per-page"
+          value={itemsPerPage}
+          onChange={handleItemsPerPageChange}
+          className="items-per-page-select"
+        >
+          <option value={5}>5</option>
+          <option value={10}>10</option>
+          <option value={20}>20</option>
+          <option value={50}>50</option>
+        </select>
+      </div>
+      {/* Pagination controls */}
+      {totalItems > 0 && (
+        <div className="pagination">
+          <motion.button
+            onClick={() => handlePageChange(currentPage - 1)}
+            disabled={currentPage === 1}
+            className="pagination-button"
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+          >
+            មុន
+          </motion.button>
+
+          <div className="pagination-pages">
+            {Array.from({ length: totalPages }, (_, index) => index + 1).map((page) => (
+              <motion.button
+                key={page}
+                onClick={() => handlePageChange(page)}
+                className={`pagination-page ${currentPage === page ? 'active' : ''}`}
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                {page}
+              </motion.button>
+            ))}
+          </div>
+
+          <motion.button
+            onClick={() => handlePageChange(currentPage + 1)}
+            disabled={currentPage === totalPages}
+            className="pagination-button"
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+          >
+            បន្ទាប់
+          </motion.button>
+        </div>
+      )}
+
+      {/* Display total items and current range */}
+      {totalItems > 0 && (
+        <div className="pagination-info">
+          បង្ហាញ {startIndex + 1} ដល់ {Math.min(endIndex, totalItems)} នៃ {totalItems} ធាតុ
+        </div>
+      )}
     </motion.div>
   );
 };

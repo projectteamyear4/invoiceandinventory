@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
+    'model_utils',
     'api',
     'corsheaders',  # Make sure this line is added
 ]

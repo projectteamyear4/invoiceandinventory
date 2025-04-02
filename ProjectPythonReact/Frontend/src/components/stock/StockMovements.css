@@ -205,7 +205,37 @@
   font-size: 16px;
   color: #333;
 }
+/* Remove the following styles since the custom dropdown is no longer used */
+/* .pagination-controls and .rows-per-page-select styles are no longer needed */
 
+/* Keep the pagination-info style */
+.pagination-info {
+  text-align: center;
+  margin-top: 10px;
+  font-size: 0.9rem;
+  color: #555;
+}
+
+/* Add styles for the built-in rows per page dropdown in DataTable */
+.rdt_Pagination select {
+  padding: 6px 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  background-color: #fff;
+  transition: border-color 0.2s;
+}
+
+.rdt_Pagination select:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.1);
+}
+
+.rdt_Pagination select:hover {
+  border-color: #007bff;
+}
 /* Responsive Design */
 @media (max-width: 768px) {
   .stock-movement-controls {

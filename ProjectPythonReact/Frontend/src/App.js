@@ -2,6 +2,7 @@ import { Route, BrowserRouter as Router, Routes } from 'react-router-dom';
 import './App.css';
 import Login from './components/auth/Login';
 import { AuthProvider } from './components/AuthContext';
+
 import AddCategory from './components/category/AddCategory.jsx';
 import CategoryList from './components/category/Categorylist.jsx';
 import { AddCustomer } from './components/CustomerReview/Addcustomer.jsx';
@@ -33,6 +34,7 @@ import AddPurchase from './components/supplier/AddPurchase.jsx';
 import AddSupplier from './components/supplier/AddSupplier.jsx';
 import EditSupplier from './components/supplier/EditSupplier.jsx';
 import Purchases from './components/supplier/Purchases.jsx';
+
 import SupplierTable from './components/supplier/SupplierTable.jsx';
 import ProtectedRoute from './ProtectedRoute';
 
@@ -57,6 +59,7 @@ function App() {
               <Route path="/" element={<Login />} />
               <Route path="/dashboard" element={<ProtectedRoute><MainDash /></ProtectedRoute>} />
               <Route path="/orders" element={<ProtectedRoute><Orders /></ProtectedRoute>} />
+           
               <Route path="/customers" element={<ProtectedRoute>< Customers /></ProtectedRoute>} />
               <Route path="/add-customer" element={<ProtectedRoute><AddCustomer /></ProtectedRoute>} />
               <Route path="/edit-customer/:id" element={<ProtectedRoute><EditCustomer /></ProtectedRoute>} />

@@ -1,0 +1,76 @@
+/* Shelf.css */
+
+.shelf-form-container {
+    max-width: 500px;
+    margin: 50px auto;
+    padding: 20px;
+    background: #ffffff;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+    border-radius: 10px;
+    text-align: center;
+  }
+  
+  .shelf-form-container h2 {
+    margin-bottom: 20px;
+    color: #333;
+    font-size: 24px;
+    font-weight: bold;
+  }
+  
+  .shelf-form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+  }
+  
+  .shelf-input {
+    padding: 10px;
+    font-size: 16px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    outline: none;
+    transition: border 0.3s ease;
+  }
+  
+  .shelf-input:focus {
+    border-color: #007bff;
+  }
+  
+  .shelf-button {
+    padding: 12px;
+    font-size: 16px;
+    background: #007bff;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background 0.3s ease;
+  }
+  
+  .shelf-button:hover {
+    background: #0056b3;
+  }
+  
+  .shelf-button:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+  }
+  
+  .shelf-message {
+    margin-top: 15px;
+    font-size: 14px;
+    padding: 10px;
+    border-radius: 5px;
+  }
+  
+  .shelf-message.success {
+    background: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+  }
+  
+  .shelf-message.error {
+    background: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+  }

@@ -481,3 +481,14 @@ def invoice_detail(request, pk):
             return Response(serializer.data, status=status.HTTP_200_OK)
         logger.error(f"User {request.user.username} failed to patch invoice {pk}: {serializer.errors}")
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+# InvoiceViewSet (New)
+class InvoiceViewSet(viewsets.ModelViewSet):
+    queryset = Invoice.objects.all()
+    serializer_class = InvoiceSerializer
+
+    def perform_update(self, serializer):
+        try:
+        
+            serializer.save()
+        except ValueError as e:
+            return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
