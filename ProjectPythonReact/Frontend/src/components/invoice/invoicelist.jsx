@@ -37,7 +37,6 @@ const InvoiceList = () => {
 
   useEffect(() => {
     const token = localStorage.getItem("access_token");
-    console.log("Token:", token);
     if (!token) {
       setError("Please log in first (No access token found)");
       setLoading(false);
@@ -71,10 +70,10 @@ const InvoiceList = () => {
     const filtered = invoices.filter((invoice) => {
       const customer = invoice.customer || {};
       const customerName = `${customer.first_name || ""} ${customer.last_name || ""}`.trim().toLowerCase();
-      const delivery = invoice.delivery_method && invoice.delivery_method.name ? invoice.delivery_method.name : "";
-      const query = (searchQuery || "").toLowerCase();
+      const delivery = invoice.delivery_method?.name || "";
+      const query = searchQuery.toLowerCase();
       return (
-        (invoice.id?.toString() || "").includes(query) ||
+        String(invoice.id || "").includes(query) ||
         customerName.includes(query) ||
         (invoice.status || "").toLowerCase().includes(query) ||
         (invoice.type || "").toLowerCase().includes(query) ||
@@ -86,19 +85,20 @@ const InvoiceList = () => {
   }, [searchQuery, invoices]);
 
   const handleStatusChange = async () => {
-    if (!selectedInvoiceId || !newStatus) return;
+    if (!selectedInvoiceId) return;
+    const payload = { status: newStatus || null };
+    console.log("Sending PATCH with payload:", payload);
     try {
-      const response = await api.patch(`/api/invoices/${selectedInvoiceId}/`, { status: newStatus });
+      const response = await api.patch(`/api/invoices/${selectedInvoiceId}/`, payload);
       console.log("Patch Response:", response.data);
       const updatedInvoice = response.data;
       const updatedInvoices = invoices.map((inv) =>
         inv.id === selectedInvoiceId ? updatedInvoice : inv
       );
-      console.log("Updated Invoices:", updatedInvoices);
       setInvoices(updatedInvoices);
       setFilteredInvoices(updatedInvoices);
       setError(null);
-      setShowModal(false); // Close modal on success
+      setShowModal(false);
       setSelectedInvoiceId(null);
       setNewStatus("");
     } catch (err) {
@@ -109,7 +109,7 @@ const InvoiceList = () => {
       });
       setError(
         err.response?.data?.detail ||
-          err.response?.data?.status?.[0] ||
+          err.response?.data?.non_field_errors?.[0] ||
           "Error updating status"
       );
       if (err.response?.status === 401) {
@@ -120,7 +120,7 @@ const InvoiceList = () => {
 
   const openStatusModal = (invoiceId, currentStatus) => {
     setSelectedInvoiceId(invoiceId);
-    setNewStatus(currentStatus);
+    setNewStatus(currentStatus || "");
     setShowModal(true);
   };
 
@@ -131,7 +131,6 @@ const InvoiceList = () => {
         const updatedInvoices = invoices.filter((inv) => inv.id !== invoiceId);
         setInvoices(updatedInvoices);
         setFilteredInvoices(updatedInvoices);
-        console.log(`Invoice ${invoiceId} deleted successfully`);
         setError(null);
       } catch (err) {
         console.error("Delete error:", {
@@ -153,11 +152,11 @@ const InvoiceList = () => {
       filteredInvoices.map((inv) => ({
         "Invoice ID": inv.id,
         Type: inv.type === "invoice" ? "Invoice" : "Quotation",
-        Status: inv.status || "-",
-        Date: inv.date ? new Date(inv.date).toLocaleDateString() : "-",
-        "Due Date": inv.due_date ? new Date(inv.due_date).toLocaleDateString() : "-",
+        Status: inv.status || "None",
+        Date: inv.date || "-",
+        "Due Date": inv.due_date || "-",
         Customer: inv.customer ? `${inv.customer.first_name || ""} ${inv.customer.last_name || ""}`.trim() : "-",
-        "Delivery Method": inv.delivery_method ? inv.delivery_method.name : "-",
+        "Delivery Method": inv.delivery_method?.name || "-",
         Notes: inv.notes || "-",
         "Total (USD)": parseFloat(inv.total || 0).toFixed(2),
         "Total (KHR)": parseFloat(inv.total_in_riel || 0).toFixed(2),
@@ -176,8 +175,6 @@ const InvoiceList = () => {
           saveAs(blob, "invoices.png");
         });
       });
-    } else {
-      console.error("Table element not found for PNG export");
     }
   };
 
@@ -209,26 +206,26 @@ const InvoiceList = () => {
             onClick={() => openStatusModal(row.id, row.status)}
             style={{ padding: "5px 10px", background: "#007bff", color: "white", borderRadius: "4px", border: "none" }}
           >
-            {row.status || "DRAFT"}
+            {row.status || "None"}
           </button>
         ),
         sortable: true,
         width: "150px",
       },
-      { name: "Date", selector: (row) => (row.date ? new Date(row.date).toLocaleDateString() : "-"), sortable: true, width: "120px" },
-      { name: "Due Date", selector: (row) => (row.due_date ? new Date(row.due_date).toLocaleDateString() : "-"), sortable: true, width: "120px" },
+      { name: "Date", selector: (row) => row.date || "-", sortable: true, width: "120px" },
+      { name: "Due Date", selector: (row) => row.due_date || "-", sortable: true, width: "120px" },
       {
         name: "Customer",
         selector: (row) => {
           const customer = row.customer || {};
-          return customer ? `${customer.first_name || ""} ${customer.last_name || ""}`.trim() : row.customer_id || "-";
+          return customer ? `${customer.first_name || ""} ${customer.last_name || ""}`.trim() : "-";
         },
         sortable: true,
         width: "150px",
       },
       {
         name: "Delivery Method",
-        selector: (row) => (row.delivery_method && row.delivery_method.name ? row.delivery_method.name : "-"),
+        selector: (row) => row.delivery_method?.name || "-",
         sortable: true,
         width: "150px",
       },
@@ -269,11 +266,11 @@ const InvoiceList = () => {
   const csvData = filteredInvoices.map((inv) => ({
     "Invoice ID": inv.id,
     Type: inv.type === "invoice" ? "Invoice" : "Quotation",
-    Status: inv.status || "-",
-    Date: inv.date ? new Date(inv.date).toLocaleDateString() : "-",
-    "Due Date": inv.due_date ? new Date(inv.due_date).toLocaleDateString() : "-",
+    Status: inv.status || "None",
+    Date: inv.date || "-",
+    "Due Date": inv.due_date || "-",
     Customer: inv.customer ? `${inv.customer.first_name || ""} ${inv.customer.last_name || ""}`.trim() : "-",
-    "Delivery Method": inv.delivery_method ? inv.delivery_method.name : "-",
+    "Delivery Method": inv.delivery_method?.name || "-",
     Notes: inv.notes || "-",
     "Total (USD)": parseFloat(inv.total || 0).toFixed(2),
     "Total (KHR)": parseFloat(inv.total_in_riel || 0).toFixed(2),
@@ -338,22 +335,36 @@ const InvoiceList = () => {
         progressComponent={<div className="loading">Loading invoices...</div>}
       />
 
-      {/* Modal for Status Change */}
       {showModal && (
-        <div style={{
-          position: "fixed", top: 0, left: 0, right: 0, bottom: 0,
-          background: "rgba(0, 0, 0, 0.5)", display: "flex", justifyContent: "center", alignItems: "center"
-        }}>
-          <div style={{
-            background: "white", padding: "20px", borderRadius: "8px", width: "300px",
-            boxShadow: "0 2px 10px rgba(0, 0, 0, 0.1)"
-          }}>
+        <div
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: "rgba(0, 0, 0, 0.5)",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+          }}
+        >
+          <div
+            style={{
+              background: "white",
+              padding: "20px",
+              borderRadius: "8px",
+              width: "300px",
+              boxShadow: "0 2px 10px rgba(0, 0, 0, 0.1)",
+            }}
+          >
             <h3>Change Status</h3>
             <select
-              value={newStatus}
+              value={newStatus || ""}
               onChange={(e) => setNewStatus(e.target.value)}
               style={{ width: "100%", padding: "8px", marginBottom: "10px", borderRadius: "4px" }}
             >
+              <option value="">None</option>
               <option value="DRAFT">Draft</option>
               <option value="PENDING">Pending</option>
               <option value="PAID">Paid</option>

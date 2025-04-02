@@ -268,7 +268,6 @@ class InvoiceItemSerializer(serializers.ModelSerializer):
             'id', 'product_id', 'variant_id', 'product_name', 'variant_size',
             'variant_color', 'quantity', 'unit_price', 'discount_percentage', 'total_price'
         ]
-
 class InvoiceSerializer(serializers.ModelSerializer):
     customer = CustomerSerializer(read_only=True)
     customer_id = serializers.PrimaryKeyRelatedField(
@@ -276,8 +275,8 @@ class InvoiceSerializer(serializers.ModelSerializer):
     )
     delivery_method = DeliveryMethodSerializer(allow_null=True, required=False)
     items = InvoiceItemSerializer(many=True)
-    date = serializers.DateField(format='%Y-%m-%d')  # Fixed to match DateField
-    due_date = serializers.DateField(format='%Y-%m-%d')  # Fixed to match DateField
+    date = serializers.DateField(format='%Y-%m-%d')  # Fixed to match DateField in model
+    due_date = serializers.DateField(format='%Y-%m-%d')  # Fixed to match DateField in model
 
     class Meta:
         model = Invoice
