@@ -195,8 +195,8 @@ class Invoice(models.Model):
     )
     type = models.CharField(max_length=20, choices=INVOICE_TYPES, default='invoice')
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, null=True, blank=True)
-    date = models.DateField(default=timezone.now)
-    due_date = models.DateField()
+    date = models.DateTimeField(default=timezone.now)  # Likely DateTimeField, not DateField
+    due_date = models.DateTimeField()
     customer = models.ForeignKey('Customer', on_delete=models.SET_NULL, null=True, related_name='invoices')
     delivery_method = models.ForeignKey('DeliveryMethod', on_delete=models.SET_NULL, null=True, related_name='invoices')
     notes = models.TextField(blank=True, null=True)

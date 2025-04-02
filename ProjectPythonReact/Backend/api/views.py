@@ -405,42 +405,6 @@ def invoice_list_create(request):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         logger.error(f"User {request.user.username} failed to create invoice: {serializer.errors}")
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-@api_view(['GET', 'PUT', 'PATCH', 'DELETE'])
-@permission_classes([IsAuthenticated])
-def invoice_detail(request, pk):
-    try:
-        invoice = Invoice.objects.get(pk=pk)
-    except Invoice.DoesNotExist:
-        logger.error(f"User {request.user.username} attempted to access non-existent invoice {pk}")
-        return Response({'detail': 'Invoice not found'}, status=status.HTTP_404_NOT_FOUND)
-
-    if request.method == 'GET':
-        serializer = InvoiceSerializer(invoice)
-        logger.info(f"User {request.user.username} retrieved invoice {pk}")
-        return Response(serializer.data, status=status.HTTP_200_OK)
-    elif request.method == 'PUT':
-        serializer = InvoiceSerializer(invoice, data=request.data, partial=True, context={'request': request})
-        if serializer.is_valid():
-            serializer.save()
-            logger.info(f"User {request.user.username} updated invoice {pk}")
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        logger.error(f"User {request.user.username} failed to update invoice {pk}: {serializer.errors}")
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    elif request.method == 'PATCH':
-        logger.info(f"PATCH request for invoice {pk} with data: {request.data}")
-        serializer = InvoiceSerializer(invoice, data=request.data, partial=True, context={'request': request})
-        if serializer.is_valid():
-            serializer.save()
-            logger.info(f"User {request.user.username} partially updated invoice {pk}")
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        logger.error(f"User {request.user.username} failed to patch invoice {pk}: {serializer.errors}")
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    elif request.method == 'DELETE':
-        invoice.delete()
-        logger.info(f"User {request.user.username} deleted invoice {pk}")
-        return Response({'detail': 'Invoice deleted'}, status=status.HTTP_204_NO_CONTENT)
-
 # InvoiceItem Views (New)
 @api_view(['GET', 'PUT', 'DELETE'])
 @permission_classes([IsAuthenticated])
@@ -467,7 +431,7 @@ def invoice_item_detail(request, pk):
         invoice_item.delete()
         logger.info(f"User {request.user.username} deleted invoice item {pk}")
         return Response({'detail': 'Invoice item deleted'}, status=status.HTTP_204_NO_CONTENT)
-#invoice_item_detail
+# Invoice Views (New)
 @api_view(['GET', 'POST'])
 @permission_classes([IsAuthenticated])
 def invoice_list(request):
@@ -494,3 +458,26 @@ def invoice_list(request):
         except Exception as e:
             logger.error(f"User {request.user.username} encountered an error while creating invoice: {str(e)}", exc_info=True)
             return Response({'detail': f'Error creating invoice: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+@api_view(['GET', 'PATCH'])
+@permission_classes([IsAuthenticated])
+def invoice_detail(request, pk):
+    try:
+        invoice = Invoice.objects.get(pk=pk)
+    except Invoice.DoesNotExist:
+        logger.error(f"User {request.user.username} attempted to access non-existent invoice {pk}")
+        return Response({'detail': 'Invoice not found'}, status=status.HTTP_404_NOT_FOUND)
+
+    if request.method == 'GET':
+        serializer = InvoiceSerializer(invoice)
+        logger.info(f"User {request.user.username} retrieved invoice {pk}")
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    elif request.method == 'PATCH':
+        logger.info(f"PATCH request for invoice {pk} with data: {request.data}")
+        serializer = InvoiceSerializer(invoice, data=request.data, partial=True, context={'request': request})
+        if serializer.is_valid():
+            serializer.save()
+            logger.info(f"User {request.user.username} updated status of invoice {pk} to {request.data.get('status')}")
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        logger.error(f"User {request.user.username} failed to patch invoice {pk}: {serializer.errors}")
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

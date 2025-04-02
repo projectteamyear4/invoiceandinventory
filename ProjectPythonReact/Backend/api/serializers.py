@@ -275,8 +275,8 @@ class InvoiceSerializer(serializers.ModelSerializer):
     )
     delivery_method = DeliveryMethodSerializer(allow_null=True, required=False)
     items = InvoiceItemSerializer(many=True)
-    date = serializers.DateField(format='%Y-%m-%d')  # Fixed to match DateField in model
-    due_date = serializers.DateField(format='%Y-%m-%d')  # Fixed to match DateField in model
+    date = serializers.DateTimeField(format='%Y-%m-%d')  # Matches DateTimeField
+    due_date = serializers.DateTimeField(format='%Y-%m-%d')  # Matches DateTimeField
 
     class Meta:
         model = Invoice
@@ -286,6 +286,7 @@ class InvoiceSerializer(serializers.ModelSerializer):
             'overall_discount', 'deduct_tax', 'subtotal', 'tax', 'total',
             'total_in_riel', 'items'
         ]
+        read_only_fields = ['id', 'subtotal', 'tax', 'total', 'total_in_riel']
 
     def validate(self, data):
         request_method = self.context.get('request').method if 'request' in self.context else 'Unknown'
@@ -296,7 +297,7 @@ class InvoiceSerializer(serializers.ModelSerializer):
                 logger.error("Validation failed: At least one item required for POST")
                 raise serializers.ValidationError("At least one item is required to create an invoice.")
         elif request_method == 'PATCH':
-            logger.info("Skipping items validation for PATCH")
+            logger.info("Skipping items validation for PATCH, only status editable")
         return data
 
     def create(self, validated_data):
@@ -349,16 +350,8 @@ class InvoiceSerializer(serializers.ModelSerializer):
 
     def update(self, instance, validated_data):
         logger.info(f"Updating invoice {instance.id} with validated_data: {validated_data}")
-        if 'delivery_method' in validated_data:
-            delivery_method_data = validated_data.pop('delivery_method')
-            if delivery_method_data:
-                delivery_method_serializer = DeliveryMethodSerializer(instance.delivery_method or None, data=delivery_method_data, partial=True)
-                delivery_method_serializer.is_valid(raise_exception=True)
-                instance.delivery_method = delivery_method_serializer.save()
-            else:
-                instance.delivery_method = None
-
-        for attr, value in validated_data.items():
-            setattr(instance, attr, value)
+        # Only allow status updates via PATCH
+        if 'status' in validated_data:
+            instance.status = validated_data['status']
         instance.save()
         return instance
