@@ -1,105 +1,251 @@
-/* .CompactCard {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 20px;
-  border-radius: 10px;
-  cursor: pointer;
-  height: 15
+/* src/components/Card/Card.css */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+Khmer:wght@400;500;600;700&display=swap');
 
+/* General styling for cards */
+.CompactCard, .ExpandedCard {
+  border-radius: 12px;
+  overflow: hidden;
+  font-family: 'Inter', 'Noto Sans Khmer', sans-serif;
+  transition: all 0.3s ease;
+  cursor: pointer;
 }
+
+/* Compact Card Styling */
 .CompactCard {
   display: flex;
   justify-content: space-between;
   align-items: center;
   padding: 20px;
-  border-radius: 10px;
-  cursor: pointer;
   height: 150px;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-  transition: transform 0.2s ease-in-out;
+  width: 300px;
+  box-sizing: border-box;
+}
+
+.radialBar {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+}
+
+.CircularProgressbar {
+  width: 70px;
+  height: 70px;
+}
+
+.CircularProgressbar .CircularProgressbar-text {
+  font-size: 20px;
+  font-weight: 600;
+  fill: #333;
+}
+
+.card-title {
+  font-size: 16px;
+  font-weight: 500;
+  color: #333;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 120px;
+}
+
+.detail {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+}
+
+.card-icon {
+  width: 30px;
+  height: 30px;
+  color: #666;
+}
+
+.card-value {
+  font-size: 20px;
+  font-weight: 600;
+  color: #333;
+}
+
+/* Expanded Card Styling */
+.ExpandedCard {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 90%;
+  max-width: 600px;
+  height: auto;
+  z-index: 1000;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+.expanded-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.expanded-title {
+  font-size: 24px;
+  font-weight: 600;
+  color: #333;
+}
+
+.close-icon {
+  width: 24px;
+  height: 24px;
+  color: #666;
+  cursor: pointer;
+  transition: color 0.3s ease;
+}
+
+.close-icon:hover {
+  color: #dc3545;
+}
+
+.expanded-content {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.chartContainer {
+  width: 100%;
+  height: 300px;
+  background: #fff;
+  border-radius: 8px;
+  padding: 10px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.expanded-details {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 15px;
+  background: rgba(255, 255, 255, 0.8);
+  border-radius: 8px;
+}
+
+.detail-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.detail-label {
+  font-size: 16px;
+  font-weight: 500;
+  color: #666;
+}
+
+.detail-value {
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .CompactCard {
+    width: 100%;
+    height: 120px;
+    padding: 15px;
   }
 
-.CompactCard:hover {
-  transform: scale(1.05);
+  .CircularProgressbar {
+    width: 60px;
+    height: 60px;
+  }
+
+  .CircularProgressbar .CircularProgressbar-text {
+    font-size: 18px;
+  }
+
+  .card-title {
+    font-size: 14px;
+    max-width: 100px;
+  }
+
+  .card-icon {
+    width: 24px;
+    height: 24px;
+  }
+
+  .card-value {
+    font-size: 18px;
+  }
+
+  .ExpandedCard {
+    width: 95%;
+    max-width: 400px;
+    padding: 15px;
+  }
+
+  .expanded-title {
+    font-size: 20px;
+  }
+
+  .chartContainer {
+    height: 250px;
+  }
+
+  .detail-label, .detail-value {
+    font-size: 14px;
+  }
 }
 
-.radialBar {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 5px;
-}
+@media (max-width: 480px) {
+  .CompactCard {
+    height: 100px;
+    padding: 10px;
+  }
 
-.detail {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 5px;
-}
+  .CircularProgressbar {
+    width: 50px;
+    height: 50px;
+  }
 
-.detail span {
-  font-size: 16px;
-  font-weight: bold;
-}
+  .CircularProgressbar .CircularProgressbar-text {
+    font-size: 16px;
+  }
 
-.ExpandedCard {
-  position: absolute;
-  width: 60%;
-  height: 70vh;
-  z-index: 9;
-  left: 20%;
-  top: 15%;
-  border-radius: 10px;
-  padding: 20px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: space-between;
-  background-color: #fff;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
-}
+  .card-title {
+    font-size: 12px;
+    max-width: 80px;
+  }
 
-.chartContainer {
-  width: 100%;
-  height: 50%;
-  padding: 20px;
-}
+  .card-icon {
+    width: 20px;
+    height: 20px;
+  }
 
-.radialBar {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 5px;
-}
+  .card-value {
+    font-size: 16px;
+  }
 
-.detail {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 5px;
-}
+  .ExpandedCard {
+    width: 90%;
+    max-width: 350px;
+    padding: 10px;
+  }
 
-.detail span {
-  font-size: 16px;
-}
+  .expanded-title {
+    font-size: 18px;
+  }
 
-.ExpandedCard {
-  position: absolute;
-  width: 60%;
-  height: 70vh;
-  z-index: 9;
-  left: 20%;
-  top: 15%;
-  border-radius: 10px;
-  padding: 20px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: space-between;
-}
+  .chartContainer {
+    height: 200px;
+  }
 
-.chartContainer {
-  width: 100%;
-  height: 50%;
-} */
+  .detail-label, .detail-value {
+    font-size: 12px;
+  }
+}

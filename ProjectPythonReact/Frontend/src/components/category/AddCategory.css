@@ -1,0 +1,96 @@
+/* Category.css */
+
+/* Container for the whole form area */
+.category-form-container {
+    max-width: 500px; /* Limit width */
+    margin: 40px auto; /* Center horizontally, add space top/bottom */
+    padding: 30px; /* Internal spacing */
+  
+    border-radius: 8px; /* Rounded corners */
+
+    border: 1px solid #eee; /* Light border */
+  }
+  
+  /* Heading styling */
+  .category-form-container h2 {
+    text-align: center; /* Center the title */
+    color: #333; /* Darker text color */
+    margin-bottom: 25px; /* Space below the heading */
+    font-weight: 600;
+  }
+  
+  /* Form element */
+  .category-form {
+    display: flex; /* Use flexbox for layout */
+    flex-direction: column; /* Stack elements vertically */
+    gap: 15px; /* Space between form elements */
+  }
+  
+  /* Input field styling */
+  .category-input {
+    padding: 12px 15px; /* Comfortable padding */
+    border: 1px solid #ccc; /* Standard border */
+    border-radius: 4px; /* Slightly rounded corners */
+    font-size: 1rem; /* Standard font size */
+    width: 100%; /* Full width within container */
+    box-sizing: border-box; /* Include padding/border in width */
+    transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out; /* Smooth transitions */
+  }
+  
+  /* Input field focus style */
+  .category-input:focus {
+    border-color: #007bff; /* Highlight color on focus */
+    box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25); /* Subtle glow on focus */
+    outline: none; /* Remove default browser outline */
+  }
+  
+  /* Button styling */
+  .category-button {
+    padding: 12px 20px; /* Padding */
+    background-color: #007bff; /* Primary button color */
+    color: white; /* Text color */
+    border: none; /* No border */
+    border-radius: 4px; /* Rounded corners */
+    font-size: 1rem; /* Font size */
+    font-weight: bold; /* Bold text */
+    cursor: pointer; /* Pointer cursor on hover */
+    transition: background-color 0.2s ease-in-out, opacity 0.2s ease-in-out; /* Smooth transitions */
+    text-transform: uppercase; /* Uppercase text */
+    letter-spacing: 0.5px;
+  }
+  
+  /* Button hover effect */
+  .category-button:hover:not(:disabled) {
+    background-color: #0056b3; /* Darker shade on hover */
+  }
+  
+  /* Button disabled state */
+  .category-button:disabled {
+    background-color: #a0cfff; /* Lighter blue when disabled */
+    cursor: not-allowed; /* Indicate non-interactive state */
+    opacity: 0.7; /* Slightly faded */
+  }
+  
+  /* Message area styling (base) */
+  .category-message {
+    margin-top: 20px; /* Space above the message */
+    padding: 12px 15px; /* Padding */
+    border-radius: 4px; /* Rounded corners */
+    text-align: center; /* Center text */
+    font-size: 0.95rem;
+    border: 1px solid transparent; /* Base border */
+  }
+  
+  /* Success message specific styling */
+  .category-message.success {
+    background-color: #d4edda; /* Light green background */
+    color: #155724; /* Dark green text */
+    border-color: #c3e6cb; /* Green border */
+  }
+  
+  /* Error message specific styling */
+  .category-message.error {
+    background-color: #f8d7da; /* Light red background */
+    color: #721c24; /* Dark red text */
+    border-color: #f5c6cb; /* Red border */
+  }

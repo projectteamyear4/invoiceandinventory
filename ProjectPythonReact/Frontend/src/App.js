@@ -5,6 +5,7 @@ import { AuthProvider } from './components/AuthContext';
 
 import AddCategory from './components/category/AddCategory.jsx';
 import CategoryList from './components/category/Categorylist.jsx';
+// import CategoryList from './components/category/Categorylist.jsx';
 import { AddCustomer } from './components/CustomerReview/Addcustomer.jsx';
 import Customers from './components/CustomerReview/Customers.jsx';
 import EditCustomer from './components/CustomerReview/EditCustomer.jsx';
@@ -59,7 +60,6 @@ function App() {
               <Route path="/" element={<Login />} />
               <Route path="/dashboard" element={<ProtectedRoute><MainDash /></ProtectedRoute>} />
               <Route path="/orders" element={<ProtectedRoute><Orders /></ProtectedRoute>} />
-           
               <Route path="/customers" element={<ProtectedRoute>< Customers /></ProtectedRoute>} />
               <Route path="/add-customer" element={<ProtectedRoute><AddCustomer /></ProtectedRoute>} />
               <Route path="/edit-customer/:id" element={<ProtectedRoute><EditCustomer /></ProtectedRoute>} />

@@ -1,49 +1,41 @@
+/* Category.css */
+
+/* Ensure proper font for Khmer text */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+Khmer:wght@400;500;600;700&display=swap');
+
+/* General container styling */
 .category-table-container {
   max-width: 1500px;
-  margin: 30px auto;
+  margin: 20px auto;
   padding: 20px;
-  background: #ffffff;
+
   border-radius: 15px;
+  font-family: 'Inter', 'Noto Sans Khmer', sans-serif;
  
+  overflow-x: auto;
 }
 
+/* Header styling */
 .category-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 20px;
+  margin-bottom: 25px;
+  padding-bottom: 15px;
+  border-bottom: 1px solid #e0e0e0;
 }
 
-.category-table-container h2 {
-  text-align: left;
-  color: #007bff;
+/* Title styling */
+.category-header h2 {
   font-size: 28px;
   margin: 0;
+  background: linear-gradient(90deg, #3f7fc2, #0056b3);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-weight: 600;
 }
 
-.category-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 16px;
-}
-
-.category-table th,
-.category-table td {
-  padding: 12px;
-  text-align: left;
-  border-bottom: 1px solid #ddd;
-}
-
-.category-table th {
-  background: #007bff;
-  color: white;
-  text-transform: uppercase;
-}
-
-.category-table tr:hover {
-  background: rgba(0, 123, 255, 0.1);
-}
-
+/* Add button styling */
 .category-add-button {
   padding: 10px 20px;
   background: linear-gradient(90deg, #007bff, #0056b3);
@@ -54,6 +46,7 @@
   cursor: pointer;
   transition: all 0.3s ease;
   text-transform: uppercase;
+  font-family: 'Inter', 'Noto Sans Khmer', sans-serif;
 }
 
 .category-add-button:hover {
@@ -62,15 +55,78 @@
   transform: translateY(-2px);
 }
 
-.category-edit-button {
-  padding: 8px 15px;
-  background: linear-gradient(90deg, #28a745, #218838); /* Green for edit */
+/* Table styling */
+.category-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 16px;
+  background: #fff !important;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+}
+
+.category-table th,
+.category-table td {
+  padding: 12px 15px;
+  text-align: left;
+  border-bottom: 1px solid #ddd;
+  white-space: nowrap;
+}
+
+.category-table th {
+  background: linear-gradient(90deg, #3f7fc2, #0056b3);
   color: white;
+  text-transform: uppercase;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.category-table th:hover {
+  background: #0056b3;
+}
+
+.category-table td {
+  font-size: 14px;
+  color: #333;
+}
+
+/* Input field styling for editing */
+.category-input {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+  color: #333;
+  box-sizing: border-box;
+  font-family: 'Inter', 'Noto Sans Khmer', sans-serif;
+  transition: all 0.3s ease;
+}
+
+.category-input:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 5px rgba(0, 123, 255, 0.3);
+}
+
+/* Button styling for actions */
+.category-edit-button,
+.category-save-button,
+.category-delete-button {
+  padding: 8px 15px;
   border: none;
   border-radius: 5px;
   font-size: 14px;
   cursor: pointer;
   transition: all 0.3s ease;
+  font-family: 'Inter', 'Noto Sans Khmer', sans-serif;
+}
+
+/* Edit button */
+.category-edit-button {
+  background: linear-gradient(90deg, #28a745, #218838);
+  color: white;
   margin-right: 10px;
 }
 
@@ -80,15 +136,10 @@
   transform: translateY(-2px);
 }
 
+/* Save button */
 .category-save-button {
-  padding: 8px 15px;
-  background: linear-gradient(90deg, #007bff, #0056b3); /* Blue for save */
+  background: linear-gradient(90deg, #007bff, #0056b3);
   color: white;
-  border: none;
-  border-radius: 5px;
-  font-size: 14px;
-  cursor: pointer;
-  transition: all 0.3s ease;
   margin-right: 10px;
 }
 
@@ -98,15 +149,10 @@
   transform: translateY(-2px);
 }
 
+/* Delete button */
 .category-delete-button {
-  padding: 8px 15px;
-  background: linear-gradient(90deg, #dc3545, #c82333); /* Red for delete */
+  background: linear-gradient(90deg, #dc3545, #c82333);
   color: white;
-  border: none;
-  border-radius: 5px;
-  font-size: 14px;
-  cursor: pointer;
-  transition: all 0.3s ease;
 }
 
 .category-delete-button:hover {
@@ -115,82 +161,68 @@
   transform: translateY(-2px);
 }
 
-.category-form-container {
-  max-width: 500px;
-  margin: 20px auto;
+/* Loading message styling */
+p {
+  text-align: center;
+  color: #666;
+  font-size: 16px;
   padding: 20px;
-  background: #ffffff;
-  border-radius: 15px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  font-family: 'Inter', 'Noto Sans Khmer', sans-serif;
 }
 
-.category-form-container h2 {
-  text-align: center;
-  color: #007bff;
-  font-size: 28px;
-  margin-bottom: 20px;
-  text-transform: uppercase;
+/* Responsive design */
+@media (max-width: 768px) {
+  .category-table-container {
+    margin: 20px 10px;
+    padding: 15px;
+  }
+
+  .category-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 15px;
+  }
+
+  .category-header h2 {
+    font-size: 24px;
+  }
+
+  .category-add-button {
+    width: 100%;
+    text-align: center;
+    padding: 10px;
+    font-size: 14px;
+  }
+
+  .category-table th,
+  .category-table td {
+    padding: 10px;
+    font-size: 14px;
+  }
+
+  .category-edit-button,
+  .category-save-button,
+  .category-delete-button {
+    padding: 6px 12px;
+    font-size: 12px;
+    margin-right: 5px;
+  }
 }
 
-.category-form {
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
-}
+@media (max-width: 480px) {
+  .category-table th,
+  .category-table td {
+    font-size: 12px;
+    padding: 8px;
+  }
 
-.category-input {
-  width: 100%;
-  padding: 12px;
-  border: 2px solid #ddd;
-  border-radius: 8px;
-  font-size: 16px;
-  color: #333;
-  transition: all 0.3s ease;
-  background: #f9f9f9;
-}
+  .category-table th:nth-child(1),
+  .category-table td:nth-child(1) {
+    width: 60px;
+  }
 
-.category-input:focus {
-  outline: none;
-  border-color: #007bff;
-  box-shadow: 0 0 8px rgba(0, 123, 255, 0.3);
-  background: #fff;
-}
-
-.category-button {
-  width: 100%;
-  padding: 12px;
-  background: linear-gradient(90deg, #007bff, #0056b3);
-  color: white;
-  border: none;
-  border-radius: 8px;
-  font-size: 16px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  text-transform: uppercase;
-}
-
-.category-button:disabled {
-  background: #ccc;
-  cursor: not-allowed;
-}
-
-.category-button:hover:not(:disabled) {
-  background: linear-gradient(90deg, #0056b3, #007bff);
-  box-shadow: 0 4px 15px rgba(0, 123, 255, 0.4);
-  transform: translateY(-2px);
-}
-
-.category-message {
-  text-align: center;
-  margin-top: 15px;
-  font-size: 14px;
-  font-weight: bold;
-}
-
-.category-message.success {
-  color: #28a745;
-}
-
-.category-message.error {
-  color: #dc3545;
+  .category-table th:nth-child(3),
+  .category-table td:nth-child(3) {
+    width: 120px;
+  }
 }

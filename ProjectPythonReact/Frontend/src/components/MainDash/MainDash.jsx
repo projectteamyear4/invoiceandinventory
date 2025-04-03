@@ -1,12 +1,11 @@
 // src/components/MainDash.jsx
 import axios from "axios";
 import React, { useEffect, useState } from "react";
-import { cardsData } from "../../Data/Data"; // Import static cardsData
 import Cards from "../Cards/Cards";
 import "./MainDash.css";
 
 const MainDash = () => {
-  const [dynamicCardsData, setDynamicCardsData] = useState(cardsData); // Start with static data
+  const [cards, setCards] = useState([]); // Store only database-generated cards
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -22,16 +21,22 @@ const MainDash = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // Fetch purchases and products concurrently
-        const [purchasesResponse, productsResponse] = await Promise.all([
+        // Fetch purchases, products, customers, suppliers, and invoices concurrently
+        const [purchasesResponse, productsResponse, customersResponse, suppliersResponse, invoicesResponse] = await Promise.all([
           api.get("/api/purchases/"),
           api.get("/api/products/"),
+          api.get("/api/invoices/"),
+          api.get("/api/customers/"),
+          api.get("/api/suppliers/"),
         ]);
 
         const purchases = purchasesResponse.data;
         const products = productsResponse.data;
+        const customers = customersResponse.data;
+        const suppliers = suppliersResponse.data;
+        const invoices = invoicesResponse.data;
 
-        // Get today's date in YYYY-MM-DD format
+        // Get today's date in YYYY-MM-DD format (for today's purchase price)
         const today = new Date().toISOString().split("T")[0];
 
         // Calculate total purchase price for today
@@ -51,6 +56,15 @@ const MainDash = () => {
 
         // Calculate total number of products
         const totalProducts = products.length;
+
+        // Calculate total customers (all time)
+        const totalCustomers = customers.length;
+
+        // Calculate total suppliers (all time)
+        const totalSuppliers = suppliers.length;
+
+        // Calculate total invoices (all time)
+        const totalInvoices = invoices.length;
 
         // Convert numbers to Khmer numerals
         const khmerNumbers = (num) =>
@@ -78,7 +92,7 @@ const MainDash = () => {
             border: "1px solid #2196f3",
             boxShadow: "0 4px 10px rgba(33, 150, 243, 0.3)",
           },
-          barValue: Math.min((totalPurchasePrice / 100000) * 100, 100),
+          barValue: Math.min((totalPurchasePrice / 1000000) * 100, 100),
           value: `${khmerNumbers(totalPurchasePrice.toFixed(2))} $`,
           png: "UilMoneyWithdrawal",
           series: [{ name: "សរុប", data: purchases.map((p) => parseFloat(p.purchase_price)) }],
@@ -92,14 +106,63 @@ const MainDash = () => {
             border: "1px solid #4caf50",
             boxShadow: "0 4px 10px rgba(76, 175, 80, 0.3)",
           },
-          barValue: Math.min((totalProducts / 100) * 100, 100), // Scale to 100 products max for the bar
+          barValue: Math.min((totalProducts / 100) * 100, 100),
           value: khmerNumbers(totalProducts),
-          png: "UilBox", // Use an appropriate icon (you may need to import this from 'react-icons')
-          series: [{ name: "ផលិតផល", data: [totalProducts] }], // Simple series for the chart
+          png: "UilBox",
+          series: [{ name: "ផលិតផល", data: [totalProducts] }],
         };
 
-        // Update cardsData with new cards
-        setDynamicCardsData([...cardsData, purchaseTodayCard, totalPurchaseCard, totalProductsCard]);
+        // Card for total customers (all time)
+        const totalCustomersCard = {
+          title: "អតិថិជនសរុប", // Total Customers
+          color: {
+            backGround: "#f3e5f5",
+            border: "1px solid #ab47bc",
+            boxShadow: "0 4px 10px rgba(171, 71, 188, 0.3)",
+          },
+          barValue: Math.min((totalCustomers / 500) * 100, 100),
+          value: khmerNumbers(totalCustomers),
+          png: "UilUsersAlt",
+          series: [{ name: "អតិថិជន", data: [totalCustomers] }],
+        };
+
+        // Card for total suppliers (all time)
+        const totalSuppliersCard = {
+          title: "អ្នកផ្គត់ផ្គង់សរុប", // Total Suppliers
+          color: {
+            backGround: "#ffebee",
+            border: "1px solid #ef5350",
+            boxShadow: "0 4px 10px rgba(239, 83, 80, 0.3)",
+          },
+          barValue: Math.min((totalSuppliers / 100) * 100, 100),
+          value: khmerNumbers(totalSuppliers),
+          png: "UilTruck",
+          series: [{ name: "អ្នកផ្គត់ផ្គង់", data: [totalSuppliers] }],
+        };
+
+        // Card for total invoices (all time)
+        const totalInvoicesCard = {
+          title: "វិក្កយបត្រសរុប", // Total Invoices
+          color: {
+            backGround: "#e0f7fa",
+            border: "1px solid #00acc1",
+            boxShadow: "0 4px 10px rgba(0, 172, 193, 0.3)",
+          },
+          barValue: Math.min((totalInvoices / 1000) * 100, 100),
+          value: khmerNumbers(totalInvoices),
+          png: "UilFileAlt",
+          series: [{ name: "វិក្កយបត្រ", data: [totalInvoices] }],
+        };
+
+        // Set the cards array with only database-generated cards
+        setCards([
+          purchaseTodayCard,
+          totalPurchaseCard,
+          totalProductsCard,
+          totalCustomersCard,
+          totalSuppliersCard,
+          totalInvoicesCard,
+        ]);
       } catch (err) {
         setError("Failed to load data.");
         console.error("Fetch error:", err.response?.data || err);
@@ -117,7 +180,7 @@ const MainDash = () => {
   return (
     <div className="MainDash">
       <h1>ផ្ទាំងគ្រប់គ្រង</h1>
-      <Cards cardsData={dynamicCardsData} />
+      <Cards cardsData={cards} />
     </div>
   );
 };
