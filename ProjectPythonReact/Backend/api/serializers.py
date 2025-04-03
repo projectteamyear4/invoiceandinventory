@@ -345,11 +345,7 @@ class InvoiceSerializer(serializers.ModelSerializer):
         invoice.total = invoice.subtotal + invoice.tax + invoice.shipping_cost - invoice.overall_discount
         invoice.total_in_riel = invoice.total * Decimal('4100')
         invoice.save()
-    def create(self, validated_data):
-        items_data = validated_data.pop('items')
-        invoice = Invoice.objects.create(**validated_data)
-        for item_data in items_data:
-            InvoiceItem.objects.create(invoice=invoice, **item_data)
+
         return invoice
 
     def update(self, instance, validated_data):
