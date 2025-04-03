@@ -355,7 +355,7 @@ def customer_detail(request, pk):
         return Response({'detail': 'Customer deleted'}, status=status.HTTP_204_NO_CONTENT)
     # Delivery Method Views (New)
 @api_view(['GET', 'POST'])
-@permission_classes([IsAuthenticated])
+# @permission_classes([IsAuthenticated])
 def delivery_method_list_create(request):
     if request.method == 'GET':
         delivery_methods = DeliveryMethod.objects.all()
@@ -482,13 +482,20 @@ def invoice_detail(request, pk):
         logger.error(f"User {request.user.username} failed to patch invoice {pk}: {serializer.errors}")
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 # InvoiceViewSet (New)
+# Invoice ViewSet
 class InvoiceViewSet(viewsets.ModelViewSet):
     queryset = Invoice.objects.all()
     serializer_class = InvoiceSerializer
+    permission_classes = [IsAuthenticated]
+
+    def create(self, request, *args, **kwargs):
+        try:
+            return super().create(request, *args, **kwargs)
+        except ValueError as e:
+            return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
     def perform_update(self, serializer):
         try:
-        
             serializer.save()
         except ValueError as e:
-            return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+            raise ValueError(str(e))

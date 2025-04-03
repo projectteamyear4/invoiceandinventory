@@ -176,7 +176,7 @@ class Customer(models.Model):
     address = models.TextField(blank=True, null=True)
     city = models.CharField(max_length=100, blank=True, null=True)
     country = models.CharField(max_length=100, blank=True, null=True)
-    order_history = models.TextField(blank=True, null=True)
+    order_history = models.TextField(blank=True, null=True, default="")
     status = models.CharField(max_length=20, default='active')
     registration_date = models.DateTimeField(auto_now_add=True)
 
