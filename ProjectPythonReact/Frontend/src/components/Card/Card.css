@@ -17,8 +17,10 @@
   align-items: center;
   padding: 20px;
   height: 150px;
-  width: 300px;
+  width: 100%;
+  max-width: 300px;
   box-sizing: border-box;
+  flex: 1 1 auto;
 }
 
 .radialBar {
@@ -74,15 +76,22 @@
 /* Expanded Card Styling */
 .ExpandedCard {
   position: fixed;
-  top: 50%;
-  left: 50%;
+  top: 20%;
+  left: 40%;
   transform: translate(-50%, -50%);
   width: 90%;
   max-width: 600px;
   height: auto;
-  z-index: 1000;
+  z-index: 10000; /* Increased z-index to ensure it appears on top */
   padding: 20px;
   box-sizing: border-box;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2); /* Added shadow for depth */
+  border: 1px solid rgba(0, 0, 0, 0.1); /* Subtle border to match screenshot */
+}
+
+/* Ensure the body doesn't scroll when the expanded card is open */
+body:has(.ExpandedCard) {
+  overflow: hidden;
 }
 
 .expanded-header {
@@ -155,9 +164,9 @@
 /* Responsive Design */
 @media (max-width: 768px) {
   .CompactCard {
-    width: 100%;
     height: 120px;
     padding: 15px;
+    max-width: 250px;
   }
 
   .CircularProgressbar {
@@ -206,6 +215,7 @@
   .CompactCard {
     height: 100px;
     padding: 10px;
+    max-width: 100%;
   }
 
   .CircularProgressbar {

@@ -1,16 +1,105 @@
 /* src/components/MainDash.css */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+Khmer:wght@400;500;600;700&display=swap');
+
+/* Main container styling */
 .MainDash {
-    padding: 20px;
-    text-align: center;
+  max-width: 1500px;
+  margin: 20px auto;
+  padding: 20px;
+  background: #f9f9f9;
+  border-radius: 15px;
+  font-family: 'Inter', 'Noto Sans Khmer', sans-serif;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+  overflow-x: auto;
+}
+
+/* Title styling */
+.MainDash h1 {
+  font-size: 28px;
+  font-weight: 600;
+  margin-bottom: 25px;
+  padding-bottom: 15px;
+  border-bottom: 1px solid #e0e0e0;
+  background: linear-gradient(90deg, #3f7fc2, #0056b3);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-align: left;
+}
+
+/* Cards container styling */
+.MainDash .Cards {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px; /* Reduced gap to match the screenshot */
+  padding: 10px;
+  justify-content: flex-start;
+}
+
+/* Loading message styling */
+.MainDash p {
+  text-align: center;
+  font-size: 16px;
+  color: #666;
+  padding: 20px;
+  font-family: 'Inter', 'Noto Sans Khmer', sans-serif;
+}
+
+/* Error message styling */
+.MainDash .error-message {
+  text-align: center;
+  font-size: 16px;
+  color: #dc3545;
+  padding: 20px;
+  background: #ffebee;
+  border-radius: 8px;
+  margin: 20px 0;
+  font-family: 'Inter', 'Noto Sans Khmer', sans-serif;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .MainDash {
+    margin: 20px 10px;
+    padding: 15px;
   }
-  
+
   .MainDash h1 {
-    font-size: 28px;
+    font-size: 24px;
     margin-bottom: 20px;
-    color: #333;
+    padding-bottom: 10px;
   }
-  
-  .error-message {
-    color: red;
-    font-size: 16px;
+
+  .MainDash .Cards {
+    gap: 8px; /* Slightly smaller gap for medium screens */
   }
+
+  .MainDash p,
+  .MainDash .error-message {
+    font-size: 14px;
+    padding: 15px;
+  }
+}
+
+@media (max-width: 480px) {
+  .MainDash {
+    margin: 10px;
+    padding: 10px;
+  }
+
+  .MainDash h1 {
+    font-size: 20px;
+    margin-bottom: 15px;
+    padding-bottom: 8px;
+  }
+
+  .MainDash .Cards {
+    flex-direction: column;
+    gap: 6px; /* Smaller gap for small screens */
+  }
+
+  .MainDash p,
+  .MainDash .error-message {
+    font-size: 12px;
+    padding: 10px;
+  }
+}

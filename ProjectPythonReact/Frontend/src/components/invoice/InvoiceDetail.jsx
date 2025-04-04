@@ -1,3 +1,4 @@
+// src/components/InvoiceDetail/InvoiceDetail.jsx
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
 import React from "react";
@@ -23,13 +24,13 @@ const InvoiceDetail = () => {
     if (!dateString) return "-";
     const options = { year: 'numeric', month: 'short', day: 'numeric' };
     try {
-        const date = new Date(dateString);
-        if (isNaN(date.getTime())) {
-            return "កាលបរិច្ឆេទមិនត្រឹមត្រូវ";
-        }
-        return date.toLocaleDateString('en-US', options);
-    } catch (error) {
+      const date = new Date(dateString);
+      if (isNaN(date.getTime())) {
         return "កាលបរិច្ឆេទមិនត្រឹមត្រូវ";
+      }
+      return date.toLocaleDateString('en-US', options);
+    } catch (error) {
+      return "កាលបរិច្ឆេទមិនត្រឹមត្រូវ";
     }
   };
 
@@ -45,7 +46,7 @@ const InvoiceDetail = () => {
       cancelled: "badge-dark",
       unknown: "badge-secondary"
     };
-    
+
     const statusTranslations = {
       paid: "បានបង់",
       unpaid: "មិនទាន់បង់",
@@ -56,7 +57,7 @@ const InvoiceDetail = () => {
       cancelled: "បានលុបចោល",
       unknown: "មិនស្គាល់"
     };
-    
+
     const badgeClass = statusClasses[statusText] || 'badge-primary';
     const displayText = statusTranslations[statusText] || statusTranslations.unknown;
     return <span className={`badge ${badgeClass}`}>{displayText}</span>;
@@ -69,9 +70,9 @@ const InvoiceDetail = () => {
 
   const downloadAsPDF = () => {
     const input = document.getElementById('invoice-to-export');
-    
+
     html2canvas(input, {
-      scale: 2, // Higher quality
+      scale: 2,
       logging: false,
       useCORS: true,
       allowTaint: true
@@ -100,9 +101,9 @@ const InvoiceDetail = () => {
 
   const downloadAsJPG = () => {
     const input = document.getElementById('invoice-to-export');
-    
+
     html2canvas(input, {
-      scale: 2, // Higher quality
+      scale: 2,
       logging: false,
       useCORS: true,
       allowTaint: true
@@ -124,13 +125,13 @@ const InvoiceDetail = () => {
     <div className="invoice-page">
       {/* Action buttons */}
       <div className="invoice-actions">
-        <button onClick={handlePrint} className="btn-action print-btn">
+        <button onClick={handlePrint} className="btn-action print-btn no-print">
           បោះពុម្ព
         </button>
-        <button onClick={downloadAsPDF} className="btn-action pdf-btn">
+        <button onClick={downloadAsPDF} className="btn-action pdf-btn no-print">
           ទាញយក PDF
         </button>
-        <button onClick={downloadAsJPG} className="btn-action jpg-btn">
+        <button onClick={downloadAsJPG} className="btn-action jpg-btn no-print">
           ទាញយក JPG
         </button>
       </div>
@@ -144,7 +145,7 @@ const InvoiceDetail = () => {
               <h1>វិក័យប័ត្រ</h1>
               <div className="company-info-header">
                 <p className="company-name">ឈ្មោះក្រុមហ៊ុនរបស់អ្នក</p>
-                <p>១២៣ ផ្លូវអាជីវកម្ម, អគារ ១០០,ទីក្រុង, ខេត្ត ១២៣៤៥,កម្ពុជា</p>
+                <p>១២៣ ផ្លូវអាជីវកម្ម, អគារ ១០០, ទីក្រុង, ខេត្ត ១២៣៤៥, កម្ពុជា</p>
                 <p>អ៊ីមែល: contact@yourcompany.com</p>
                 <p>ទូរស័ព្ទ: +១២៣ ៤៥៦ ៧៨៩០</p>
               </div>
@@ -157,7 +158,6 @@ const InvoiceDetail = () => {
             </div>
           </div>
 
-          {/* Rest of your invoice content (same as before) */}
           {/* Invoice Meta */}
           <div className="invoice-meta">
             <div className="meta-item">
@@ -255,40 +255,40 @@ const InvoiceDetail = () => {
 
           {/* Summary */}
           <div className="invoice-summary-section">
-              <div className="invoice-summary">
-                <div className="summary-row">
-                  <span>សរុបរង:</span>
-                  <span>${formatCurrency(invoice.subtotal)}</span>
-                </div>
-                {invoice.tax > 0 && (
-                  <div className="summary-row">
-                    <span>ពន្ធ ({invoice.tax_rate || 0}%):</span>
-                    <span>${formatCurrency(invoice.tax)}</span>
-                  </div>
-                )}
-                {invoice.shipping_cost > 0 && (
-                  <div className="summary-row">
-                    <span>ដឹកជញ្ជូន:</span>
-                    <span>${formatCurrency(invoice.shipping_cost)}</span>
-                  </div>
-                )}
-                {invoice.overall_discount > 0 && (
-                  <div className="summary-row discount-row">
-                    <span>បញ្ចុះតម្លៃ:</span>
-                    <span>-${formatCurrency(invoice.overall_discount)}</span>
-                  </div>
-                )}
-                <div className="summary-row total-row">
-                  <span>សរុប (ដុល្លារ):</span>
-                  <span>${formatCurrency(invoice.total)}</span>
-                </div>
-                {invoice.total_in_riel > 0 && (
-                  <div className="summary-row currency-khmer">
-                    <span>សរុប (រៀល):</span>
-                    <span>៛{parseFloat(invoice.total_in_riel).toLocaleString('km-KH', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</span>
-                  </div>
-                )}
+            <div className="invoice-summary">
+              <div className="summary-row">
+                <span>សរុបរង:</span>
+                <span>${formatCurrency(invoice.subtotal)}</span>
               </div>
+              {invoice.tax > 0 && (
+                <div className="summary-row">
+                  <span>ពន្ធ ({invoice.tax_rate || 0}%):</span>
+                  <span>${formatCurrency(invoice.tax)}</span>
+                </div>
+              )}
+              {invoice.shipping_cost > 0 && (
+                <div className="summary-row">
+                  <span>ដឹកជញ្ជូន:</span>
+                  <span>${formatCurrency(invoice.shipping_cost)}</span>
+                </div>
+              )}
+              {invoice.overall_discount > 0 && (
+                <div className="summary-row discount-row">
+                  <span>បញ្ចុះតម្លៃ:</span>
+                  <span>-${formatCurrency(invoice.overall_discount)}</span>
+                </div>
+              )}
+              <div className="summary-row total-row">
+                <span>សរុប (ដុល្លារ):</span>
+                <span>${formatCurrency(invoice.total)}</span>
+              </div>
+              {invoice.total_in_riel > 0 && (
+                <div className="summary-row currency-khmer">
+                  <span>សរុប (រៀល):</span>
+                  <span>៛{parseFloat(invoice.total_in_riel).toLocaleString('km-KH', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</span>
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Footer */}

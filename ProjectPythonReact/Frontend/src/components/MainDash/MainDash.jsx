@@ -120,13 +120,13 @@ const MainDash = () => {
             border: "1px solid #ab47bc",
             boxShadow: "0 4px 10px rgba(171, 71, 188, 0.3)",
           },
-          barValue: Math.min((totalCustomers / 500) * 100, 100),
+          barValue: Math.min((totalCustomers / 100) * 100, 100),
           value: khmerNumbers(totalCustomers),
           png: "UilUsersAlt",
           series: [{ name: "អតិថិជន", data: [totalCustomers] }],
         };
 
-        // Card for total suppliers (all time)
+        // Card for total suppliers (all time)  
         const totalSuppliersCard = {
           title: "អ្នកផ្គត់ផ្គង់សរុប", // Total Suppliers
           color: {
