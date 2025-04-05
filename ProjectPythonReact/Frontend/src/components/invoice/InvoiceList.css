@@ -1,7 +1,7 @@
 /* InvoiceList.css */
 .invoice-list-container {
   padding: 3rem;
-  max-width: 1400px;
+  max-width: 1400px !important;
   /* margin: 0 auto; */
   min-height: 90vh;
   border-radius: 12px;

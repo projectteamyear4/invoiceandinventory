@@ -6,6 +6,8 @@ from django.db.models import Sum
 from rest_framework import viewsets
 from django.utils import timezone
 import logging
+from .utils import get_current_stock
+from django.db import transaction
 from datetime import datetime
 from rest_framework.validators import UniqueValidator
 from django.contrib.auth.password_validation import validate_password
@@ -129,10 +131,18 @@ class ProductVariantSerializer(serializers.ModelSerializer):
         model = ProductVariant
         fields = ['id', 'product', 'size', 'color', 'stock_quantity', 'purchase_price', 'selling_price', 'purchases']
 
+    # def get_stock_quantity(self, obj):
+    #     purchases = obj.purchase_set.all()
+    #     total_quantity = purchases.aggregate(total=models.Sum('quantity'))['total'] or 0
+    #     return total_quantity
+
+    # def get_purchase_price(self, obj):
+    #     latest_purchase = obj.purchase_set.order_by('-purchase_date').first()
+    #     return latest_purchase.purchase_price if latest_purchase else 0.00
     def get_stock_quantity(self, obj):
-        purchases = obj.purchase_set.all()
-        total_quantity = purchases.aggregate(total=models.Sum('quantity'))['total'] or 0
-        return total_quantity
+        stock = get_current_stock(obj.product, variant=obj)
+        print(f"Stock for variant {obj.id} ({obj.size}/{obj.color}): {stock}")  # Debug log
+        return stock
 
     def get_purchase_price(self, obj):
         latest_purchase = obj.purchase_set.order_by('-purchase_date').first()
@@ -273,18 +283,21 @@ class InvoiceSerializer(serializers.ModelSerializer):
     customer_id = serializers.PrimaryKeyRelatedField(
         queryset=Customer.objects.all(), source='customer', write_only=True
     )
-    delivery_method = DeliveryMethodSerializer(allow_null=True, required=False)
+    delivery_method = DeliveryMethodSerializer(read_only=True, allow_null=True)
+    delivery_method_id = serializers.IntegerField(
+        write_only=True, required=False, allow_null=True
+    )
     items = InvoiceItemSerializer(many=True)
-    date = serializers.DateTimeField(format='%Y-%m-%d')  # Matches DateTimeField
-    due_date = serializers.DateTimeField(format='%Y-%m-%d')  # Matches DateTimeField
+    date = serializers.DateTimeField(format='%Y-%m-%d')  # Matches DateTimeField in the model
+    due_date = serializers.DateTimeField(format='%Y-%m-%d')  # Matches DateTimeField in the model
 
     class Meta:
         model = Invoice
         fields = [
             'id', 'type', 'status', 'date', 'due_date', 'customer', 'customer_id',
-            'delivery_method', 'notes', 'payment_method', 'shipping_cost',
-            'overall_discount', 'deduct_tax', 'subtotal', 'tax', 'total',
-            'total_in_riel', 'items'
+            'delivery_method', 'delivery_method_id', 'notes', 'payment_method',
+            'shipping_cost', 'overall_discount', 'deduct_tax', 'subtotal', 'tax',
+            'total', 'total_in_riel', 'items'
         ]
         read_only_fields = ['id', 'subtotal', 'tax', 'total', 'total_in_riel']
 
@@ -296,62 +309,106 @@ class InvoiceSerializer(serializers.ModelSerializer):
             if not items:
                 logger.error("Validation failed: At least one item required for POST")
                 raise serializers.ValidationError("At least one item is required to create an invoice.")
+
+            # Validate stock availability for each item
+            for item in items:
+                variant_id = item.get('variant_id')
+                quantity = item.get('quantity')
+                if variant_id:  # Only check stock for items with a variant
+                    try:
+                        variant = ProductVariant.objects.get(id=variant_id)
+                        if variant.stock_quantity < quantity:
+                            raise serializers.ValidationError(
+                                f"Insufficient stock for variant ID {variant_id}. "
+                                f"Requested: {quantity}, Available: {variant.stock_quantity}"
+                            )
+                    except ProductVariant.DoesNotExist:
+                        raise serializers.ValidationError(f"Variant ID {variant_id} does not exist.")
         elif request_method == 'PATCH':
             logger.info("Skipping items validation for PATCH, only status editable")
         return data
 
+    def validate_delivery_method_id(self, value):
+        if value is not None and not DeliveryMethod.objects.filter(delivery_method_id=value).exists():
+            raise serializers.ValidationError("Delivery method does not exist.")
+        return value
+
     def create(self, validated_data):
-        delivery_method_data = validated_data.pop('delivery_method', None)
-        items_data = validated_data.pop('items', [])
-        customer = validated_data.pop('customer')
+        with transaction.atomic():  # Ensure all operations succeed or fail together
+            # Remove items, customer, and delivery_method_id from validated_data
+            items_data = validated_data.pop('items', [])
+            customer = validated_data.pop('customer')
+            delivery_method_id = validated_data.pop('delivery_method_id', None)
 
-        delivery_method = None
-        if delivery_method_data:
-            delivery_method_serializer = DeliveryMethodSerializer(data=delivery_method_data)
-            delivery_method_serializer.is_valid(raise_exception=True)
-            delivery_method = delivery_method_serializer.save()
+            # Set delivery_method based on delivery_method_id
+            delivery_method = None
+            if delivery_method_id is not None:
+                delivery_method = DeliveryMethod.objects.get(delivery_method_id=delivery_method_id)
 
-        invoice = Invoice.objects.create(
-            customer=customer,
-            delivery_method=delivery_method,
-            **validated_data
-        )
-
-        subtotal = Decimal('0.0')
-        for item_data in items_data:
-            if item_data is None:
-                continue
-            product_id = item_data.pop('product_id')
-            variant_id = item_data.pop('variant_id', None)
-            product = Product.objects.get(id=product_id)
-            variant = ProductVariant.objects.get(id=variant_id) if variant_id else None
-
-            quantity = Decimal(str(item_data['quantity']))
-            unit_price = Decimal(str(item_data['unit_price']))
-            discount_percentage = Decimal(str(item_data.get('discount_percentage', '0.0')))
-            total_price = (quantity * unit_price) * (1 - discount_percentage / Decimal('100'))
-            subtotal += total_price
-
-            InvoiceItem.objects.create(
-                invoice=invoice,
-                product=product,
-                variant=variant,
-                total_price=total_price,
-                **item_data
+            # Create the invoice
+            invoice = Invoice.objects.create(
+                customer=customer,
+                delivery_method=delivery_method,
+                **validated_data
             )
 
-        invoice.subtotal = subtotal
-        invoice.tax = subtotal * Decimal('0.1') if not invoice.deduct_tax else Decimal('0.0')
-        invoice.total = invoice.subtotal + invoice.tax + invoice.shipping_cost - invoice.overall_discount
-        invoice.total_in_riel = invoice.total * Decimal('4100')
-        invoice.save()
+            # Calculate subtotal and create invoice items
+            subtotal = Decimal('0.0')
+            for item_data in items_data:
+                if item_data is None:
+                    continue
+                product_id = item_data.pop('product_id')
+                variant_id = item_data.pop('variant_id', None)
+                product = Product.objects.get(id=product_id)
+                variant = ProductVariant.objects.get(id=variant_id) if variant_id else None
 
-        return invoice
+                quantity = Decimal(str(item_data['quantity']))
+                unit_price = Decimal(str(item_data['unit_price']))
+                discount_percentage = Decimal(str(item_data.get('discount_percentage', '0.0')))
+                total_price = (quantity * unit_price) * (1 - discount_percentage / Decimal('100'))
+                subtotal += total_price
+
+                # Update stock quantity if there's a variant
+                if variant:
+                    variant.stock_quantity -= int(quantity)  # Subtract the purchased quantity
+                    if variant.stock_quantity < 0:
+                        raise serializers.ValidationError(
+                            f"Stock quantity for variant ID {variant.id} cannot be negative. "
+                            f"Current stock: {variant.stock_quantity + int(quantity)}, Requested: {quantity}"
+                        )
+                    variant.save()
+
+                # Create the invoice item
+                InvoiceItem.objects.create(
+                    invoice=invoice,
+                    product=product,
+                    variant=variant,
+                    total_price=total_price,
+                    **item_data
+                )
+
+            # Calculate totals
+            invoice.subtotal = subtotal
+            overall_discount_amount = invoice.subtotal * (invoice.overall_discount / Decimal('100'))
+            discounted_subtotal = invoice.subtotal - overall_discount_amount
+            invoice.tax = discounted_subtotal * Decimal('0.1') if not invoice.deduct_tax else Decimal('0.0')
+            invoice.total = discounted_subtotal + invoice.shipping_cost + invoice.tax
+            invoice.total_in_riel = invoice.total * Decimal('4100')
+            invoice.save()
+
+            return invoice
 
     def update(self, instance, validated_data):
         logger.info(f"Updating invoice {instance.id} with validated_data: {validated_data}")
         # Only allow status updates via PATCH
         if 'status' in validated_data:
-            instance.status = validated_data['status']
+            new_status = validated_data['status']
+            if new_status == 'CANCELLED' and instance.status != 'CANCELLED':
+                # Restore stock for all items in the invoice
+                for item in instance.invoiceitem_set.all():
+                    if item.variant:
+                        item.variant.stock_quantity += item.quantity
+                        item.variant.save()
+            instance.status = new_status
         instance.save()
         return instance

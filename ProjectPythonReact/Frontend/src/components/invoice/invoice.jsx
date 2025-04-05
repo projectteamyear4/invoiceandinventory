@@ -1,3 +1,4 @@
+// src/InvoiceForm.jsx
 import axios from "axios";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -19,7 +20,7 @@ const initialProduct = {
 
 const initialFormData = {
   type: "invoice",
-  status: "DRAFT",
+  status: "PENDING", // Changed to PENDING to trigger stock movement
   date: new Date().toISOString().split("T")[0],
   dueDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split("T")[0],
   customerName: "",
@@ -33,7 +34,7 @@ const initialFormData = {
   shippingTown: "",
   shippingCountry: "",
   shippingPostcode: "",
-  deliveryMethod: null, // Store the full delivery method object
+  deliveryMethodId: null,
   notes: "",
   paymentMethod: "CASH",
   products: [initialProduct],
@@ -194,12 +195,12 @@ const InvoiceForm = () => {
   const handleSelectDelivery = useCallback((method) => {
     setFormData((prev) => ({
       ...prev,
+      deliveryMethodId: method.delivery_method_id,
       shippingName: method.delivery_name || "",
       shippingAddress1: method.car_number || "",
       shippingTown: method.delivery_number || "",
       shippingCountry: method.country || "",
       shippingPostcode: method.postcode || "",
-      deliveryMethod: method,
     }));
     setShowDeliveryModal(false);
   }, []);
@@ -208,6 +209,8 @@ const InvoiceForm = () => {
     (variant) => {
       const product = products.find((p) => p.id === variant.product);
       if (!product) return;
+
+      console.log("Selected variant:", variant); // Debug: Log the selected variant
 
       const updatedProducts = [...formData.products];
       updatedProducts[selectedProductIndex] = {
@@ -232,15 +235,17 @@ const InvoiceForm = () => {
   );
 
   const filteredVariants = useMemo(() => {
-    if (!searchTerm) return variants;
-
-    const term = searchTerm.toLowerCase();
-    return variants.filter((variant) => {
-      const product = products.find((p) => p.id === variant.product);
-      const productName = product?.name.toLowerCase() || "";
-      const barcode = variant.barcode?.toLowerCase() || "";
-      return productName.includes(term) || barcode.includes(term);
-    });
+    let filtered = variants;
+    if (searchTerm) {
+      const term = searchTerm.toLowerCase();
+      filtered = variants.filter((variant) => {
+        const product = products.find((p) => p.id === variant.product);
+        const productName = product?.name.toLowerCase() || "";
+        const barcode = variant.barcode?.toLowerCase() || "";
+        return productName.includes(term) || barcode.includes(term);
+      });
+    }
+    return filtered.sort((a, b) => b.stock_quantity - a.stock_quantity);
   }, [variants, products, searchTerm]);
 
   const filteredCustomers = useMemo(() => {
@@ -257,17 +262,20 @@ const InvoiceForm = () => {
     });
   }, [customers, customerSearchTerm]);
 
-  // Calculate totals for display purposes only (backend will handle actual calculations)
+  const hasStockIssue = useMemo(() => {
+    return formData.products.some((p) => p.product_id && p.quantity > p.stock);
+  }, [formData.products]);
+
   const { subtotal, tax, total, totalInRiel, shippingDisplay, discountDisplay } = useMemo(() => {
     const calculatedSubtotal = formData.products.reduce((sum, product) => sum + product.total, 0);
     const discountAmount = calculatedSubtotal * (formData.overallDiscount / 100);
     const discountedSubtotal = calculatedSubtotal - discountAmount;
     const calculatedShipping = parseFloat(formData.shippingCost) || 0;
     const taxableAmount = discountedSubtotal;
-    const taxRatePercent = 10; // Match backend tax rate
+    const taxRatePercent = 10;
     const calculatedTax = formData.deductTax ? 0 : taxableAmount * (taxRatePercent / 100);
     const calculatedTotal = taxableAmount + calculatedShipping + calculatedTax;
-    const exchangeRateKhr = 4000; // Match backend exchange rate
+    const exchangeRateKhr = 4000;
     const calculatedTotalInRiel = calculatedTotal * exchangeRateKhr;
 
     return {
@@ -302,8 +310,7 @@ const InvoiceForm = () => {
     e.preventDefault();
     setIsSubmitting(true);
     setError((prev) => ({ ...prev, submit: null }));
-  
-    // Validate required fields
+
     if (!formData.customerName) {
       setError((prev) => ({
         ...prev,
@@ -312,7 +319,7 @@ const InvoiceForm = () => {
       setIsSubmitting(false);
       return;
     }
-  
+
     if (!formData.dueDate || !formData.paymentMethod) {
       setError((prev) => ({
         ...prev,
@@ -321,8 +328,7 @@ const InvoiceForm = () => {
       setIsSubmitting(false);
       return;
     }
-  
-    // Validate products
+
     const validProducts = formData.products.filter((p) => p.product_id);
     if (validProducts.length === 0) {
       setError((prev) => ({
@@ -332,20 +338,48 @@ const InvoiceForm = () => {
       setIsSubmitting(false);
       return;
     }
-  
-    // Check stock
-    const outOfStockItems = validProducts.filter((p) => p.quantity > p.stock);
-    if (outOfStockItems.length > 0) {
-      const itemNames = outOfStockItems
-        .map((p) => `${p.name}${p.size || p.color ? ` (${p.size || ""}/${p.color || ""})` : ""}`)
-        .join(", ");
-      setError((prev) => ({ ...prev, submit: `បរិមាណលើសស្តុកសម្រាប់៖ ${itemNames}` }));
+
+    try {
+      const variantsRes = await api.get("/api/variants/");
+      const fetchedVariants = variantsRes.data.map((variant) => ({
+        ...variant,
+        selling_price: parseFloat(variant.selling_price || 0),
+        stock_quantity: parseInt(variant.stock_quantity || 0, 10),
+      }));
+      console.log("Fetched variants with stock:", fetchedVariants);
+      setVariants(fetchedVariants);
+
+      const updatedProducts = formData.products.map((product) => {
+        if (product.variant_id) {
+          const variant = fetchedVariants.find((v) => v.id === parseInt(product.variant_id));
+          console.log(`Product variant_id: ${product.variant_id}, Found variant:`, variant);
+          if (variant) {
+            return { ...product, stock: variant.stock_quantity };
+          }
+        }
+        return product;
+      });
+      setFormData((prev) => ({ ...prev, products: updatedProducts }));
+
+      console.log("Updated products before validation:", updatedProducts);
+
+      const outOfStockItems = updatedProducts.filter((p) => p.product_id && p.quantity > p.stock);
+      if (outOfStockItems.length > 0) {
+        const itemNames = outOfStockItems
+          .map((p) => `${p.name}${p.size || p.color ? ` (${p.size || ""}/${p.color || ""})` : ""} - ស្តុកបច្ចុប្បន្ន: ${p.stock}, បរិមាណស្នើសុំ: ${p.quantity}`)
+          .join(", ");
+        setError((prev) => ({ ...prev, submit: `បរិមាណលើសស្តុកសម្រាប់៖ ${itemNames}` }));
+        setIsSubmitting(false);
+        return;
+      }
+    } catch (err) {
+      console.error("Error refreshing stock data:", err);
+      setError((prev) => ({ ...prev, submit: "មានបញ្ហាក្នុងការផ្ទៀងផ្ទាត់ស្តុក" }));
       setIsSubmitting(false);
       return;
     }
-  
+
     try {
-      // Prepare customer data
       const nameParts = formData.customerName.trim().split(" ");
       const customerData = {
         first_name: nameParts[0] || formData.customerName.trim(),
@@ -357,8 +391,7 @@ const InvoiceForm = () => {
         phone_number: formData.customerPhone || "",
         status: "active",
       };
-  
-      // Check if customer already exists by email (if provided)
+
       let customerId = null;
       if (customerData.email) {
         const existingCustomer = customers.find(
@@ -368,37 +401,23 @@ const InvoiceForm = () => {
           customerId = existingCustomer.customer_id;
         }
       }
-  
-      // If customer doesn't exist, create a new one
+
       if (!customerId) {
         const customerResponse = await api.post("/api/customers/", customerData);
         if (!customerResponse.data.customer_id) {
           throw new Error("Failed to create customer: No customer_id returned");
         }
         customerId = customerResponse.data.customer_id;
-        setCustomers((prev) => [...prev, customerResponse.data]); // Update customer list
+        setCustomers((prev) => [...prev, customerResponse.data]);
       }
-  
-      // Prepare delivery method data as a dictionary
-      const deliveryMethodData = formData.deliveryMethod
-        ? {
-            delivery_name: formData.shippingName || "",
-            car_number: formData.shippingAddress1 || "",
-            delivery_number: formData.shippingTown || "",
-            country: formData.shippingCountry || "",
-            postcode: formData.shippingPostcode || "",
-            estimated_delivery_time: null,
-            is_active: true,
-          }
-        : null;
-  
+
       const invoiceData = {
         type: formData.type,
         status: formData.status,
         date: formData.date,
         due_date: formData.dueDate,
-        customer_id: customerId, // Changed from 'customer' to 'customer_id'
-        delivery_method: deliveryMethodData,
+        customer_id: customerId,
+        delivery_method_id: formData.deliveryMethodId,
         notes: formData.notes,
         payment_method: formData.paymentMethod,
         shipping_cost: shippingDisplay,
@@ -412,23 +431,64 @@ const InvoiceForm = () => {
           discount_percentage: p.discount,
         })),
       };
-  
+
       console.log("Submitting invoice data:", invoiceData);
-  
+
       const response = await api.post("/api/invoices/", invoiceData);
       alert("វិក្កយបត្របានបង្កើតដោយជោគជ័យ!");
-  
+
+      const variantsRes = await api.get("/api/variants/");
+      const fetchedVariants = variantsRes.data.map((variant) => ({
+        ...variant,
+        selling_price: parseFloat(variant.selling_price || 0),
+        stock_quantity: parseInt(variant.stock_quantity || 0, 10),
+      }));
+      console.log("Updated variants with new stock:", fetchedVariants);
+      setVariants(fetchedVariants);
+
+      const updatedProducts = formData.products.map((product) => {
+        if (product.variant_id) {
+          const variant = fetchedVariants.find((v) => v.id === parseInt(product.variant_id));
+          if (variant) {
+            return { ...product, stock: variant.stock_quantity };
+          }
+        }
+        return product;
+      });
+      setFormData((prev) => ({ ...prev, products: updatedProducts }));
+
       navigate("/invoicelist", { state: { invoice: response.data } });
       setFormData(initialFormData);
     } catch (err) {
       console.error("Error creating invoice:", err.response?.data || err.message || err);
       let errorMsg = "មានបញ្ហាក្នុងការបង្កើតវិក្កយបត្រ";
-  
+
       if (err.response?.data) {
         const backendErrors = err.response.data;
         if (typeof backendErrors === "object") {
           errorMsg = Object.entries(backendErrors)
-            .map(([field, errors]) => `${field}: ${Array.isArray(errors) ? errors.join(", ") : errors}`)
+            .map(([field, errors]) => {
+              const errorText = Array.isArray(errors) ? errors.join(", ") : errors;
+              if (field === "items" && errorText.includes("Insufficient stock")) {
+                const variantIdMatch = errorText.match(/variant ID (\d+)/);
+                const variantId = variantIdMatch ? variantIdMatch[1] : null;
+                const variant = variants.find((v) => v.id === parseInt(variantId));
+                const product = variant ? products.find((p) => p.id === variant.product) : null;
+                if (variant && product) {
+                  return `បរិមាណលើសស្តុកសម្រាប់៖ ${product.name}${variant.size || variant.color ? ` (${variant.size || ""}/${variant.color || ""})` : ""}`;
+                }
+              }
+              if (errorText.includes("Insufficient stock for")) {
+                const productMatch = errorText.match(/Insufficient stock for (.+?) \(Variant:/);
+                const stockMatch = errorText.match(/(\d+) available/);
+                const requestedMatch = errorText.match(/(\d+) requested/);
+                const productName = productMatch ? productMatch[1] : "unknown product";
+                const currentStock = stockMatch ? stockMatch[1] : "unknown";
+                const requested = requestedMatch ? requestedMatch[1] : "unknown";
+                return `បរិមាណលើសស្តុកសម្រាប់៖ ${productName} - ស្តុកបច្ចុប្បន្ន: ${currentStock}, បរិមាណស្នើសុំ: ${requested}`;
+              }
+              return `${field}: ${errorText}`;
+            })
             .join("; ");
         } else {
           errorMsg = backendErrors.toString();
@@ -436,13 +496,14 @@ const InvoiceForm = () => {
       } else if (err.message) {
         errorMsg = err.message;
       }
-  
+
       setError((prev) => ({ ...prev, submit: errorMsg }));
       alert(`មានបញ្ហាក្នុងការបង្កើតវិក្កយបត្រ៖ ${errorMsg}`);
     } finally {
       setIsSubmitting(false);
     }
   };
+
   return (
     <div className="invoice-container">
       <h1 className="invoice-title">
@@ -884,7 +945,8 @@ const InvoiceForm = () => {
                   loading.customers ||
                   loading.delivery ||
                   loading.products ||
-                  loading.variants
+                  loading.variants ||
+                  hasStockIssue
                 }
               >
                 {isSubmitting ? "កំពុងបង្កើត..." : "បង្កើតវិក្កយបត្រ"}

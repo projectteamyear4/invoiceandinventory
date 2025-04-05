@@ -111,43 +111,8 @@ class Purchase(models.Model):
         self.total = self.quantity * self.purchase_price
         super().save(*args, **kwargs)
 
-#stock model
-class StockMovement(models.Model):
-    MOVEMENT_TYPES = (
-        ('IN', 'In'),
-        ('OUT', 'Out'),
-    )
-    product = models.ForeignKey('Product', on_delete=models.CASCADE)
-    product_variant = models.ForeignKey('ProductVariant', on_delete=models.CASCADE, null=True, blank=True)
-    warehouse = models.ForeignKey('Warehouse', on_delete=models.CASCADE, null=True, blank=True)  # Allow null
-    shelf = models.ForeignKey('Shelf', on_delete=models.CASCADE, null=True, blank=True)  # Allow null
-    movement_type = models.CharField(max_length=3, choices=MOVEMENT_TYPES)
-    quantity = models.IntegerField()
-    movement_date = models.DateTimeField(auto_now_add=True)
-    purchase = models.ForeignKey('Purchase', on_delete=models.CASCADE, null=True, blank=True)
 
-    def __str__(self):
-        return f"{self.movement_type} - {self.product.name} - {self.quantity}"
-    #current stock function
-def get_current_stock(product, variant=None, warehouse=None, shelf=None):
-    filters = {'product': product}
-    if variant:
-        filters['product_variant'] = variant
-    if warehouse:
-        filters['warehouse'] = warehouse
-    if shelf:
-        filters['shelf'] = shelf
 
-    movements = StockMovement.objects.filter(**filters).aggregate(
-        total_in=Sum('quantity', filter=Q(movement_type='IN')) or 0,
-        total_out=Sum('quantity', filter=Q(movement_type='OUT')) or 0
-    )
-    
-    # Ensure None is replaced with 0
-    total_in = movements['total_in'] if movements['total_in'] is not None else 0
-    total_out = movements['total_out'] if movements['total_out'] is not None else 0
-    
-    return max(total_in - total_out, 0)
 
 # delivery model
 class DeliveryMethod(models.Model):
@@ -257,3 +222,20 @@ class InvoiceItem(models.Model):
 
     def __str__(self):
         return f"Item {self.id} - {self.product.name} - Invoice {self.invoice.id}"
+#stock model
+class StockMovement(models.Model):
+    MOVEMENT_TYPES = (
+        ('IN', 'In'),
+        ('OUT', 'Out'),
+    )
+    product = models.ForeignKey('Product', on_delete=models.CASCADE)
+    product_variant = models.ForeignKey('ProductVariant', on_delete=models.CASCADE, null=True, blank=True)
+    warehouse = models.ForeignKey('Warehouse', on_delete=models.CASCADE, null=True, blank=True)  # Allow null
+    shelf = models.ForeignKey('Shelf', on_delete=models.CASCADE, null=True, blank=True)  # Allow null
+    movement_type = models.CharField(max_length=3, choices=MOVEMENT_TYPES)
+    quantity = models.IntegerField()
+    movement_date = models.DateTimeField(auto_now_add=True)
+    purchase = models.ForeignKey('Purchase', on_delete=models.CASCADE, null=True, blank=True)
+    invoice_item = models.ForeignKey(InvoiceItem, on_delete=models.CASCADE, null=True, blank=True)  # New field
+    def __str__(self):
+        return f"{self.movement_type} - {self.product.name} - {self.quantity}"

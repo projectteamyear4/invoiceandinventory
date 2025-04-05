@@ -1,6 +1,6 @@
 /* General container styles */
 .invoice-container {
-  max-width: 1200px;
+  max-width: 1400px !important;
   margin: 0 auto;
   padding: 24px; /* Slightly increased padding for breathing room */
   font-family: 'Khmer', Arial, sans-serif;
