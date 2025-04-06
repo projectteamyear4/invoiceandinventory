@@ -17,8 +17,8 @@ const InvoiceList = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
-  const [startDate, setStartDate] = useState(""); // New state for start date
-  const [endDate, setEndDate] = useState("");     // New state for end date
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [showModal, setShowModal] = useState(false);
   const [selectedInvoiceId, setSelectedInvoiceId] = useState(null);
@@ -40,7 +40,7 @@ const InvoiceList = () => {
   useEffect(() => {
     const token = localStorage.getItem("access_token");
     if (!token) {
-      setError("សូមចូលប្រើប្រាស់ជាមុន (រកមិនឃើញ Access Token)"); // "Please log in first (No access token found)"
+      setError("សូមចូលប្រើប្រាស់ជាមុន (រកមិនឃើញ Access Token)");
       setLoading(false);
       navigate("/login");
       return;
@@ -54,7 +54,7 @@ const InvoiceList = () => {
         setInvoices(fetchedInvoices);
         setFilteredInvoices(fetchedInvoices);
       } catch (err) {
-        setError(err.response?.data?.detail || "មានបញ្ហាក្នុងការទាញយកវិក្កយបត្រ"); // "Error fetching invoices"
+        setError(err.response?.data?.detail || "មានបញ្ហាក្នុងការទាញយកវិក្កយបត្រ");
         console.error("Fetch error:", {
           status: err.response?.status,
           data: err.response?.data,
@@ -68,14 +68,13 @@ const InvoiceList = () => {
     fetchData();
   }, [api, navigate]);
 
-  useEffect(() => {
-    const filtered = invoices.filter((invoice) => {
+  const filterInvoices = (invoicesToFilter) => {
+    return invoicesToFilter.filter((invoice) => {
       const customer = invoice.customer || {};
       const customerName = `${customer.first_name || ""} ${customer.last_name || ""}`.trim().toLowerCase();
       const delivery = invoice.delivery_method?.delivery_name || "";
       const query = searchQuery.toLowerCase();
-      
-      // Text-based filtering
+
       const matchesText =
         String(invoice.id || "").includes(query) ||
         customerName.includes(query) ||
@@ -84,7 +83,6 @@ const InvoiceList = () => {
         (invoice.notes || "").toLowerCase().includes(query) ||
         delivery.toLowerCase().includes(query);
 
-      // Date range filtering
       const invoiceDate = new Date(invoice.date);
       const start = startDate ? new Date(startDate) : null;
       const end = endDate ? new Date(endDate) : null;
@@ -95,26 +93,43 @@ const InvoiceList = () => {
 
       return matchesText && matchesDate;
     });
+  };
+
+  useEffect(() => {
+    const filtered = filterInvoices(invoices);
     setFilteredInvoices(filtered);
   }, [searchQuery, startDate, endDate, invoices]);
 
   const handleStatusChange = async () => {
     if (!selectedInvoiceId) return;
+
     const payload = { status: newStatus || null };
     console.log("Sending PATCH with payload:", payload);
+
+    const originalInvoice = invoices.find((inv) => inv.id === selectedInvoiceId);
+
+    const updatedInvoices = invoices.map((inv) =>
+      inv.id === selectedInvoiceId ? { ...inv, status: newStatus || null } : inv
+    );
+    console.log("After optimistic update - invoices:", updatedInvoices);
+    setInvoices(updatedInvoices);
+    setFilteredInvoices(filterInvoices(updatedInvoices));
+    setShowModal(false);
+    setSelectedInvoiceId(null);
+    setNewStatus("");
+
     try {
       const response = await api.patch(`/api/invoices/${selectedInvoiceId}/`, payload);
-      console.log("Patch Response:", response.data);
+      console.log("Patch Response Data:", response.data);
       const updatedInvoice = response.data;
-      const updatedInvoices = invoices.map((inv) =>
-        inv.id === selectedInvoiceId ? updatedInvoice : inv
+
+      const finalInvoices = invoices.map((inv) =>
+        inv.id === selectedInvoiceId ? { ...inv, status: updatedInvoice.status } : inv
       );
-      setInvoices(updatedInvoices);
-      setFilteredInvoices(updatedInvoices);
+      console.log("After API update - invoices:", finalInvoices);
+      setInvoices(finalInvoices);
+      setFilteredInvoices(filterInvoices(finalInvoices));
       setError(null);
-      setShowModal(false);
-      setSelectedInvoiceId(null);
-      setNewStatus("");
     } catch (err) {
       console.error("Status update error:", {
         message: err.message,
@@ -124,8 +139,16 @@ const InvoiceList = () => {
       setError(
         err.response?.data?.detail ||
           err.response?.data?.non_field_errors?.[0] ||
-          "មានបញ្ហាក្នុងការកែស្ថានភាព" // "Error updating status"
+          "មានបញ្ហាក្នុងការកែស្ថានភាព"
       );
+
+      const revertedInvoices = invoices.map((inv) =>
+        inv.id === selectedInvoiceId ? originalInvoice : inv
+      );
+      console.log("After revert - invoices:", revertedInvoices);
+      setInvoices(revertedInvoices);
+      setFilteredInvoices(filterInvoices(revertedInvoices));
+
       if (err.response?.status === 401) {
         navigate("/login");
       }
@@ -139,12 +162,12 @@ const InvoiceList = () => {
   };
 
   const handleDelete = async (invoiceId) => {
-    if (window.confirm("តើអ្នកប្រាកដទេថាចង់លុបវិក្កយបត្រនេះ?")) { // "Are you sure you want to delete this invoice?"
+    if (window.confirm("តើអ្នកប្រាកដទេថាចង់លុបវិក្កយបត្រនេះ?")) {
       try {
         await api.delete(`/api/invoices/${invoiceId}/`);
         const updatedInvoices = invoices.filter((inv) => inv.id !== invoiceId);
         setInvoices(updatedInvoices);
-        setFilteredInvoices(updatedInvoices);
+        setFilteredInvoices(filterInvoices(updatedInvoices));
         setError(null);
       } catch (err) {
         console.error("Delete error:", {
@@ -152,7 +175,7 @@ const InvoiceList = () => {
           data: err.response?.data,
           message: err.message,
         });
-        setError("មានបញ្ហាក្នុងការលុបវិក្កយបត្រ"); // "Error deleting invoice"
+        setError("មានបញ្ហាក្នុងការលុបវិក្កយបត្រ");
       }
     }
   };
@@ -164,21 +187,21 @@ const InvoiceList = () => {
   const exportToExcel = () => {
     const ws = XLSX.utils.json_to_sheet(
       filteredInvoices.map((inv) => ({
-        "លេខវិក្កយបត្រ": inv.id, // "Invoice ID"
-        "ប្រភេទ": inv.type === "invoice" ? "វិក្កយបត្រ" : "សម្រង់តម្លៃ", // "Type": "Invoice" or "Quotation"
-        "ស្ថានភាព": inv.status || "គ្មាន", // "Status" or "None"
-        "កាលបរិច្ឆេទ": inv.date || "-", // "Date"
-        "កាលបរិច្ឆេទផុតកំណត់": inv.due_date || "-", // "Due Date"
-        "អតិថិជន": inv.customer ? `${inv.customer.first_name || ""} ${inv.customer.last_name || ""}`.trim() : "-", // "Customer"
-        "វិធីដឹកជញ្ជូន": inv.delivery_method?.delivery_name || "-", // "Delivery Method"
-        "កំណត់សម្គាល់": inv.notes || "-", // "Notes"
-        "សរុប (USD)": parseFloat(inv.total || 0).toFixed(2), // "Total (USD)"
-        "សរុប (រៀល)": parseFloat(inv.total_in_riel || 0).toFixed(2), // "Total (KHR)"
+        "លេខវិក្កយបត្រ": inv.id,
+        "ប្រភេទ": inv.type === "invoice" ? "វិក្កយបត្រ" : "សម្រង់តម្លៃ",
+        "ស្ថានភាព": inv.status || "គ្មាន",
+        "កាលបរិច្ឆេទ": inv.date || "-",
+        "កាលបរិច្ឆេទផុតកំណត់": inv.due_date || "-",
+        "អតិថិជន": inv.customer ? `${inv.customer.first_name || ""} ${inv.customer.last_name || ""}`.trim() : "-",
+        "វិធីដឹកជញ្ជូន": inv.delivery_method?.delivery_name || "-",
+        "កំណត់សម្គាល់": inv.notes || "-",
+        "សរុប (USD)": parseFloat(inv.total || 0).toFixed(2),
+        "សរុប (រៀល)": parseFloat(inv.total_in_riel || 0).toFixed(2),
       }))
     );
     const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "វិក្កយបត្រ"); // "Invoices"
-    XLSX.writeFile(wb, "វិក្កយបត្រ.xlsx"); // "invoices.xlsx"
+    XLSX.utils.book_append_sheet(wb, ws, "វិក្កយបត្រ");
+    XLSX.writeFile(wb, "វិក្កយបត្រ.xlsx");
   };
 
   const exportToPNG = () => {
@@ -186,7 +209,7 @@ const InvoiceList = () => {
     if (table) {
       html2canvas(table).then((canvas) => {
         canvas.toBlob((blob) => {
-          saveAs(blob, "វិក្កយបត្រ.png"); // "invoices.png"
+          saveAs(blob, "វិក្កយបត្រ.png");
         });
       });
     }
@@ -195,12 +218,12 @@ const InvoiceList = () => {
   const columns = useMemo(
     () => [
       {
-        name: "មើល", // "View"
+        name: "មើល",
         cell: (row) => (
           <button
             onClick={() => handleView(row)}
             style={{ padding: "5px", background: "transparent", border: "none", cursor: "pointer" }}
-            title="មើលលម្អិត" // "View Details"
+            title="មើលលម្អិត"
           >
             <FaEye style={{ color: "#007bff", fontSize: "18px" }} />
           </button>
@@ -210,10 +233,10 @@ const InvoiceList = () => {
         button: true,
         width: "60px",
       },
-      { name: "លេខវិក្កយបត្រ", selector: (row) => row.id || "-", sortable: true, width: "100px" }, // "Invoice ID"
-      { name: "ប្រភេទ", selector: (row) => (row.type === "invoice" ? "វិក្កយបត្រ" : "សម្រង់តម្លៃ"), sortable: true, width: "120px" }, // "Type"
+      { name: "លេខវិក្កយបត្រ", selector: (row) => row.id || "-", sortable: true, width: "100px" },
+      { name: "ប្រភេទ", selector: (row) => (row.type === "invoice" ? "វិក្កយបត្រ" : "សម្រង់តម្លៃ"), sortable: true, width: "120px" },
       {
-        name: "ស្ថានភាព", // "Status"
+        name: "ស្ថានភាព",
         selector: (row) => row.status,
         cell: (row) => (
           <button
@@ -229,10 +252,10 @@ const InvoiceList = () => {
         sortable: true,
         width: "150px",
       },
-      { name: "កាលបរិច្ឆេទ", selector: (row) => row.date || "-", sortable: true, width: "120px" }, // "Date"
-      { name: "ផុតកំណត់", selector: (row) => row.due_date || "-", sortable: true, width: "120px" }, // "Due Date"
+      { name: "កាលបរិច្ឆេទ", selector: (row) => row.date || "-", sortable: true, width: "120px" },
+      { name: "ផុតកំណត់", selector: (row) => row.due_date || "-", sortable: true, width: "120px" },
       {
-        name: "អតិថិជន", // "Customer"
+        name: "អតិថិជន",
         selector: (row) => {
           const customer = row.customer || {};
           return customer ? `${customer.first_name || ""} ${customer.last_name || ""}`.trim() : "-";
@@ -241,22 +264,22 @@ const InvoiceList = () => {
         width: "150px",
       },
       {
-        name: "វិធីដឹកជញ្ជូន", // "Delivery Method"
-        selector: (row) => row.delivery_method?.delivery_name || "-", // Adjusted to match model
+        name: "វិធីដឹកជញ្ជូន",
+        selector: (row) => row.delivery_method?.delivery_name || "-",
         sortable: true,
         width: "150px",
       },
-      { name: "កំណត់សម្គាល់", selector: (row) => row.notes || "-", sortable: true, width: "150px" }, // "Notes"
-      { name: "សរុប (USD)", selector: (row) => `$${parseFloat(row.total || 0).toFixed(2)}`, sortable: true, width: "120px" }, // "Total (USD)"
-      { name: "សរុប (រៀល)", selector: (row) => `៛${parseFloat(row.total_in_riel || 0).toFixed(2)}`, sortable: true, width: "150px" }, // "Total (KHR)"
+      { name: "កំណត់សម្គាល់", selector: (row) => row.notes || "-", sortable: true, width: "150px" },
+      { name: "សរុប (USD)", selector: (row) => `$${parseFloat(row.total || 0).toFixed(2)}`, sortable: true, width: "120px" },
+      { name: "សរុប (រៀល)", selector: (row) => `៛${parseFloat(row.total_in_riel || 0).toFixed(2)}`, sortable: true, width: "150px" },
       {
-        name: "សកម្មភាព", // "Action"
+        name: "សកម្មភាព",
         cell: (row) => (
           <button
             onClick={() => handleDelete(row.id)}
             style={{ padding: "5px 10px", background: "#dc3545", color: "white", borderRadius: "4px", border: "none" }}
           >
-            លុប  {/* "Delete" */}
+            លុប
           </button>
         ),
         ignoreRowClick: true,
@@ -281,42 +304,42 @@ const InvoiceList = () => {
   };
 
   const csvData = filteredInvoices.map((inv) => ({
-    "លេខវិក្កយបត្រ": inv.id, // "Invoice ID"
-    "ប្រភេទ": inv.type === "invoice" ? "វិក្កយបត្រ" : "សម្រង់តម្លៃ", // "Type"
+    "លេខវិក្កយបត្រ": inv.id,
+    "ប្រភេទ": inv.type === "invoice" ? "វិក្កយបត្រ" : "សម្រង់តម្លៃ",
     "ស្ថានភាព": inv.status === "DRAFT" ? "ព្រាង" : 
                   inv.status === "PENDING" ? "មិនទាន់បង់" : 
                   inv.status === "PAID" ? "បានបង់" : 
-                  inv.status === "CANCELLED" ? "បានលុប" : "គ្មាន", // "Status"
-    "កាលបរិច្ឆេទ": inv.date || "-", // "Date"
-    "ផុតកំណត់": inv.due_date || "-", // "Due Date"
-    "អតិថិជន": inv.customer ? `${inv.customer.first_name || ""} ${inv.customer.last_name || ""}`.trim() : "-", // "Customer"
-    "វិធីដឹកជញ្ជូន": inv.delivery_method?.delivery_name || "-", // "Delivery Method"
-    "កំណត់សម្គាល់": inv.notes || "-", // "Notes"
-    "សរុប (USD)": parseFloat(inv.total || 0).toFixed(2), // "Total (USD)"
-    "សរុប (រៀល)": parseFloat(inv.total_in_riel || 0).toFixed(2), // "Total (KHR)"
+                  inv.status === "CANCELLED" ? "បានលុប" : "គ្មាន",
+    "កាលបរិច្ឆេទ": inv.date || "-",
+    "ផុតកំណត់": inv.due_date || "-",
+    "អតិថិជន": inv.customer ? `${inv.customer.first_name || ""} ${inv.customer.last_name || ""}`.trim() : "-",
+    "វិធីដឹកជញ្ជូន": inv.delivery_method?.delivery_name || "-",
+    "កំណត់សម្គាល់": inv.notes || "-",
+    "សរុប (USD)": parseFloat(inv.total || 0).toFixed(2),
+    "សរុប (រៀល)": parseFloat(inv.total_in_riel || 0).toFixed(2),
   }));
 
   return (
     <div className="invoice-list-container">
-      <h2>បញ្ជីវិក្កយបត្រ</h2> {/* "Invoice List" */}
+      <h2>បញ្ជីវិក្កយបត្រ</h2>
       {error && <p className="error-message">{error}</p>}
       <div style={{ marginBottom: "10px", display: "flex", gap: "10px", alignItems: "center", flexWrap: "wrap" }}>
         <input
           type="text"
-          placeholder="ស្វែងរក (លេខសម្គាល់, អតិថិជន, ស្ថានភាព, កំណត់សម្គាល់...)" // "Search (ID, Customer, Status, Notes...)"
+          placeholder="ស្វែងរក (លេខសម្គាល់, អតិថិជន, ស្ថានភាព, កំណត់សម្គាល់...)"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           style={{ padding: "8px", width: "300px", borderRadius: "4px", border: "1px solid #ccc" }}
         />
         <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
-          <label>ចាប់ពីថ្ងៃ: </label> {/* "From Date:" */}
+          <label>ចាប់ពីថ្ងៃ: </label>
           <input
             type="date"
             value={startDate}
             onChange={(e) => setStartDate(e.target.value)}
             style={{ padding: "8px", borderRadius: "4px", border: "1px solid #ccc" }}
           />
-          <label>ដល់ថ្ងៃ: </label> {/* "To Date:" */}
+          <label>ដល់ថ្ងៃ: </label>
           <input
             type="date"
             value={endDate}
@@ -326,7 +349,7 @@ const InvoiceList = () => {
         </div>
         <CSVLink
           data={csvData}
-          filename="វិក្កយបត្រ.csv" // "invoices.csv"
+          filename="វិក្កយបត្រ.csv"
           style={{ padding: "8px 15px", background: "#28a745", color: "white", borderRadius: "4px", textDecoration: "none" }}
         >
           CSV
@@ -344,8 +367,8 @@ const InvoiceList = () => {
           Excel
         </button>
       </div>
-      {/* "No invoices match the search criteria" */}
       <DataTable
+        key={filteredInvoices.length + JSON.stringify(filteredInvoices.map((inv) => inv.status))}
         columns={columns}
         data={filteredInvoices}
         pagination
@@ -356,7 +379,7 @@ const InvoiceList = () => {
         highlightOnHover
         responsive
         progressPending={loading}
-        progressComponent={<div className="loading">កំពុងផ្ទុកវិក្កយបត្រ...</div>} // "Loading invoices..."
+        progressComponent={<div className="loading">កំពុងផ្ទុកវិក្កយបត្រ...</div>}
       />
 
       {showModal && (
@@ -382,30 +405,30 @@ const InvoiceList = () => {
               boxShadow: "0 2px 10px rgba(0, 0, 0, 0.1)",
             }}
           >
-            <h3>ផ្លាស់ប្តូរស្ថានភាព</h3> {/* "Change Status" */}
+            <h3>ផ្លាស់ប្តូរស្ថានភាព</h3>
             <select
               value={newStatus || ""}
               onChange={(e) => setNewStatus(e.target.value)}
               style={{ width: "100%", padding: "8px", marginBottom: "10px", borderRadius: "4px" }}
             >
-              <option value="">គ្មាន</option> {/* "None" */}
-              <option value="DRAFT">ព្រាង</option> {/* "Draft" */}
-              <option value="PENDING">មិនទាន់បង់</option> {/* "Pending" */}
-              <option value="PAID">បានបង់</option> {/* "Paid" */}
-              <option value="CANCELLED">បានលុប</option> {/* "Cancelled" */}
+              <option value="">ជ្រើសរើសស្ថានភាព</option>
+              <option value="DRAFT">ព្រាង</option>
+              <option value="PENDING">មិនទាន់បង់</option>
+              <option value="PAID">បានបង់</option>
+              <option value="CANCELLED">បានលុប</option>
             </select>
             <div style={{ display: "flex", gap: "10px" }}>
               <button
                 onClick={handleStatusChange}
                 style={{ padding: "8px 15px", background: "#28a745", color: "white", borderRadius: "4px", border: "none" }}
               >
-                រក្សាទុក {/* "Save" */}
+                រក្សាទុក
               </button>
               <button
                 onClick={() => setShowModal(false)}
                 style={{ padding: "8px 15px", background: "#dc3545", color: "white", borderRadius: "4px", border: "none" }}
               >
-                បោះបង់ {/* "Cancel" */}
+                បោះបង់
               </button>
             </div>
           </div>
