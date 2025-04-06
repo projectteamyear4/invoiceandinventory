@@ -3,6 +3,7 @@ import uuid
 from model_utils import FieldTracker
 import random
 from django.utils import timezone
+from django.db import transaction
 from django.db.models import Sum, Q
 from django.core.exceptions import ValidationError
 #Supplier model
@@ -38,16 +39,7 @@ class Product(models.Model):
     def __str__(self):
         return self.name
 
-class ProductVariant(models.Model):
-    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='variants')
-    size = models.CharField(max_length=20, blank=True, null=True)
-    color = models.CharField(max_length=30, blank=True, null=True)
-    stock_quantity = models.IntegerField(default=0)
-    purchase_price = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
-    selling_price = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
 
-    def __str__(self):
-        return f"{self.product.name} - {self.size or 'No Size'} - {self.color or 'No Color'}"
     
 # warehouse model
 class Warehouse(models.Model):
@@ -91,44 +83,7 @@ class Shelf(models.Model):
 
     class Meta:
         db_table = 'shelf'
-#purchase model
-class Purchase(models.Model):
-    id = models.AutoField(primary_key=True)
-    supplier = models.ForeignKey('Supplier', on_delete=models.CASCADE)
-    product = models.ForeignKey('Product', on_delete=models.CASCADE)
-    product_variant = models.ForeignKey('ProductVariant', on_delete=models.CASCADE, null=True, blank=True)
-    batch_number = models.CharField(max_length=50)
-    quantity = models.IntegerField()
-    purchase_price = models.DecimalField(max_digits=10, decimal_places=2)
-    purchase_date = models.DateTimeField(auto_now_add=True)
-    total = models.DecimalField(max_digits=12, decimal_places=2, null=True, blank=True)  # New field for total
 
-    def __str__(self):
-        return f"Purchase {self.id} - {self.product.name} ({self.batch_number})"
-
-    def save(self, *args, **kwargs):
-        # Calculate total as quantity * purchase_price
-        self.total = self.quantity * self.purchase_price
-        super().save(*args, **kwargs)
-
-
-
-
-# delivery model
-class DeliveryMethod(models.Model):
-    delivery_method_id = models.AutoField(primary_key=True)
-    delivery_name = models.CharField(max_length=100, null=False)
-    car_number = models.CharField(max_length=100, null=False)
-    delivery_number = models.IntegerField(null=True, blank=True)
-    estimated_delivery_time = models.DurationField(null=True, blank=True)
-    is_active = models.BooleanField(default=True)
-    date = models.DateTimeField(null=True, blank=True)  # New field for date and time, nullable
-
-    def __str__(self):
-        return self.delivery_name
-
-    class Meta:
-        db_table = 'delivery_methods'
 #customer model
 # Customer Model
 class Customer(models.Model):
@@ -204,8 +159,23 @@ class Invoice(models.Model):
         # Debug to check if save is interfering
         print(f"Saving invoice {self.id or 'new'} with status {self.status}")
         super().save(*args, **kwargs)
+# api/models.py (ProductVariant model only)
+class ProductVariant(models.Model):
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='variants')
+    size = models.CharField(max_length=20, blank=True, null=True)
+    color = models.CharField(max_length=30, blank=True, null=True)
+    stock_quantity = models.IntegerField(default=0)
+    purchase_price = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
+    selling_price = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
 
-# InvoiceItem Model
+    def __str__(self):
+        return f"{self.product.name} - {self.size or 'No Size'} - {self.color or 'No Color'}"
+
+    def save(self, *args, **kwargs):
+        print(f"Saving ProductVariant {self.id}, stock_quantity={self.stock_quantity}")  # Debug
+        super().save(*args, **kwargs)
+        print(f"Saved ProductVariant {self.id}, stock_quantity={self.stock_quantity}")  # Debug
+    # InvoiceItem Model
 class InvoiceItem(models.Model):
     invoice = models.ForeignKey(Invoice, on_delete=models.CASCADE, related_name='items')
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
@@ -239,3 +209,51 @@ class StockMovement(models.Model):
     invoice_item = models.ForeignKey(InvoiceItem, on_delete=models.CASCADE, null=True, blank=True)  # New field
     def __str__(self):
         return f"{self.movement_type} - {self.product.name} - {self.quantity}"
+#purchase model
+# models.py
+class Purchase(models.Model):
+    id = models.AutoField(primary_key=True)
+    supplier = models.ForeignKey(Supplier, on_delete=models.CASCADE)
+    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+    product_variant = models.ForeignKey(ProductVariant, on_delete=models.CASCADE, null=True, blank=True)
+    batch_number = models.CharField(max_length=50)
+    quantity = models.IntegerField()
+    purchase_price = models.DecimalField(max_digits=10, decimal_places=2)
+    purchase_date = models.DateTimeField(auto_now_add=True)
+    total = models.DecimalField(max_digits=12, decimal_places=2, null=True, blank=True)
+
+    def __str__(self):
+        return f"Purchase {self.id} - {self.product.name} ({self.batch_number})"
+
+    def save(self, *args, **kwargs):
+        # Calculate total
+        self.total = self.quantity * self.purchase_price
+
+        # Check if this is a new purchase
+        is_new = self._state.adding
+        print(f"Saving purchase {self.id or 'new'}, is_new={is_new}, product_variant={self.product_variant}")  # Debug
+
+        with transaction.atomic():
+            # Save the purchase first to get an ID
+            super().save(*args, **kwargs)
+
+            # If there's a product variant and this is a new purchase, update stock
+            if is_new and self.product_variant:
+                print(f"Before update: Variant {self.product_variant.id} stock_quantity={self.product_variant.stock_quantity}")  # Debug
+                self.product_variant.stock_quantity += self.quantity
+                self.product_variant.save()
+                print(f"After update: Variant {self.product_variant.id} stock_quantity={self.product_variant.stock_quantity}")  # Debug
+
+                # Create a StockMovement entry
+                StockMovement.objects.create(
+                    product=self.product,
+                    product_variant=self.product_variant,
+                    movement_type='IN',
+                    quantity=self.quantity,
+                    purchase=self,
+                    warehouse=None,
+                    shelf=None,
+                )
+                print(f"Created StockMovement for purchase {self.id}")  # Debug
+            else:
+                print("Stock update skipped: is_new or product_variant condition not met")  # Debug

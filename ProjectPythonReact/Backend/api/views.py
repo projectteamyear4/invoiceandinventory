@@ -458,8 +458,7 @@ def invoice_list(request):
         except Exception as e:
             logger.error(f"User {request.user.username} encountered an error while creating invoice: {str(e)}", exc_info=True)
             return Response({'detail': f'Error creating invoice: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-@api_view(['GET', 'PATCH'])
+@api_view(['GET', 'PATCH', 'DELETE'])
 @permission_classes([IsAuthenticated])
 def invoice_detail(request, pk):
     try:
@@ -473,29 +472,55 @@ def invoice_detail(request, pk):
         logger.info(f"User {request.user.username} retrieved invoice {pk}")
         return Response(serializer.data, status=status.HTTP_200_OK)
     elif request.method == 'PATCH':
-        logger.info(f"PATCH request for invoice {pk} with data: {request.data}")
-        serializer = InvoiceSerializer(invoice, data=request.data, partial=True, context={'request': request})
-        if serializer.is_valid():
-            serializer.save()
-            logger.info(f"User {request.user.username} updated status of invoice {pk} to {request.data.get('status')}")
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        logger.error(f"User {request.user.username} failed to patch invoice {pk}: {serializer.errors}")
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            logger.info(f"PATCH request for invoice {pk} with data: {request.data}")
+            serializer = InvoiceSerializer(
+                invoice,
+                data=request.data,
+                partial=True,
+                context={'request': request}
+            )
+            if serializer.is_valid():
+                updated_invoice = serializer.save()
+                logger.info(f"User {request.user.username} updated status of invoice {pk} to {updated_invoice.status}")
+                return Response(serializer.data, status=status.HTTP_200_OK)
+            logger.error(f"User {request.user.username} failed to patch invoice {pk}: {serializer.errors}")
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            logger.error(f"Error updating invoice {pk}: {str(e)}", exc_info=True)
+            return Response({'detail': f'Error updating invoice: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    elif request.method == 'DELETE':
+        try:
+            invoice.delete()
+            logger.info(f"User {request.user.username} deleted invoice {pk}")
+            return Response({'detail': 'Invoice deleted'}, status=status.HTTP_204_NO_CONTENT)
+        except Exception as e:
+            logger.error(f"Error deleting invoice {pk}: {str(e)}", exc_info=True)
+            return Response({'detail': f'Error deleting invoice: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 # InvoiceViewSet (New)
 # Invoice ViewSet
+# class InvoiceViewSet(viewsets.ModelViewSet):
+#     queryset = Invoice.objects.all()
+#     serializer_class = InvoiceSerializer
+#     permission_classes = [IsAuthenticated]
+
+#     def create(self, request, *args, **kwargs):
+#         try:
+#             return super().create(request, *args, **kwargs)
+#         except ValueError as e:
+#             return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+#     def perform_update(self, serializer):
+#         try:
+#             serializer.save()
+#         except ValueError as e:
+#             raise ValueError(str(e))
+# api/views.py
 class InvoiceViewSet(viewsets.ModelViewSet):
     queryset = Invoice.objects.all()
     serializer_class = InvoiceSerializer
     permission_classes = [IsAuthenticated]
 
     def create(self, request, *args, **kwargs):
-        try:
-            return super().create(request, *args, **kwargs)
-        except ValueError as e:
-            return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
-
-    def perform_update(self, serializer):
-        try:
-            serializer.save()
-        except ValueError as e:
-            raise ValueError(str(e))
+        logger.info(f"Raw request data: {request.data}")
+        return super().create(request, *args, **kwargs)

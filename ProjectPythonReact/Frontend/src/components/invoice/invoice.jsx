@@ -1,4 +1,4 @@
-// src/InvoiceForm.jsx
+// src/components/invoice/invoice.jsx
 import axios from "axios";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -20,7 +20,7 @@ const initialProduct = {
 
 const initialFormData = {
   type: "invoice",
-  status: "PENDING", // Changed to PENDING to trigger stock movement
+  status: "PENDING",
   date: new Date().toISOString().split("T")[0],
   dueDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split("T")[0],
   customerName: "",
@@ -87,17 +87,38 @@ const InvoiceForm = () => {
     []
   );
 
+  const fetchVariants = useCallback(async () => {
+    try {
+      const variantsRes = await api.get(`/api/variants/?t=${new Date().getTime()}`);
+      const fetchedVariants = variantsRes.data.map((variant) => {
+        const stockValue = parseInt(variant.stock || 0, 10);
+        console.log(`Variant ${variant.id} stock: ${stockValue}`);
+        return {
+          ...variant,
+          selling_price: parseFloat(variant.selling_price || 0),
+          stock: stockValue,
+        };
+      });
+      console.log("Fetched variants:", JSON.stringify(fetchedVariants, null, 2));
+      setVariants(fetchedVariants);
+      return fetchedVariants;
+    } catch (err) {
+      console.error("Error fetching variants:", err);
+      setError((prev) => ({ ...prev, variants: "Failed to load product variants" }));
+      return [];
+    }
+  }, [api]);
+
   useEffect(() => {
     const fetchData = async () => {
       setError({ customers: null, delivery: null, products: null, variants: null, submit: null });
       setLoading({ customers: true, delivery: true, products: true, variants: true });
 
       try {
-        const [customersRes, deliveryRes, productsRes, variantsRes] = await Promise.allSettled([
+        const [customersRes, deliveryRes, productsRes] = await Promise.allSettled([
           api.get("/api/customers/"),
           api.get("/api/delivery-methods/"),
           api.get("/api/products/"),
-          api.get("/api/variants/"),
         ]);
 
         if (customersRes.status === "fulfilled") setCustomers(customersRes.value.data);
@@ -106,19 +127,14 @@ const InvoiceForm = () => {
         if (deliveryRes.status === "fulfilled") setDeliveryMethods(deliveryRes.value.data);
         else setError((prev) => ({ ...prev, delivery: "Failed to load delivery methods" }));
 
-        if (productsRes.status === "fulfilled") setProducts(productsRes.value.data);
-        else setError((prev) => ({ ...prev, products: "Failed to load products" }));
-
-        if (variantsRes.status === "fulfilled") {
-          const fetchedVariants = variantsRes.value.data.map((variant) => ({
-            ...variant,
-            selling_price: parseFloat(variant.selling_price || 0),
-            stock_quantity: parseInt(variant.stock_quantity || 0, 10),
-          }));
-          setVariants(fetchedVariants);
+        if (productsRes.status === "fulfilled") {
+          console.log("Fetched products:", JSON.stringify(productsRes.value.data, null, 2));
+          setProducts(productsRes.value.data);
         } else {
-          setError((prev) => ({ ...prev, variants: "Failed to load product variants" }));
+          setError((prev) => ({ ...prev, products: "Failed to load products" }));
         }
+
+        await fetchVariants();
       } catch (err) {
         console.error("API Fetch Error:", err);
         setError({
@@ -134,7 +150,7 @@ const InvoiceForm = () => {
     };
 
     fetchData();
-  }, [api]);
+  }, [api, fetchVariants]);
 
   const handleChange = useCallback((e) => {
     const { name, value, type, checked } = e.target;
@@ -210,21 +226,34 @@ const InvoiceForm = () => {
       const product = products.find((p) => p.id === variant.product);
       if (!product) return;
 
-      console.log("Selected variant:", variant); // Debug: Log the selected variant
+      console.log("Selected product:", JSON.stringify(product, null, 2));
+      console.log("Selected variant:", JSON.stringify(variant, null, 2));
+
+      const productId = parseInt(product.id, 10);
+      const variantId = variant.id ? parseInt(variant.id, 10) : null;
+
+      if (isNaN(productId)) {
+        console.error("Invalid product.id:", product.id);
+        return;
+      }
+      if (variantId !== null && isNaN(variantId)) {
+        console.error("Invalid variant.id:", variant.id);
+        return;
+      }
 
       const updatedProducts = [...formData.products];
       updatedProducts[selectedProductIndex] = {
-        product_id: product.id,
-        variant_id: variant.id || "",
-        barcode: variant.barcode || "",
+        product_id: productId,
+        variant_id: variantId,
+        barcode: product.barcode || "",
         name: product.name || "",
         size: variant.size || "",
         color: variant.color || "",
-        unitPrice: variant.selling_price,
-        stock: variant.stock_quantity,
+        unitPrice: parseFloat(variant.selling_price) || 0,
+        stock: parseInt(variant.stock, 10) || 0,
         quantity: 1,
         discount: 0,
-        total: variant.selling_price,
+        total: parseFloat(variant.selling_price) || 0,
       };
 
       setFormData((prev) => ({ ...prev, products: updatedProducts }));
@@ -241,11 +270,11 @@ const InvoiceForm = () => {
       filtered = variants.filter((variant) => {
         const product = products.find((p) => p.id === variant.product);
         const productName = product?.name.toLowerCase() || "";
-        const barcode = variant.barcode?.toLowerCase() || "";
+        const barcode = product?.barcode?.toLowerCase() || "";
         return productName.includes(term) || barcode.includes(term);
       });
     }
-    return filtered.sort((a, b) => b.stock_quantity - a.stock_quantity);
+    return filtered.sort((a, b) => b.stock - a.stock);
   }, [variants, products, searchTerm]);
 
   const filteredCustomers = useMemo(() => {
@@ -275,7 +304,7 @@ const InvoiceForm = () => {
     const taxRatePercent = 10;
     const calculatedTax = formData.deductTax ? 0 : taxableAmount * (taxRatePercent / 100);
     const calculatedTotal = taxableAmount + calculatedShipping + calculatedTax;
-    const exchangeRateKhr = 4000;
+    const exchangeRateKhr = 4100;
     const calculatedTotalInRiel = calculatedTotal * exchangeRateKhr;
 
     return {
@@ -290,7 +319,7 @@ const InvoiceForm = () => {
 
   const typeOptions = [
     { value: "invoice", label: "វិក្កយបត្រ" },
-    { value: "quotation", label: "សម្រង់តម្លៃ" },
+    { value: "quote", label: "សម្រង់តម្លៃ" },
   ];
 
   const statusOptions = [
@@ -329,7 +358,9 @@ const InvoiceForm = () => {
       return;
     }
 
-    const validProducts = formData.products.filter((p) => p.product_id);
+    console.log("Raw formData.products:", JSON.stringify(formData.products, null, 2));
+
+    const validProducts = formData.products.filter((p) => p.product_id && !isNaN(parseInt(p.product_id, 10)));
     if (validProducts.length === 0) {
       setError((prev) => ({
         ...prev,
@@ -340,28 +371,20 @@ const InvoiceForm = () => {
     }
 
     try {
-      const variantsRes = await api.get("/api/variants/");
-      const fetchedVariants = variantsRes.data.map((variant) => ({
-        ...variant,
-        selling_price: parseFloat(variant.selling_price || 0),
-        stock_quantity: parseInt(variant.stock_quantity || 0, 10),
-      }));
-      console.log("Fetched variants with stock:", fetchedVariants);
-      setVariants(fetchedVariants);
-
+      const fetchedVariants = await fetchVariants();
       const updatedProducts = formData.products.map((product) => {
         if (product.variant_id) {
-          const variant = fetchedVariants.find((v) => v.id === parseInt(product.variant_id));
+          const variant = fetchedVariants.find((v) => v.id === parseInt(product.variant_id, 10));
           console.log(`Product variant_id: ${product.variant_id}, Found variant:`, variant);
           if (variant) {
-            return { ...product, stock: variant.stock_quantity };
+            return { ...product, stock: variant.stock };
           }
         }
         return product;
       });
       setFormData((prev) => ({ ...prev, products: updatedProducts }));
 
-      console.log("Updated products before validation:", updatedProducts);
+      console.log("Updated products before validation:", JSON.stringify(updatedProducts, null, 2));
 
       const outOfStockItems = updatedProducts.filter((p) => p.product_id && p.quantity > p.stock);
       if (outOfStockItems.length > 0) {
@@ -372,14 +395,7 @@ const InvoiceForm = () => {
         setIsSubmitting(false);
         return;
       }
-    } catch (err) {
-      console.error("Error refreshing stock data:", err);
-      setError((prev) => ({ ...prev, submit: "មានបញ្ហាក្នុងការផ្ទៀងផ្ទាត់ស្តុក" }));
-      setIsSubmitting(false);
-      return;
-    }
 
-    try {
       const nameParts = formData.customerName.trim().split(" ");
       const customerData = {
         first_name: nameParts[0] || formData.customerName.trim(),
@@ -389,7 +405,6 @@ const InvoiceForm = () => {
         city: formData.customerTown || "",
         country: formData.customerCountry || "",
         phone_number: formData.customerPhone || "",
-        status: "active",
       };
 
       let customerId = null;
@@ -411,6 +426,42 @@ const InvoiceForm = () => {
         setCustomers((prev) => [...prev, customerResponse.data]);
       }
 
+      console.log("validProducts:", JSON.stringify(validProducts, null, 2));
+
+      const items = validProducts.map((p, index) => {
+        const productId = parseInt(p.product_id, 10);
+        const variantId = p.variant_id ? parseInt(p.variant_id, 10) : null;
+        const quantity = parseInt(p.quantity, 10);
+        const unitPrice = parseFloat(p.unitPrice);
+        const discountPercentage = parseFloat(p.discount);
+
+        if (isNaN(productId)) {
+          throw new Error(`Invalid product_id at index ${index}: ${JSON.stringify(p.product_id)}`);
+        }
+        if (variantId !== null && isNaN(variantId)) {
+          throw new Error(`Invalid variant_id at index ${index}: ${JSON.stringify(p.variant_id)}`);
+        }
+        if (isNaN(quantity) || quantity <= 0) {
+          throw new Error(`Invalid quantity at index ${index}: ${p.quantity}`);
+        }
+        if (isNaN(unitPrice) || unitPrice < 0) {
+          throw new Error(`Invalid unit_price at index ${index}: ${p.unitPrice}`);
+        }
+        if (isNaN(discountPercentage) || discountPercentage < 0 || discountPercentage > 100) {
+          throw new Error(`Invalid discount_percentage at index ${index}: ${p.discount}`);
+        }
+
+        return {
+          product_id: productId,
+          variant_id: variantId,
+          quantity: quantity,
+          unit_price: unitPrice,
+          discount_percentage: discountPercentage,
+        };
+      });
+
+      console.log("Items array:", JSON.stringify(items, null, 2));
+
       const invoiceData = {
         type: formData.type,
         status: formData.status,
@@ -423,39 +474,19 @@ const InvoiceForm = () => {
         shipping_cost: shippingDisplay,
         overall_discount: formData.overallDiscount,
         deduct_tax: formData.deductTax,
-        items: validProducts.map((p) => ({
-          product_id: p.product_id,
-          variant_id: p.variant_id || null,
-          quantity: p.quantity,
-          unit_price: p.unitPrice,
-          discount_percentage: p.discount,
-        })),
+        items: items,
       };
 
-      console.log("Submitting invoice data:", invoiceData);
+      console.log("Submitting invoice data:", JSON.stringify(invoiceData, null, 2));
 
-      const response = await api.post("/api/invoices/", invoiceData);
+      const response = await api.post("/api/invoices/", invoiceData, {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
       alert("វិក្កយបត្របានបង្កើតដោយជោគជ័យ!");
 
-      const variantsRes = await api.get("/api/variants/");
-      const fetchedVariants = variantsRes.data.map((variant) => ({
-        ...variant,
-        selling_price: parseFloat(variant.selling_price || 0),
-        stock_quantity: parseInt(variant.stock_quantity || 0, 10),
-      }));
-      console.log("Updated variants with new stock:", fetchedVariants);
-      setVariants(fetchedVariants);
-
-      const updatedProducts = formData.products.map((product) => {
-        if (product.variant_id) {
-          const variant = fetchedVariants.find((v) => v.id === parseInt(product.variant_id));
-          if (variant) {
-            return { ...product, stock: variant.stock_quantity };
-          }
-        }
-        return product;
-      });
-      setFormData((prev) => ({ ...prev, products: updatedProducts }));
+      await fetchVariants();
 
       navigate("/invoicelist", { state: { invoice: response.data } });
       setFormData(initialFormData);
@@ -470,7 +501,7 @@ const InvoiceForm = () => {
             .map(([field, errors]) => {
               const errorText = Array.isArray(errors) ? errors.join(", ") : errors;
               if (field === "items" && errorText.includes("Insufficient stock")) {
-                const variantIdMatch = errorText.match(/variant ID (\d+)/);
+                const variantIdMatch = errorText.match(/variant (\d+)/);
                 const variantId = variantIdMatch ? variantIdMatch[1] : null;
                 const variant = variants.find((v) => v.id === parseInt(variantId));
                 const product = variant ? products.find((p) => p.id === variant.product) : null;
@@ -479,12 +510,11 @@ const InvoiceForm = () => {
                 }
               }
               if (errorText.includes("Insufficient stock for")) {
-                const productMatch = errorText.match(/Insufficient stock for (.+?) \(Variant:/);
-                const stockMatch = errorText.match(/(\d+) available/);
-                const requestedMatch = errorText.match(/(\d+) requested/);
+                const productMatch = errorText.match(/variant (.+?)\./);
+                const stockMatch = errorText.match(/Requested: (\d+), Available: (\d+)/);
                 const productName = productMatch ? productMatch[1] : "unknown product";
-                const currentStock = stockMatch ? stockMatch[1] : "unknown";
-                const requested = requestedMatch ? requestedMatch[1] : "unknown";
+                const requested = stockMatch ? stockMatch[1] : "unknown";
+                const currentStock = stockMatch ? stockMatch[2] : "unknown";
                 return `បរិមាណលើសស្តុកសម្រាប់៖ ${productName} - ស្តុកបច្ចុប្បន្ន: ${currentStock}, បរិមាណស្នើសុំ: ${requested}`;
               }
               return `${field}: ${errorText}`;
@@ -1044,8 +1074,6 @@ const InvoiceForm = () => {
                     <tr>
                       <th>លេខសម្គាល់</th>
                       <th>ឈ្មោះដឹកជញ្ជូន</th>
-                      <th>លេខឡាន</th>
-                      <th>លេខដឹកជញ្ជូន</th>
                       <th>សកម្មភាព</th>
                     </tr>
                   </thead>
@@ -1054,8 +1082,6 @@ const InvoiceForm = () => {
                       <tr key={method.delivery_method_id}>
                         <td>{method.delivery_method_id}</td>
                         <td>{method.delivery_name}</td>
-                        <td>{method.car_number}</td>
-                        <td>{method.delivery_number}</td>
                         <td>
                           <button
                             className="select-button"
@@ -1115,19 +1141,19 @@ const InvoiceForm = () => {
                       const product = products.find((p) => p.id === variant.product);
                       return (
                         <tr key={`${variant.product}-${variant.id}`}>
-                          <td>{variant.barcode || "-"}</td>
+                          <td>{product?.barcode || "-"}</td>
                           <td>{product?.name || "មិនស្គាល់"}</td>
                           <td>{variant.size || "-"}</td>
                           <td>{variant.color || "-"}</td>
                           <td>${parseFloat(variant.selling_price).toFixed(2)}</td>
-                          <td>{variant.stock_quantity}</td>
+                          <td>{variant.stock}</td>
                           <td>
                             <button
                               className="select-button"
                               onClick={() => handleSelectProduct(variant)}
-                              disabled={variant.stock_quantity <= 0}
+                              disabled={variant.stock <= 0}
                             >
-                              {variant.stock_quantity <= 0 ? "អស់ស្តុក" : "ជ្រើសរើស"}
+                              {variant.stock <= 0 ? "អស់ស្តុក" : "ជ្រើសរើស"}
                             </button>
                           </td>
                         </tr>

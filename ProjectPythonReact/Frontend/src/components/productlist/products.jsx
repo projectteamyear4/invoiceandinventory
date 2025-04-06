@@ -42,12 +42,12 @@ const Products = () => {
     },
   });
 
-  // Fetch products with nested variants and purchases
+  // Fetch products with nested variants
   useEffect(() => {
     const fetchProducts = async () => {
       try {
         const response = await api.get('/api/products/');
-        console.log('Total products fetched:', response.data);
+        console.log('Total products fetched from API:', response.data); // Debug API response
         setProducts(response.data);
         setFilteredProducts(response.data);
       } catch (error) {
@@ -63,16 +63,20 @@ const Products = () => {
   useEffect(() => {
     const flattened = filteredProducts.flatMap((product) => {
       if (product.variants && product.variants.length > 0) {
-        return product.variants.map((variant, index) => ({
-          ...product,
-          variant,
-          isFirstVariant: index === 0,
-          variantCount: product.variants.length,
-        }));
+        return product.variants.map((variant, index) => {
+          console.log(`Flattening product ${product.id}, variant ${variant.id}, stock_quantity: ${variant.stock_quantity}`); // Debug
+          return {
+            ...product,
+            variant,
+            isFirstVariant: index === 0,
+            variantCount: product.variants.length,
+          };
+        });
       } else {
         return [{ ...product, variant: null, isFirstVariant: true, variantCount: 1 }];
       }
     });
+    console.log('Flattened data:', flattened); // Debug
     setFlattenedData(flattened);
   }, [filteredProducts]);
 
@@ -127,8 +131,9 @@ const Products = () => {
     if (window.confirm('តើអ្នកប្រាកដទេថាចង់លុបផលិតផលនេះ?')) {
       try {
         await api.delete(`/api/products/${productId}/`);
-        setProducts(products.filter((p) => p.id !== productId));
-        setFilteredProducts(filteredProducts.filter((p) => p.id !== productId));
+        const updatedProducts = products.filter((p) => p.id !== productId);
+        setProducts(updatedProducts);
+        setFilteredProducts(updatedProducts);
       } catch (error) {
         console.error('កំហុសក្នុងការលុបផលិតផល៖', error);
       }
@@ -180,7 +185,7 @@ const Products = () => {
               )}
             </div>
           ) : null,
-        width: '80px ',
+        width: '80px',
         omit: !visibleColumns.image,
       },
       {
@@ -236,23 +241,17 @@ const Products = () => {
       },
       {
         name: 'បរិមាណស្តុក',
-        selector: (row) =>
-          row.variant
-            ? row.variant.purchases
-              ? row.variant.purchases.reduce((sum, p) => sum + p.quantity, 0)
-              : 0
-            : 'គ្មានវ៉ារីយ៉ង់',
+        selector: (row) => {
+          const stock = row.variant ? row.variant.stock_quantity || 0 : 'គ្មានវ៉ារីយ៉ង់';
+          console.log(`Displaying stock for variant ${row.variant?.id}: ${stock}`); // Debug
+          return stock;
+        },
         sortable: true,
         omit: !visibleColumns.stock_quantity,
       },
       {
         name: 'តម្លៃទិញ',
-        selector: (row) =>
-          row.variant && row.variant.purchases && row.variant.purchases.length > 0
-            ? row.variant.purchases.sort(
-                (a, b) => new Date(b.purchase_date) - new Date(a.purchase_date)
-              )[0].purchase_price
-            : '-',
+        selector: (row) => (row.variant ? row.variant.purchase_price || '-' : 'គ្មានវ៉ារីយ៉ង់'),
         sortable: true,
         omit: !visibleColumns.purchase_price,
       },
@@ -425,13 +424,13 @@ const Products = () => {
             មើលប្រភេទផលិតផល
           </motion.button>
           <motion.button
-          className="delivery-methods-button"
-          onClick={() => navigate('/delivery-methods')}
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-        >
-          មើលវិធីសាស្ត្រដឹកជញ្ជូន
-        </motion.button>
+            className="delivery-methods-button"
+            onClick={() => navigate('/delivery-methods')}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+          >
+            មើលវិធីសាស្ត្រដឹកជញ្ជូន
+          </motion.button>
         </div>
       </motion.div>
 
