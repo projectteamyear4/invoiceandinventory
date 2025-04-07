@@ -101,7 +101,7 @@ class StockMovementSerializer(serializers.ModelSerializer):
     product_name = serializers.SerializerMethodField()
     variant_info = serializers.SerializerMethodField()
     warehouse_name = serializers.SerializerMethodField()
-    shelf_name = serializers.SerializerMethodField()
+    shelf_name = serializers.SerializerMethodField()  # Add this line
 
     class Meta:
         model = StockMovement
@@ -125,7 +125,7 @@ class StockMovementSerializer(serializers.ModelSerializer):
 # Updated ProductVariantSerializer with logging
 class ProductVariantSerializer(serializers.ModelSerializer):
     purchases = PurchaseSerializer(source='purchase_set', many=True, read_only=True)
-    stock = serializers.IntegerField(source='stock_quantity')  # Rename stock_quantity to stock
+    stock = serializers.IntegerField(source='stock_quantity', required=False, allow_null=True)  # Make optional
     purchase_price = serializers.SerializerMethodField()
 
     class Meta:

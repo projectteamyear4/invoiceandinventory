@@ -164,7 +164,7 @@ class ProductVariant(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='variants')
     size = models.CharField(max_length=20, blank=True, null=True)
     color = models.CharField(max_length=30, blank=True, null=True)
-    stock_quantity = models.IntegerField(default=0)
+    stock_quantity = models.IntegerField(default=0,null=True, blank=True)
     purchase_price = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
     selling_price = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
 
@@ -206,7 +206,7 @@ class StockMovement(models.Model):
     quantity = models.IntegerField()
     movement_date = models.DateTimeField(auto_now_add=True)
     purchase = models.ForeignKey('Purchase', on_delete=models.CASCADE, null=True, blank=True)
-    invoice_item = models.ForeignKey(InvoiceItem, on_delete=models.CASCADE, null=True, blank=True)
+    invoice_item = models.ForeignKey('InvoiceItem', on_delete=models.CASCADE, null=True, blank=True)
 
     def __str__(self):
         return f"{self.movement_type} - {self.product.name} - {self.quantity}"

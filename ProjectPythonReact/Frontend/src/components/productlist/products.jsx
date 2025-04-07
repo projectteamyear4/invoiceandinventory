@@ -242,7 +242,7 @@ const Products = () => {
       {
         name: 'បរិមាណស្តុក',
         selector: (row) => {
-          const stock = row.variant ? row.variant.stock_quantity || 0 : 'គ្មានវ៉ារីយ៉ង់';
+          const stock = row.variant ? row.variant.stock_quantity || null : 'គ្មានវ៉ារីយ៉ង់';
           console.log(`Displaying stock for variant ${row.variant?.id}: ${stock}`); // Debug
           return stock;
         },

@@ -9,13 +9,13 @@ const AddProductVariant = () => {
     product: '',
     size: '',
     color: '',
-    stock_quantity: 0,
+    stock: 0,  // Changed to stock
     purchase_price: '',
     selling_price: '',
   });
   const [message, setMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const { user, logout } = useContext(AuthContext); // Added 'logout' here
+  const { user, logout } = useContext(AuthContext);
   const { productId } = useParams();
   const navigate = useNavigate();
 
@@ -53,7 +53,7 @@ const AddProductVariant = () => {
         product: productId || '',
         size: '',
         color: '',
-        stock_quantity: 0,
+        stock: 0,  // Changed to stock
         purchase_price: '',
         selling_price: '',
       });
@@ -65,7 +65,7 @@ const AddProductVariant = () => {
         const data = error.response.data;
         if (status === 401) {
           setMessage('សមាជិកหมดសុពលភាព។ សូមចូលម៉ាស៊ីនម្តងទៀត។');
-          if (user && typeof logout === 'function') logout(); // Now logout is defined
+          if (user && typeof logout === 'function') logout();
           setTimeout(() => navigate('/login'), 1000);
         } else if (status === 400) {
           setMessage('បរាជ័យក្នុងការបន្ថែមវ៉ារីអង់ត: ' + JSON.stringify(data));
@@ -116,12 +116,11 @@ const AddProductVariant = () => {
         />
         <input
           type="number"
-          name="stock_quantity"
+          name="stock"
           placeholder="បរិមាណស្តុក"
-          value={formData.stock_quantity}
+          value={formData.stock}
           onChange={handleChange}
           required
-         readOnly
           className="product-input"
         />
         <input
