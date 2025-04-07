@@ -15,9 +15,8 @@ const StockMovements = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
   const [exportFormat, setExportFormat] = useState('');
-  // Pagination states
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(10); // Default to 10 items per page
+  const [itemsPerPage, setItemsPerPage] = useState(10);
   const navigate = useNavigate();
   const tableRef = useRef(null);
 
@@ -36,10 +35,11 @@ const StockMovements = () => {
       try {
         const response = await api.get('/api/stock-movements/');
         console.log('API Response:', response.data);
-        setStockMovements(response.data);
-        setFilteredStockMovements(response.data);
+        setStockMovements(response.data || []);
+        setFilteredStockMovements(response.data || []);
       } catch (err) {
-        setError('មិនអាចទាញយកព័ត៌មានស្តុកបានទេ។ សូមព្យាយាមម្ដងទៀត។');
+        const errorMessage = err.response?.data?.detail || err.message || 'មិនអាចទាញយកព័ត៌មានស្តុកបានទេ។ សូមព្យាយាមម្ដងទៀត។';
+        setError(errorMessage);
         console.error('Fetch error:', err.response?.data || err);
       } finally {
         setLoading(false);
@@ -51,10 +51,10 @@ const StockMovements = () => {
   // Search and filter stock movements by product name
   useEffect(() => {
     const filtered = stockMovements.filter((movement) =>
-      movement.product_name.toLowerCase().includes(searchTerm.toLowerCase())
+      (movement.product_name || '').toLowerCase().includes(searchTerm.toLowerCase())
     );
     setFilteredStockMovements(filtered);
-    setCurrentPage(1); // Reset to first page when search term changes
+    setCurrentPage(1);
   }, [searchTerm, stockMovements]);
 
   // Sort stock movements
@@ -74,10 +74,6 @@ const StockMovements = () => {
         return direction === 'asc'
           ? new Date(aValue) - new Date(bValue)
           : new Date(bValue) - new Date(aValue);
-      } else if (key === 'purchase') {
-        const aPurchase = aValue || 0;
-        const bPurchase = bValue || 0;
-        return direction === 'asc' ? aPurchase - bPurchase : bPurchase - aPurchase;
       } else {
         return direction === 'asc'
           ? aValue.localeCompare(bValue)
@@ -103,7 +99,7 @@ const StockMovements = () => {
   const handleItemsPerPageChange = (e) => {
     const newItemsPerPage = parseInt(e.target.value, 10);
     setItemsPerPage(newItemsPerPage);
-    setCurrentPage(1); // Reset to first page when items per page changes
+    setCurrentPage(1);
   };
 
   // Prepare data for export (CSV and Excel)
@@ -115,16 +111,18 @@ const StockMovements = () => {
     { label: 'ប្រភេទ', key: 'movement_type' },
     { label: 'បរិមាណ', key: 'quantity' },
     { label: 'កាលបរិច្ឆេទ', key: 'movement_date' },
+    { label: 'លេខសម្គាល់ធាតុវិក្កយបត្រ', key: 'invoice_item_id' }, // Added for export
   ];
 
   const exportData = filteredStockMovements.map((movement) => ({
-    product_name: movement.product_name,
+    product_name: movement.product_name || 'មិនមាន',
     variant_info: movement.variant_info || 'មិនមាន',
     warehouse_name: movement.warehouse_name || 'មិនមាន',
     shelf_name: movement.shelf_name || 'មិនមាន',
-    movement_type: movement.movement_type,
-    quantity: movement.quantity,
-    movement_date: new Date(movement.movement_date).toLocaleString(),
+    movement_type: movement.movement_type || 'មិនមាន',
+    quantity: movement.quantity || 0,
+    movement_date: movement.movement_date ? new Date(movement.movement_date).toLocaleString() : 'មិនមាន',
+    invoice_item_id: movement.invoice_item_id || 'មិនមាន', // Added for export
   }));
 
   // Download as PNG
@@ -192,8 +190,16 @@ const StockMovements = () => {
     }
   };
 
-  console.log('Stock Movements State:', stockMovements);
-  if (loading) return <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5 }}>កំពុងផ្ទុកទិន្នន័យស្តុក...</motion.p>;
+  if (loading) return (
+    <motion.p
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.5 }}
+    >
+      កំពុងផ្ទុកទិន្នន័យស្តុក...
+    </motion.p>
+  );
+
   if (error) return (
     <motion.p
       className="error-message"
@@ -268,162 +274,180 @@ const StockMovements = () => {
         </div>
       </motion.div>
 
-    
-
-      <table className="stock-movement-table" ref={tableRef}>
-        <thead>
-          <tr>
-            <th onClick={() => handleSort('product_name')}>
-              ផលិតផល
-              {sortConfig.key === 'product_name' && (
-                <span className="sort-icon">
-                  {sortConfig.direction === 'asc' ? '▲' : '▼'}
-                </span>
-              )}
-            </th>
-            <th onClick={() => handleSort('variant_info')}>
-              វ៉ារីយ៉ង់
-              {sortConfig.key === 'variant_info' && (
-                <span className="sort-icon">
-                  {sortConfig.direction === 'asc' ? '▲' : '▼'}
-                </span>
-              )}
-            </th>
-            <th onClick={() => handleSort('warehouse_name')}>
-              ឃ្លាំង
-              {sortConfig.key === 'warehouse_name' && (
-                <span className="sort-icon">
-                  {sortConfig.direction === 'asc' ? '▲' : '▼'}
-                </span>
-              )}
-            </th>
-            <th onClick={() => handleSort('shelf_name')}>
-              ធ្នើរ
-              {sortConfig.key === 'shelf_name' && (
-                <span className="sort-icon">
-                  {sortConfig.direction === 'asc' ? '▲' : '▼'}
-                </span>
-              )}
-            </th>
-            <th onClick={() => handleSort('movement_type')}>
-              ប្រភេទ
-              {sortConfig.key === 'movement_type' && (
-                <span className="sort-icon">
-                  {sortConfig.direction === 'asc' ? '▲' : '▼'}
-                </span>
-              )}
-            </th>
-            <th onClick={() => handleSort('quantity')}>
-              បរិមាណ
-              {sortConfig.key === 'quantity' && (
-                <span className="sort-icon">
-                  {sortConfig.direction === 'asc' ? '▲' : '▼'}
-                </span>
-              )}
-            </th>
-            <th onClick={() => handleSort('movement_date')}>
-              កាលបរិច្ឆេទ
-              {sortConfig.key === 'movement_date' && (
-                <span className="sort-icon">
-                  {sortConfig.direction === 'asc' ? '▲' : '▼'}
-                </span>
-              )}
-            </th>
-            <th>សកម្មភាព</th>
-          </tr>
-        </thead>
-        <tbody>
-          {paginatedMovements.map((movement, index) => {
-            const isMissingStockInfo = !movement.warehouse_name || !movement.shelf_name;
-
-            return (
-              <motion.tr
-                key={movement.id}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.3, delay: index * 0.05 }}
-              >
-                <td>{movement.product_name}</td>
-                <td>{movement.variant_info || 'មិនមាន'}</td>
-                <td>{movement.warehouse_name || 'មិនមាន'}</td>
-                <td>{movement.shelf_name || 'មិនមាន'}</td>
-                <td>{movement.movement_type}</td>
-                <td>{movement.quantity}</td>
-                <td>{new Date(movement.movement_date).toLocaleString()}</td>
-                <td>
-                  <motion.button
-                    onClick={() => navigate(`/edit-stock-movement/${movement.id}`)}
-                    className={isMissingStockInfo ? 'join-stock-button' : 'edit-button'}
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                  >
-                    {isMissingStockInfo ? 'បញ្ចូលស្តុក' : 'កែសម្រួល'}
-                  </motion.button>
-                </td>
-              </motion.tr>
-            );
-          })}
-        </tbody>
-      </table>
-  {/* Items per page selector */}
-  <div className="pagination-controls">
-        <label htmlFor="items-per-page">ចំនួនក្នុងមួយទំព័រ: </label>
-        <select
-          id="items-per-page"
-          value={itemsPerPage}
-          onChange={handleItemsPerPageChange}
-          className="items-per-page-select"
+      {filteredStockMovements.length === 0 ? (
+        <motion.p
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.5 }}
         >
-          <option value={5}>5</option>
-          <option value={10}>10</option>
-          <option value={20}>20</option>
-          <option value={50}>50</option>
-        </select>
-      </div>
-      {/* Pagination controls */}
-      {totalItems > 0 && (
-        <div className="pagination">
-          <motion.button
-            onClick={() => handlePageChange(currentPage - 1)}
-            disabled={currentPage === 1}
-            className="pagination-button"
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-          >
-            មុន
-          </motion.button>
+          មិនមានទិន្នន័យចលនាស្តុកទេ។
+        </motion.p>
+      ) : (
+        <>
+          <table className="stock-movement-table" ref={tableRef}>
+            <thead>
+              <tr>
+                <th onClick={() => handleSort('product_name')}>
+                  ផលិតផល
+                  {sortConfig.key === 'product_name' && (
+                    <span className="sort-icon">
+                      {sortConfig.direction === 'asc' ? '▲' : '▼'}
+                    </span>
+                  )}
+                </th>
+                <th onClick={() => handleSort('variant_info')}>
+                  វ៉ារីយ៉ង់
+                  {sortConfig.key === 'variant_info' && (
+                    <span className="sort-icon">
+                      {sortConfig.direction === 'asc' ? '▲' : '▼'}
+                    </span>
+                  )}
+                </th>
+                <th onClick={() => handleSort('warehouse_name')}>
+                  ឃ្លាំង
+                  {sortConfig.key === 'warehouse_name' && (
+                    <span className="sort-icon">
+                      {sortConfig.direction === 'asc' ? '▲' : '▼'}
+                    </span>
+                  )}
+                </th>
+                <th onClick={() => handleSort('shelf_name')}>
+                  ធ្នើរ
+                  {sortConfig.key === 'shelf_name' && (
+                    <span className="sort-icon">
+                      {sortConfig.direction === 'asc' ? '▲' : '▼'}
+                    </span>
+                  )}
+                </th>
+                <th onClick={() => handleSort('movement_type')}>
+                  ប្រភេទ
+                  {sortConfig.key === 'movement_type' && (
+                    <span className="sort-icon">
+                      {sortConfig.direction === 'asc' ? '▲' : '▼'}
+                    </span>
+                  )}
+                </th>
+                <th onClick={() => handleSort('quantity')}>
+                  បរិមាណ
+                  {sortConfig.key === 'quantity' && (
+                    <span className="sort-icon">
+                      {sortConfig.direction === 'asc' ? '▲' : '▼'}
+                    </span>
+                  )}
+                </th>
+                <th onClick={() => handleSort('movement_date')}>
+                  កាលបរិច្ឆេទ
+                  {sortConfig.key === 'movement_date' && (
+                    <span className="sort-icon">
+                      {sortConfig.direction === 'asc' ? '▲' : '▼'}
+                    </span>
+                  )}
+                </th>
+                <th onClick={() => handleSort('invoice_item_id')}>
+                  លេខសម្គាល់ធាតុវិក្កយបត្រ
+                  {sortConfig.key === 'invoice_item_id' && (
+                    <span className="sort-icon">
+                      {sortConfig.direction === 'asc' ? '▲' : '▼'}
+                    </span>
+                  )}
+                </th>
+                <th>សកម្មភាព</th>
+              </tr>
+            </thead>
+            <tbody>
+              {paginatedMovements.map((movement, index) => {
+                const isMissingStockInfo = !movement.warehouse_name || !movement.shelf_name;
 
-          <div className="pagination-pages">
-            {Array.from({ length: totalPages }, (_, index) => index + 1).map((page) => (
-              <motion.button
-                key={page}
-                onClick={() => handlePageChange(page)}
-                className={`pagination-page ${currentPage === page ? 'active' : ''}`}
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                {page}
-              </motion.button>
-            ))}
+                return (
+                  <motion.tr
+                    key={movement.id || index}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.3, delay: index * 0.05 }}
+                  >
+                    <td>{movement.product_name || 'មិនមាន'}</td>
+                    <td>{movement.variant_info || 'មិនមាន'}</td>
+                    <td>{movement.warehouse_name || 'មិនមាន'}</td>
+                    <td>{movement.shelf_name || 'មិនមាន'}</td>
+                    <td>{movement.movement_type || 'មិនមាន'}</td>
+                    <td>{movement.quantity || 0}</td>
+                    <td>{movement.movement_date ? new Date(movement.movement_date).toLocaleString() : 'មិនមាន'}</td>
+                    <td>{movement.invoice_item_id || 'មិនមាន'}</td>
+                    <td>
+                      <motion.button
+                        onClick={() => navigate(`/edit-stock-movement/${movement.id}`)}
+                        className={isMissingStockInfo ? 'join-stock-button' : 'edit-button'}
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                      >
+                        {isMissingStockInfo ? 'បញ្ចូលស្តុក' : 'កែសម្រួល'}
+                      </motion.button>
+                    </td>
+                  </motion.tr>
+                );
+              })}
+            </tbody>
+          </table>
+
+          <div className="pagination-controls">
+            <label htmlFor="items-per-page">ចំនួនក្នុងមួយទំព័រ: </label>
+            <select
+              id="items-per-page"
+              value={itemsPerPage}
+              onChange={handleItemsPerPageChange}
+              className="items-per-page-select"
+            >
+              <option value={5}>5</option>
+              <option value={10}>10</option>
+              <option value={20}>20</option>
+              <option value={50}>50</option>
+            </select>
           </div>
 
-          <motion.button
-            onClick={() => handlePageChange(currentPage + 1)}
-            disabled={currentPage === totalPages}
-            className="pagination-button"
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-          >
-            បន្ទាប់
-          </motion.button>
-        </div>
-      )}
+          {totalItems > 0 && (
+            <div className="pagination">
+              <motion.button
+                onClick={() => handlePageChange(currentPage - 1)}
+                disabled={currentPage === 1}
+                className="pagination-button"
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                មុន
+              </motion.button>
 
-      {/* Display total items and current range */}
-      {totalItems > 0 && (
-        <div className="pagination-info">
-          បង្ហាញ {startIndex + 1} ដល់ {Math.min(endIndex, totalItems)} នៃ {totalItems} ធាតុ
-        </div>
+              <div className="pagination-pages">
+                {Array.from({ length: totalPages }, (_, index) => index + 1).map((page) => (
+                  <motion.button
+                    key={page}
+                    onClick={() => handlePageChange(page)}
+                    className={`pagination-page ${currentPage === page ? 'active' : ''}`}
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.95 }}
+                  >
+                    {page}
+                  </motion.button>
+                ))}
+              </div>
+
+              <motion.button
+                onClick={() => handlePageChange(currentPage + 1)}
+                disabled={currentPage === totalPages}
+                className="pagination-button"
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                បន្ទាប់
+              </motion.button>
+            </div>
+          )}
+
+          {totalItems > 0 && (
+            <div className="pagination-info">
+              បង្ហាញ {startIndex + 1} ដល់ {Math.min(endIndex, totalItems)} នៃ {totalItems} ធាតុ
+            </div>
+          )}
+        </>
       )}
     </motion.div>
   );

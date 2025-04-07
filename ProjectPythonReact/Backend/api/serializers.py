@@ -99,17 +99,37 @@ class PurchaseSerializer(serializers.ModelSerializer):
 
 class StockMovementSerializer(serializers.ModelSerializer):
     product_name = serializers.CharField(source='product.name', read_only=True)
-    variant_info = serializers.CharField(source='product_variant.__str__', read_only=True)
-    warehouse_name = serializers.CharField(source='warehouse.name', read_only=True)
-    shelf_name = serializers.CharField(source='shelf.shelf_name', read_only=True, allow_null=True)
+    variant_info = serializers.CharField(source='product_variant.__str__', read_only=True, allow_null=True)
+    warehouse_name = serializers.SerializerMethodField()
+    shelf_name = serializers.SerializerMethodField()
+    invoice_item_id = serializers.PrimaryKeyRelatedField(source='invoice_item', read_only=True)
 
     class Meta:
         model = StockMovement
         fields = [
             'id', 'product', 'product_name', 'product_variant', 'variant_info',
             'warehouse', 'warehouse_name', 'shelf', 'shelf_name', 'movement_type',
-            'quantity', 'movement_date', 'purchase'
+            'quantity', 'movement_date', 'purchase', 'invoice_item', 'invoice_item_id'
         ]
+
+    def get_warehouse_name(self, obj):
+        return obj.warehouse.name if obj.warehouse else None
+
+    def get_shelf_name(self, obj):
+        return obj.shelf.shelf_name if obj.shelf else None
+
+    def validate(self, data):
+        if data.get('movement_type') == 'IN' and data.get('quantity', 0) <= 0:
+            raise serializers.ValidationError({"quantity": "Quantity must be positive for IN movements."})
+        if data.get('movement_type') == 'OUT' and data.get('quantity', 0) <= 0:
+            raise serializers.ValidationError({"quantity": "Quantity must be positive for OUT movements."})
+        if data.get('movement_type') == 'OUT' and 'product_variant' in data and data['product_variant']:
+            available_stock = data['product_variant'].stock_quantity
+            if data['quantity'] > available_stock:
+                raise serializers.ValidationError(
+                    f"Insufficient stock for variant {data['product_variant']}. Available: {available_stock}, Requested: {data['quantity']}"
+                )
+        return data
 
 # Updated ProductVariantSerializer with logging
 class ProductVariantSerializer(serializers.ModelSerializer):
@@ -261,7 +281,7 @@ class InvoiceSerializer(serializers.ModelSerializer):
     customer_id = serializers.PrimaryKeyRelatedField(
         queryset=Customer.objects.all(), source='customer', write_only=True
     )
-    delivery_method = DeliveryMethodSerializer(allow_null=True, required=False)
+    delivery_method = DeliveryMethodSerializer(allow_null=True, required=False, read_only=True)
     delivery_method_id = serializers.PrimaryKeyRelatedField(
         queryset=DeliveryMethod.objects.all(), source='delivery_method', write_only=True, allow_null=True, required=False
     )
@@ -303,20 +323,19 @@ class InvoiceSerializer(serializers.ModelSerializer):
             if not items:
                 logger.error("Validation failed: At least one item required for POST")
                 raise serializers.ValidationError("At least one item is required to create an invoice.")
-            for item in items:
-                variant = item.get('variant')
-                quantity = item.get('quantity')
-                if variant:
-                    available_stock = variant.stock_quantity
-                    if available_stock < quantity:
-                        raise serializers.ValidationError(
-                            f"Insufficient stock for variant {variant}. "
-                            f"Requested: {quantity}, Available: {available_stock}"
-                        )
         elif request_method == 'PATCH':
             logger.info("PATCH request: Only validating status field")
             if 'status' not in data:
                 logger.warning("No status field provided in PATCH request")
+
+        if 'due_date' in data and 'date' in data:
+            if data['due_date'] < data['date']:
+                raise serializers.ValidationError({"due_date": "Due date cannot be earlier than the invoice date."})
+        if 'shipping_cost' in data and data['shipping_cost'] < 0:
+            raise serializers.ValidationError({"shipping_cost": "Shipping cost cannot be negative."})
+        if 'overall_discount' in data and data['overall_discount'] < 0:
+            raise serializers.ValidationError({"overall_discount": "Overall discount cannot be negative."})
+
         return data
 
     def validate_status(self, value):
@@ -331,68 +350,28 @@ class InvoiceSerializer(serializers.ModelSerializer):
         customer = validated_data.pop('customer')
         delivery_method = validated_data.pop('delivery_method', None)
 
-        invoice = Invoice.objects.create(
-            customer=customer,
-            delivery_method=delivery_method,
-            **validated_data
-        )
-
-        for item_data in items_data:
-            if item_data is None:
-                continue
-            product = item_data.pop('product')
-            variant = item_data.pop('variant', None)
-            quantity = Decimal(str(item_data['quantity']))
-            unit_price = Decimal(str(item_data['unit_price']))
-            discount_percentage = Decimal(str(item_data.get('discount_percentage', '0.0')))
-            total_price = (quantity * unit_price) * (1 - discount_percentage / Decimal('100'))
-
-            # Reduce stock if variant exists
-            if variant:
-                if variant.stock_quantity < quantity:
-                    raise serializers.ValidationError(
-                        f"Insufficient stock for variant {variant}. "
-                        f"Requested: {quantity}, Available: {variant.stock_quantity}"
-                    )
-                variant.stock_quantity -= int(quantity)
-                variant.save()
-
-                # Create a StockMovement entry for the stock reduction
-                StockMovement.objects.create(
-                    product=product,
-                    product_variant=variant,
-                    movement_type='OUT',
-                    quantity=int(quantity),
-                    invoice_item=None,  # Will be set after creating the InvoiceItem
-                    warehouse=None,
-                    shelf=None,
-                )
-
-            invoice_item = InvoiceItem.objects.create(
-                invoice=invoice,
-                product=product,
-                variant=variant,
-                total_price=total_price,
-                **item_data
+        with transaction.atomic():
+            invoice = Invoice.objects.create(
+                customer=customer,
+                delivery_method=delivery_method,
+                **validated_data
             )
 
-            # Update the StockMovement with the invoice_item reference
-            if variant:
-                StockMovement.objects.filter(
+            for item_data in items_data:
+                if item_data is None:
+                    continue
+                product = item_data.pop('product')
+                variant = item_data.pop('variant', None)
+                InvoiceItem.objects.create(
+                    invoice=invoice,
                     product=product,
-                    product_variant=variant,
-                    movement_type='OUT',
-                    invoice_item__isnull=True
-                ).update(invoice_item=invoice_item)
+                    variant=variant,
+                    **item_data
+                )
 
-        # Calculate totals
-        invoice.subtotal = sum(item.total_price for item in invoice.items.all())
-        invoice.tax = invoice.subtotal * Decimal('0.1') if not invoice.deduct_tax else Decimal('0.0')
-        invoice.total = invoice.subtotal + invoice.tax + invoice.shipping_cost - invoice.overall_discount
-        invoice.total_in_riel = invoice.total * Decimal('4100')  # Example exchange rate
-        invoice.save()
-
-        return invoice
+            # Totals are calculated automatically in the Invoice model's save method
+            invoice.save()
+            return invoice
 
     def update(self, instance, validated_data):
         logger.info(f"Updating invoice {instance.id} with validated_data: {validated_data}")
