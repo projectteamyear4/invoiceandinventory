@@ -85,26 +85,28 @@ const EditCustomer = () => {
       </motion.h2>
 
       <form onSubmit={handleSubmit} className="edit-customer-form">
-        <div className="form-group">
-          <label>ឈ្មោះ:</label>
-          <input
-            type="text"
-            name="first_name"
-            value={customer.first_name}
-            onChange={handleChange}
-            required
-          />
-        </div>
+        <div className="form-row">
+          <div className="form-group half">
+            <label>ឈ្មោះ:</label>
+            <input
+              type="text"
+              name="first_name"
+              value={customer.first_name}
+              onChange={handleChange}
+              required
+            />
+          </div>
 
-        <div className="form-group">
-          <label>នាមត្រកូល:</label>
-          <input
-            type="text"
-            name="last_name"
-            value={customer.last_name}
-            onChange={handleChange}
-            required
-          />
+          <div className="form-group half">
+            <label>នាមត្រកូល:</label>
+            <input
+              type="text"
+              name="last_name"
+              value={customer.last_name}
+              onChange={handleChange}
+              required
+            />
+          </div>
         </div>
 
         <div className="form-group">
@@ -118,24 +120,26 @@ const EditCustomer = () => {
           />
         </div>
 
-        <div className="form-group">
-          <label>លេខទូរស័ព្ទ:</label>
-          <input
-            type="tel"
-            name="phone_number"
-            value={customer.phone_number}
-            onChange={handleChange}
-          />
-        </div>
+        <div className="form-row">
+          <div className="form-group half">
+            <label>លេខទូរស័ព្ទ:</label>
+            <input
+              type="tel"
+              name="phone_number"
+              value={customer.phone_number}
+              onChange={handleChange}
+            />
+          </div>
 
-        <div className="form-group">
-          <label>លេខទូរស័ព្ទ ២:</label>
-          <input
-            type="tel"
-            name="phone_number2"
-            value={customer.phone_number2}
-            onChange={handleChange}
-          />
+          <div className="form-group half">
+            <label>លេខទូរស័ព្ទ ២:</label>
+            <input
+              type="tel"
+              name="phone_number2"
+              value={customer.phone_number2}
+              onChange={handleChange}
+            />
+          </div>
         </div>
 
         <div className="form-group">

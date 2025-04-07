@@ -120,7 +120,8 @@ const AddProductVariant = () => {
           placeholder="បរិមាណស្តុក"
           value={formData.stock}
           onChange={handleChange}
-          required
+          min="0"
+          readOnly
           className="product-input"
         />
         <input

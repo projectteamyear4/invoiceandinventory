@@ -1,4 +1,3 @@
-// src/components/InvoiceDetail/InvoiceDetail.jsx
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
 import React from "react";
@@ -8,8 +7,10 @@ import "./InvoiceDetail.css";
 const InvoiceDetail = () => {
   const { state } = useLocation();
   const invoice = state?.invoice;
+  console.log('Invoice data:', invoice); // Log the entire invoice
+  console.log('Delivery method:', invoice?.delivery_method); // Log the delivery method
 
-  // Formatting utilities (same as before)
+  // Formatting utilities
   const formatCurrency = (value) => {
     const num = parseFloat(value);
     return isNaN(num) ? "0.00" : num.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -95,7 +96,7 @@ const InvoiceDetail = () => {
         heightLeft -= pageHeight;
       }
 
-      pdf.save(`invoice_${invoice.invoice_id || 'unknown'}.pdf`);
+      pdf.save(`invoice_${invoice.id || 'unknown'}.pdf`);
     });
   };
 
@@ -109,7 +110,7 @@ const InvoiceDetail = () => {
       allowTaint: true
     }).then(canvas => {
       const link = document.createElement('a');
-      link.download = `invoice_${invoice.invoice_id || 'unknown'}.jpg`;
+      link.download = `invoice_${invoice.id || 'unknown'}.jpg`;
       link.href = canvas.toDataURL('image/jpeg', 1.0);
       link.click();
     });
@@ -151,7 +152,7 @@ const InvoiceDetail = () => {
               </div>
             </div>
             <div className="invoice-header-right">
-              <p className="invoice-number">លេខ #{invoice.invoice_id || "មិនមាន"}</p>
+              <p className="invoice-number">លេខ #{invoice.id || "មិនមាន"}</p>
               <div className="invoice-status">
                 {getStatusBadge(invoice.status)}
               </div>
@@ -194,13 +195,29 @@ const InvoiceDetail = () => {
             </div>
 
             {/* Right Column - Delivery Info (Conditional) */}
-            {invoice.delivery_method && (
+            {invoice.delivery_method ? (
               <div className="invoice-section delivery-section">
                 <h3>ព័ត៌មានដឹកជញ្ជូន</h3>
                 <div className="delivery-info">
-                  <p><span>វិធីសារ:</span> {invoice.delivery_method.delivery_name || "មិនមាន"}</p>
-                  <p><span>យានយន្ត:</span> {invoice.delivery_method.car_number || "មិនមាន"}</p>
-                  <p><span>លេខតាមដាន:</span> {invoice.delivery_method.delivery_number || "មិនមាន"}</p>
+                  <p>
+                    <span>ឈ្មោះនាក់ដឹក:</span>{" "}
+                    {invoice.delivery_method.delivery_name ? invoice.delivery_method.delivery_name : "មិនមាន (Delivery Method ID: " + (invoice.delivery_method.delivery_method_id || "N/A") + ")"}
+                  </p>
+                  <p>
+                    <span>លេខរថយន្ត:</span>{" "}
+                    {invoice.delivery_method.car_number ? invoice.delivery_method.car_number : "មិនមាន (Delivery Method ID: " + (invoice.delivery_method.delivery_method_id || "N/A") + ")"}
+                  </p>
+                  <p>
+                    <span>វិធីសារ:</span>{" "}
+                    {invoice.delivery_method.car_number ? invoice.delivery_method.car_number : "មិនមាន (Delivery Method ID: " + (invoice.delivery_method.delivery_method_id || "N/A") + ")"}
+                  </p>
+                </div>
+              </div>
+            ) : (
+              <div className="invoice-section delivery-section">
+                <h3>ព័ត៌មានដឹកជញ្ជូន</h3>
+                <div className="delivery-info">
+                  <p><span>វិធីសារ:</span> គ្មានការដឹកជញ្ជូនត្រូវបានជ្រើសរើស</p>
                 </div>
               </div>
             )}
@@ -226,13 +243,17 @@ const InvoiceDetail = () => {
                   {items.length > 0 ? (
                     items.map((item, index) => (
                       <tr key={item.id || `item-${index}`}>
-                        <td>{item.product_name || "ផលិតផលគ្មានឈ្មោះ"}</td>
-                        <td>{item.variant_size || "-"}</td>
-                        <td>{item.variant_color || "-"}</td>
+                        <td>{item.product?.name || "ផលិតផលគ្មានឈ្មោះ"}</td>
+                        <td>{item.variant?.size || "-"}</td>
+                        <td>{item.variant?.color || "-"}</td>
                         <td className="text-right">{item.quantity}</td>
                         <td className="text-right">${formatCurrency(item.unit_price)}</td>
                         <td className="text-right">{formatPercentage(item.discount_percentage)}%</td>
-                        <td className="text-right">${formatCurrency(item.total_price)}</td>
+                        <td className="text-right">
+                          ${formatCurrency(
+                            item.quantity * (item.unit_price * (1 - item.discount_percentage / 100))
+                          )}
+                        </td>
                       </tr>
                     ))
                   ) : (
@@ -262,7 +283,7 @@ const InvoiceDetail = () => {
               </div>
               {invoice.tax > 0 && (
                 <div className="summary-row">
-                  <span>ពន្ធ ({invoice.tax_rate || 0}%):</span>
+                  <span>ពន្ធ ({invoice.subtotal ? (invoice.tax / invoice.subtotal * 100).toFixed(2) : 0}%):</span>
                   <span>${formatCurrency(invoice.tax)}</span>
                 </div>
               )}
@@ -294,7 +315,6 @@ const InvoiceDetail = () => {
           {/* Footer */}
           <div className="invoice-footer">
             <p>សូមអរគុណសម្រាប់ការប្រើប្រាស់សេវាកម្មរបស់យើង!</p>
-            {invoice.payment_terms && <p className="footer-note">លក្ខខណ្ឌនៃការបង់ប្រាក់: {invoice.payment_terms}</p>}
             {invoice.due_date && <p className="footer-note">សូមបង់ប្រាក់មុនថ្ងៃ {formatDate(invoice.due_date)}។</p>}
           </div>
         </div>

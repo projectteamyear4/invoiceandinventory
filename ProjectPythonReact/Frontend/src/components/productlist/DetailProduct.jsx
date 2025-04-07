@@ -1,4 +1,3 @@
-// src/components/DetailProduct.jsx
 import axios from 'axios';
 import { motion } from 'framer-motion';
 import React, { useEffect, useState } from 'react';
@@ -10,9 +9,11 @@ const DetailProduct = () => {
   const [groupedVariants, setGroupedVariants] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [sortOrder, setSortOrder] = useState('asc'); // For sorting by stock
   const { productId } = useParams();
   const navigate = useNavigate();
 
+  // Axios instance for API requests
   const api = axios.create({
     baseURL: 'http://localhost:8000',
     timeout: 5000,
@@ -22,6 +23,7 @@ const DetailProduct = () => {
     },
   });
 
+  // Fetch product details and variants
   useEffect(() => {
     const fetchProductDetails = async () => {
       try {
@@ -59,7 +61,7 @@ const DetailProduct = () => {
 
           if (existingGroup) {
             existingGroup.variants.push(variant);
-            existingGroup.stock_quantity += variant.stock_quantity || 0;
+            existingGroup.stock += variant.stock || 0; // Use stock
             const latestVariant = existingGroup.variants.sort((a, b) => b.id - a.id)[0];
             existingGroup.purchase_price = latestVariant.purchase_price || 0.00;
             existingGroup.selling_price = latestVariant.selling_price || '-';
@@ -69,7 +71,7 @@ const DetailProduct = () => {
               product_name: variant.product_name,
               size: variant.size || '-',
               color: variant.color || '-',
-              stock_quantity: variant.stock_quantity || 0,
+              stock: variant.stock || 0, // Use stock
               purchase_price: variant.purchase_price || 0.00,
               selling_price: variant.selling_price || '-',
               variants: [variant],
@@ -90,33 +92,30 @@ const DetailProduct = () => {
     fetchProductDetails();
   }, [productId]);
 
+  // Navigate back to the products list
   const handleBackToProducts = () => {
     navigate('/products');
   };
 
-  const handleEditVariantGroup = (group) => {
-    const firstVariantId = group.variants[0].id;
-    navigate(`/edit-variant/${firstVariantId}`);
+
+
+
+  // Sort variants by stock
+  const handleSortByStock = () => {
+    const newOrder = sortOrder === 'asc' ? 'desc' : 'asc';
+    setSortOrder(newOrder);
+    setGroupedVariants((prev) =>
+      [...prev].sort((a, b) =>
+        newOrder === 'asc'
+          ? a.stock - b.stock
+          : b.stock - a.stock
+      )
+    );
   };
 
-  const handleDeleteVariantGroup = async (group) => {
-    if (window.confirm(`តើអ្នកប្រាកដទេថាចង់លុបវ៉ារីយ៉ង់ទាំងអស់សម្រាប់ផលិតផល ${group.product_name} ដែលមានទំហំ ${group.size} និងពណ៌ ${group.color}?`)) {
-      try {
-        await Promise.all(
-          group.variants.map((variant) =>
-            api.delete(`/api/variants/${variant.id}/`)
-          )
-        );
-        setGroupedVariants((prev) =>
-          prev.filter((g) => g.key !== group.key)
-        );
-      } catch (error) {
-        console.error('កំហុសក្នុងការលុបវ៉ារីយ៉ង់៖', error);
-        setError('មិនអាចលុបវ៉ារីយ៉ង់បានទេ។');
-      }
-    }
-  };
 
+
+  // Loading state
   if (loading) {
     return (
       <motion.div
@@ -130,6 +129,7 @@ const DetailProduct = () => {
     );
   }
 
+  // Error state
   if (error) {
     return (
       <motion.div
@@ -152,6 +152,7 @@ const DetailProduct = () => {
     );
   }
 
+  // Main render
   return (
     <motion.div
       className="detail-product-container"
@@ -182,7 +183,10 @@ const DetailProduct = () => {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3, delay: 0.3 }}
       >
-        <h3>វ៉ារីយ៉ង់នៃផលិតផល</h3>
+        {/* Display total stock summary */}
+        <h3>
+          វ៉ារីយ៉ង់នៃផលិតផល (ស្តុកសរុប: {groupedVariants.reduce((sum, group) => sum + group.stock, 0)})
+        </h3>
         {groupedVariants && groupedVariants.length > 0 ? (
           <table className="variants-table">
             <thead>
@@ -191,10 +195,12 @@ const DetailProduct = () => {
                 <th>ឈ្មោះផលិតផល</th>
                 <th>ទំហំ</th>
                 <th>ពណ៌</th>
-                <th>បរិមាណស្តុក</th>
+                <th onClick={handleSortByStock} style={{ cursor: 'pointer' }}>
+                  បរិមាណស្តុក {sortOrder === 'asc' ? '↑' : '↓'}
+                </th>
                 <th>តម្លៃទិញ (ចុងក្រោយ)</th>
                 <th>តម្លៃលក់</th>
-                <th>សកម្មភាព</th>
+               
               </tr>
             </thead>
             <tbody>
@@ -209,25 +215,14 @@ const DetailProduct = () => {
                   <td>{group.product_name}</td>
                   <td>{group.size}</td>
                   <td>{group.color}</td>
-                  <td>{group.stock_quantity}</td>
+                  <td className={group.stock < 5 ? 'low-stock' : ''}>
+                    {group.stock}
+                    {group.stock < 5 && <span className="low-stock-warning"> (ស្តុកទាប)</span>}
+                    
+                  </td>
                   <td>{group.purchase_price}</td>
                   <td>{group.selling_price}</td>
-                  <td>
-                    <div className="action-buttons">
-                      <button
-                        className="variant-edit-button"
-                        onClick={() => handleEditVariantGroup(group)}
-                      >
-                        កែ
-                      </button>
-                      <button
-                        className="variant-delete-button"
-                        onClick={() => handleDeleteVariantGroup(group)}
-                      >
-                        លុប
-                      </button>
-                    </div>
-                  </td>
+                
                 </motion.tr>
               ))}
             </tbody>

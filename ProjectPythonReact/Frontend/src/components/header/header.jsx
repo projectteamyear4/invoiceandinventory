@@ -31,7 +31,7 @@ const Header = () => {
         // បើ User បាន Login
         <div className="profile">
           <img
-            src="https://via.placeholder.com/40" // URL រូបភាព Profile (អាចប្តូរបាន)
+            src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQJoBkWxNNHvLpW4knNYlRPtXfn9pRdijE0ow&s" // URL រូបភាព Profile (អាចប្តូរបាន)
             alt="ប្រវត្តិរូប" // <--- Translated "Profile"
             className="profile-image"
           />

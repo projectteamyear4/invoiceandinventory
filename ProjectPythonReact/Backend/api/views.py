@@ -413,20 +413,18 @@ def delivery_method_detail(request, pk):
 
 # Invoice Views (New)
 @api_view(['GET', 'POST'])
-@permission_classes([IsAuthenticated])
 def invoice_list_create(request):
     if request.method == 'GET':
         invoices = Invoice.objects.all()
         serializer = InvoiceSerializer(invoices, many=True)
-        logger.info(f"User {request.user.username} retrieved list of invoices")
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.data)
+
     elif request.method == 'POST':
-        serializer = InvoiceSerializer(data=request.data)
+        serializer = InvoiceSerializer(data=request.data, context={'request': request})
         if serializer.is_valid():
             serializer.save()
-            logger.info(f"User {request.user.username} created invoice {serializer.data.get('id')}")
             return Response(serializer.data, status=status.HTTP_201_CREATED)
-        logger.error(f"User {request.user.username} failed to create invoice: {serializer.errors}")
+        logger.error(f"Invoice creation failed: {serializer.errors}")
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 # InvoiceItem Views (New)

@@ -103,10 +103,6 @@ const Customers = () => {
     }));
   };
 
-  const handleRowsPerPageChange = (e) => {
-    setRowsPerPage(Number(e.target.value));
-  };
-
   const columns = useMemo(
     () => [
       {
@@ -363,14 +359,7 @@ const Customers = () => {
             )}
           </div>
         </div>
-        <div className="per-page-selector">
-          <label>បង្ហាញក្នុងមួយទំព័រ: </label>
-          <select value={rowsPerPage} onChange={handleRowsPerPageChange}>
-            <option value={10}>10</option>
-            <option value={20}>20</option>
-            <option value={50}>50</option>
-          </select>
-        </div>
+      
       </motion.div>
 
       <DataTable

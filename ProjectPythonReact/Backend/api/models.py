@@ -2,6 +2,8 @@ from django.db import models
 import uuid
 from model_utils import FieldTracker
 import random
+import logging
+logger = logging.getLogger(__name__)  # This gets a logger named after the module
 from django.utils import timezone
 from django.db import transaction
 from django.db.models import Sum, Q
@@ -117,8 +119,45 @@ class DeliveryMethod(models.Model):
 
     class Meta:
         db_table = 'delivery_methods'
+# api/models.py (ProductVariant model only)
+class ProductVariant(models.Model):
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='variants')
+    size = models.CharField(max_length=20, blank=True, null=True)
+    color = models.CharField(max_length=30, blank=True, null=True)
+    stock_quantity = models.IntegerField(default=0,null=True, blank=True)
+    purchase_price = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
+    selling_price = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
 
+    def __str__(self):
+        return f"{self.product.name} - {self.size or 'No Size'} - {self.color or 'No Color'}"
+
+    def save(self, *args, **kwargs):
+        print(f"Saving ProductVariant {self.id}, stock_quantity={self.stock_quantity}")  # Debug
+        super().save(*args, **kwargs)
+        print(f"Saved ProductVariant {self.id}, stock_quantity={self.stock_quantity}")  # Debug
 # Invoice Model
+# Models
+class InvoiceItem(models.Model):
+    invoice = models.ForeignKey('Invoice', on_delete=models.CASCADE, related_name='items')
+    product = models.ForeignKey('Product', on_delete=models.CASCADE)
+    variant = models.ForeignKey('ProductVariant', on_delete=models.SET_NULL, null=True, blank=True)
+    quantity = models.PositiveIntegerField()
+    unit_price = models.DecimalField(max_digits=10, decimal_places=2)
+    discount_percentage = models.DecimalField(max_digits=5, decimal_places=2, default=0.00)
+    total_price = models.DecimalField(max_digits=12, decimal_places=2)
+
+    def save(self, *args, **kwargs):
+        # Ensure unit_price and discount_percentage are not None
+        unit_price = self.unit_price if self.unit_price is not None else 0
+        discount_percentage = self.discount_percentage if self.discount_percentage is not None else 0
+        # Calculate total_price
+        discount = unit_price * (discount_percentage / 100)
+        self.total_price = (unit_price - discount) * self.quantity
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"Item {self.id} - {self.product.name} - Invoice {self.invoice.id}"
+
 class Invoice(models.Model):
     INVOICE_TYPES = (
         ('invoice', 'Invoice'),
@@ -137,10 +176,10 @@ class Invoice(models.Model):
     )
     type = models.CharField(max_length=20, choices=INVOICE_TYPES, default='invoice')
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, null=True, blank=True)
-    date = models.DateTimeField(default=timezone.now)  # Likely DateTimeField, not DateField
-    due_date = models.DateTimeField()
+    date = models.DateField(default=timezone.now)
+    due_date = models.DateField()
     customer = models.ForeignKey('Customer', on_delete=models.SET_NULL, null=True, related_name='invoices')
-    delivery_method = models.ForeignKey('DeliveryMethod', on_delete=models.SET_NULL, null=True, related_name='invoices')
+    delivery_method = models.ForeignKey('DeliveryMethod', on_delete=models.SET_NULL, null=True, blank=True, related_name='invoices')
     notes = models.TextField(blank=True, null=True)
     payment_method = models.CharField(max_length=20, choices=PAYMENT_METHODS, default='CASH')
     shipping_cost = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
@@ -156,42 +195,10 @@ class Invoice(models.Model):
         return f"Invoice {self.id} - {self.customer}"
 
     def save(self, *args, **kwargs):
-        # Debug to check if save is interfering
-        print(f"Saving invoice {self.id or 'new'} with status {self.status}")
+        # Remove the calculation logic from here
+        # We'll handle calculations in the serializer after creating related items
+        logger.info(f"Saving invoice {self.id or 'new'} with status {self.status}")
         super().save(*args, **kwargs)
-# api/models.py (ProductVariant model only)
-class ProductVariant(models.Model):
-    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='variants')
-    size = models.CharField(max_length=20, blank=True, null=True)
-    color = models.CharField(max_length=30, blank=True, null=True)
-    stock_quantity = models.IntegerField(default=0,null=True, blank=True)
-    purchase_price = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
-    selling_price = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
-
-    def __str__(self):
-        return f"{self.product.name} - {self.size or 'No Size'} - {self.color or 'No Color'}"
-
-    def save(self, *args, **kwargs):
-        print(f"Saving ProductVariant {self.id}, stock_quantity={self.stock_quantity}")  # Debug
-        super().save(*args, **kwargs)
-        print(f"Saved ProductVariant {self.id}, stock_quantity={self.stock_quantity}")  # Debug
-    # InvoiceItem Model
-class InvoiceItem(models.Model):
-    invoice = models.ForeignKey(Invoice, on_delete=models.CASCADE, related_name='items')
-    product = models.ForeignKey(Product, on_delete=models.CASCADE)
-    variant = models.ForeignKey(ProductVariant, on_delete=models.SET_NULL, null=True)
-    quantity = models.PositiveIntegerField()
-    unit_price = models.DecimalField(max_digits=10, decimal_places=2)
-    discount_percentage = models.DecimalField(max_digits=5, decimal_places=2, default=0.00)
-    total_price = models.DecimalField(max_digits=12, decimal_places=2)
-
-    def save(self, *args, **kwargs):
-        discount = self.unit_price * (self.discount_percentage / 100)
-        self.total_price = (self.unit_price - discount) * self.quantity
-        super().save(*args, **kwargs)
-
-    def __str__(self):
-        return f"Item {self.id} - {self.product.name} - Invoice {self.invoice.id}"
 #stock model
 class StockMovement(models.Model):
     MOVEMENT_TYPES = (

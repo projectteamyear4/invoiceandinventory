@@ -80,9 +80,6 @@ const SupplierTable = () => {
     }));
   };
 
-  const handleRowsPerPageChange = (e) => {
-    setRowsPerPage(Number(e.target.value));
-  };
 
   const handleAddSupplier = () => {
     navigate('/add-supplier');
@@ -334,14 +331,7 @@ const SupplierTable = () => {
             )}
           </div>
         </div>
-        <div className="per-page-selector">
-          <label>បង្ហាញក្នុងមួយទំព័រ: </label>
-          <select value={rowsPerPage} onChange={handleRowsPerPageChange}>
-            <option value={10}>10</option>
-            <option value={20}>20</option>
-            <option value={30}>30</option>
-          </select>
-        </div>
+     
       </motion.div>
 
       {/* DataTable */}

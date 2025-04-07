@@ -59,7 +59,7 @@ const AddShelf = () => {
       const response = await api.post('/api/shelves/', formData);
       setMessage('Shelf added successfully!');
       setFormData({ warehouse: '', shelf_name: '', section: '', capacity: '' });
-      setTimeout(() => navigate('/shelves'), 1000);
+      setTimeout(() => navigate('/warehouses'), 1000);
     } catch (error) {
       console.error('Error adding shelf:', error);
       setMessage(error.response?.data?.detail || 'Failed to add shelf.');

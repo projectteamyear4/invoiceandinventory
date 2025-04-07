@@ -35,7 +35,7 @@ const EditSupplier = () => {
         setFormData(response.data);
       } catch (error) {
         console.error('Error fetching supplier:', error);
-        setMessage('Failed to load supplier data.');
+        setMessage('មិនអាចផ្ទុកព័ត៌មានអ្នកផ្គត់ផ្គង់បានទេ។');
       }
     };
     fetchSupplier();
@@ -53,15 +53,15 @@ const EditSupplier = () => {
 
     try {
       const response = await api.patch(`/api/suppliers/${id}/`, formData);
-      setMessage('Supplier updated successfully!');
-      setTimeout(() => navigate('/suppliers'), 1000); // Redirect after 1s
+      setMessage('អ្នកផ្គត់ផ្គង់ត្រូវបានធ្វើបច្ចុប្បន្នភាពដោយជោគជ័យ!');
+      setTimeout(() => navigate('/suppliers'), 1000);
     } catch (error) {
       if (error.response) {
-        setMessage(error.response.data.detail || 'Failed to update supplier.');
+        setMessage(error.response.data.detail || 'បរាជ័យក្នុងការធ្វើបច្ចុប្បន្នភាពអ្នកផ្គត់ផ្គង់។');
       } else if (error.request) {
-        setMessage('Unable to connect to server.');
+        setMessage('មិនអាចភ្ជាប់ទៅម៉ាស៊ីនមេបានទេ។');
       } else {
-        setMessage('Error: ' + error.message);
+        setMessage('បញ្ហា៖ ' + error.message);
       }
     } finally {
       setIsLoading(false);
@@ -70,12 +70,12 @@ const EditSupplier = () => {
 
   return (
     <div className="supplier-form-container">
-      <h2>Edit Supplier</h2>
+      <h2>កែប្រែព័ត៌មានអ្នកផ្គត់ផ្គង់</h2>
       <form onSubmit={handleSubmit} className="supplier-form">
         <input
           type="text"
           name="name"
-          placeholder="Supplier Name"
+          placeholder="ឈ្មោះអ្នកផ្គត់ផ្គង់"
           value={formData.name}
           onChange={handleChange}
           required
@@ -85,7 +85,7 @@ const EditSupplier = () => {
         <input
           type="text"
           name="contact_person"
-          placeholder="Contact Person (optional)"
+          placeholder="អ្នកទំនាក់ទំនង (ស្រេចចិត្ត)"
           value={formData.contact_person || ''}
           onChange={handleChange}
           disabled={isLoading}
@@ -94,7 +94,7 @@ const EditSupplier = () => {
         <input
           type="text"
           name="phone"
-          placeholder="Phone"
+          placeholder="លេខទូរស័ព្ទ"
           value={formData.phone}
           onChange={handleChange}
           required
@@ -104,7 +104,7 @@ const EditSupplier = () => {
         <input
           type="email"
           name="email"
-          placeholder="Email (optional)"
+          placeholder="អ៊ីមែល (ស្រេចចិត្ត)"
           value={formData.email || ''}
           onChange={handleChange}
           disabled={isLoading}
@@ -112,7 +112,7 @@ const EditSupplier = () => {
         />
         <textarea
           name="address"
-          placeholder="Address"
+          placeholder="អាសយដ្ឋាន"
           value={formData.address}
           onChange={handleChange}
           required
@@ -122,7 +122,7 @@ const EditSupplier = () => {
         <input
           type="text"
           name="country"
-          placeholder="Country"
+          placeholder="ប្រទេស"
           value={formData.country}
           onChange={handleChange}
           required
@@ -130,13 +130,13 @@ const EditSupplier = () => {
           className="supplier-input"
         />
         <button type="submit" disabled={isLoading} className="supplier-button">
-          {isLoading ? 'Updating...' : 'Update Supplier'}
+          {isLoading ? 'កំពុងធ្វើបច្ចុប្បន្នភាព...' : 'ធ្វើបច្ចុប្បន្នភាពអ្នកផ្គត់ផ្គង់'}
         </button>
       </form>
       {message && (
         <p
           className={`supplier-message ${
-            message.includes('successfully') ? 'success' : 'error'
+            message.includes('ជោគជ័យ') ? 'success' : 'error'
           }`}
         >
           {message}

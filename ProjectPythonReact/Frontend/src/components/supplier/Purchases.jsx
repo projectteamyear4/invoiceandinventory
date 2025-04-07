@@ -1,11 +1,10 @@
-// src/components/Purchases.jsx
 import axios from 'axios';
-import { motion } from 'framer-motion'; // Import framer-motion
+import { motion } from 'framer-motion';
 import html2canvas from 'html2canvas';
 import React, { useContext, useEffect, useRef, useState } from 'react';
 import { CSVLink } from 'react-csv';
 import { useNavigate } from 'react-router-dom';
-import * as XLSX from 'xlsx'; // Import xlsx for Excel export
+import * as XLSX from 'xlsx';
 import { AuthContext } from '../AuthContext';
 import './Purchases.css';
 
@@ -16,11 +15,11 @@ const Purchases = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
   const [currentPage, setCurrentPage] = useState(1);
-  const [exportFormat, setExportFormat] = useState(''); // State for selected export format
-  const purchasesPerPage = 7; // ៧ ទំនិញក្នុងមួយទំព័រ
+  const [purchasesPerPage, setPurchasesPerPage] = useState(7); // Now a state variable
+  const [exportFormat, setExportFormat] = useState('');
   const { user } = useContext(AuthContext);
   const navigate = useNavigate();
-  const tableRef = useRef(null); // Reference to the table for capturing as image
+  const tableRef = useRef(null);
 
   const api = axios.create({
     baseURL: 'http://localhost:8000',
@@ -90,7 +89,6 @@ const Purchases = () => {
     const worksheet = XLSX.utils.json_to_sheet(exportData);
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, 'Purchases');
-    // Set column headers
     XLSX.utils.sheet_add_aoa(worksheet, [exportHeaders.map((header) => header.label)], { origin: 'A1' });
     XLSX.writeFile(workbook, 'purchases.xlsx');
   };
@@ -169,11 +167,30 @@ const Purchases = () => {
     setFilteredPurchases(sorted);
   };
 
-  // Pagination
+  // Pagination logic
   const indexOfLastPurchase = currentPage * purchasesPerPage;
   const indexOfFirstPurchase = indexOfLastPurchase - purchasesPerPage;
   const currentPurchases = filteredPurchases.slice(indexOfFirstPurchase, indexOfLastPurchase);
   const totalPages = Math.ceil(filteredPurchases.length / purchasesPerPage);
+
+  // Calculate the range of page numbers to display
+  const maxPageButtons = 5;
+  const halfRange = Math.floor(maxPageButtons / 2);
+  let startPage = Math.max(1, currentPage - halfRange);
+  let endPage = Math.min(totalPages, startPage + maxPageButtons - 1);
+
+  if (endPage - startPage + 1 < maxPageButtons) {
+    startPage = Math.max(1, endPage - maxPageButtons + 1);
+  }
+
+  const pageNumbers = Array.from(
+    { length: endPage - startPage + 1 },
+    (_, index) => startPage + index
+  );
+
+  // Calculate the range for "Showing X-Y of Z"
+  const showingStart = indexOfFirstPurchase + 1;
+  const showingEnd = Math.min(indexOfLastPurchase, filteredPurchases.length);
 
   const handlePageChange = (pageNumber) => {
     setCurrentPage(pageNumber);
@@ -201,7 +218,6 @@ const Purchases = () => {
         <div className="header-content">
           <h2>ការទិញទំនិញ</h2>
           <div className="product-search-wrapper">
-          
             <input
               type="text"
               placeholder="ស្វែងរកតាមផលិតផល ឬ លេខបាច់..."
@@ -228,7 +244,6 @@ const Purchases = () => {
           >
             ស្តុកផលិតផល
           </motion.button>
-          {/* Export Format Selector */}
           <select
             value={exportFormat}
             onChange={(e) => setExportFormat(e.target.value)}
@@ -248,7 +263,6 @@ const Purchases = () => {
           >
             ទាញយក
           </motion.button>
-          {/* Hidden CSVLink for triggering CSV download */}
           <CSVLink
             data={exportData}
             headers={exportHeaders}
@@ -349,44 +363,93 @@ const Purchases = () => {
       </table>
 
       {/* Pagination */}
-      {totalPages > 1 && (
-        <motion.div
-          className="pagination"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.3, delay: 0.5 }}
-        >
-          <motion.button
-            onClick={() => handlePageChange(currentPage - 1)}
-            disabled={currentPage === 1}
-            className="pagination-button"
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
+      <div className="pagination-container">
+        {/* Page Size Selector */}
+        <div className="page-size-selector">
+          <label>បង្ហាញក្នុងមួយទំព័រ: </label>
+          <select
+            value={purchasesPerPage}
+            onChange={(e) => {
+              setPurchasesPerPage(Number(e.target.value));
+              setCurrentPage(1);
+            }}
           >
-            ថយក្រោយ
-          </motion.button>
-          {Array.from({ length: totalPages }, (_, index) => index + 1).map((page) => (
+            <option value={5}>5</option>
+            <option value={7}>7</option>
+            <option value={10}>10</option>
+            <option value={20}>20</option>
+          </select>
+        </div>
+
+        {/* Showing Range Information */}
+        <div className="showing-range">
+          បង្ហាញ {showingStart}-{showingEnd} នៃ {filteredPurchases.length} ការទិញ
+        </div>
+
+        {/* Pagination Controls */}
+        {totalPages > 1 && (
+          <motion.div
+            className="pagination"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.3, delay: 0.5 }}
+          >
             <motion.button
-              key={page}
-              onClick={() => handlePageChange(page)}
-              className={`pagination-button ${currentPage === page ? 'active' : ''}`}
+              onClick={() => handlePageChange(1)}
+              disabled={currentPage === 1}
+              className="pagination-button"
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
             >
-              {page}
+              ដំបូង
             </motion.button>
-          ))}
-          <motion.button
-            onClick={() => handlePageChange(currentPage + 1)}
-            disabled={currentPage === totalPages}
-            className="pagination-button"
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-          >
-            ទៅមុខ
-          </motion.button>
-        </motion.div>
-      )}
+            <motion.button
+              onClick={() => handlePageChange(currentPage - 1)}
+              disabled={currentPage === 1}
+              className="pagination-button"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              ថយក្រោយ
+            </motion.button>
+            {startPage > 1 && (
+              <span className="pagination-ellipsis">...</span>
+            )}
+            {pageNumbers.map((page) => (
+              <motion.button
+                key={page}
+                onClick={() => handlePageChange(page)}
+                className={`pagination-button ${currentPage === page ? 'active' : ''}`}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                {page}
+              </motion.button>
+            ))}
+            {endPage < totalPages && (
+              <span className="pagination-ellipsis">...</span>
+            )}
+            <motion.button
+              onClick={() => handlePageChange(currentPage + 1)}
+              disabled={currentPage === totalPages}
+              className="pagination-button"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              ទៅមុខ
+            </motion.button>
+            <motion.button
+              onClick={() => handlePageChange(totalPages)}
+              disabled={currentPage === totalPages}
+              className="pagination-button"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              ចុងក្រោយ
+            </motion.button>
+          </motion.div>
+        )}
+      </div>
     </motion.div>
   );
 };

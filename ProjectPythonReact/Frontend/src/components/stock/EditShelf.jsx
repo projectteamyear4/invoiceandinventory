@@ -43,7 +43,7 @@ const EditShelf = () => {
         setWarehouses(warehouseResponse.data);
       } catch (error) {
         console.error('Error fetching data:', error);
-        setMessage('Failed to load shelf or warehouses.');
+        setMessage('បរាជ័យក្នុងការផ្ទុកទិន្នន័យពីទិន្នន័យធ្វើឱ្យទាន់សម័យ។');
       }
     };
     fetchData();
@@ -61,18 +61,18 @@ const EditShelf = () => {
 
     const selectedWarehouse = warehouses.find((w) => w.id === parseInt(formData.warehouse));
     if (selectedWarehouse && parseFloat(formData.capacity) > selectedWarehouse.capacity) {
-      setMessage(`Shelf capacity (${formData.capacity}) cannot exceed warehouse capacity (${selectedWarehouse.capacity}).`);
+      setMessage(`សមត្ថភាពធ្នើ (${formData.capacity}) មិនអាចលើសសមត្ថភាពឃ្លាំង (${selectedWarehouse.capacity}) បានទេ។`);
       setIsLoading(false);
       return;
     }
 
     try {
       const response = await api.put(`/api/shelves/${id}/`, formData);
-      setMessage('Shelf updated successfully!');
-      setTimeout(() => navigate('/shelves'), 1000);
+      setMessage('ធ្នើត្រូវបានធ្វើបច្ចុប្បន្នភាពដោយជោគជ័យ!');
+      setTimeout(() => navigate('/warehouses'), 1000);
     } catch (error) {
       console.error('Error updating shelf:', error);
-      setMessage(error.response?.data?.detail || 'Failed to update shelf.');
+      setMessage(error.response?.data?.detail || 'បរាជ័យក្នុងការធ្វើបច្ចុប្បន្នភាពធ្នើ។');
     } finally {
       setIsLoading(false);
     }
@@ -80,7 +80,7 @@ const EditShelf = () => {
 
   return (
     <div className="shelf-form-container">
-      <h2>Edit Shelf</h2>
+      <h2>កែប្រែធ្នើ</h2>
       <form onSubmit={handleSubmit} className="shelf-form">
         <select
           name="warehouse"
@@ -90,17 +90,17 @@ const EditShelf = () => {
           disabled={isLoading}
           className="shelf-input"
         >
-          <option value="">Select Warehouse</option>
+          <option value="">ជ្រើសរើសឃ្លាំង</option>
           {warehouses.map((w) => (
             <option key={w.id} value={w.id}>
-              {w.name} (Capacity: {w.capacity})
+              {w.name} (សមត្ថភាព: {w.capacity})
             </option>
           ))}
         </select>
         <input
           type="text"
           name="shelf_name"
-          placeholder="Shelf Name (e.g., A1)"
+          placeholder="ឈ្មោះធ្នើ (ឧ. A1)"
           value={formData.shelf_name}
           onChange={handleChange}
           required
@@ -110,7 +110,7 @@ const EditShelf = () => {
         <input
           type="text"
           name="section"
-          placeholder="Section (e.g., Men's Clothing)"
+          placeholder="ផ្នែក (ឧ. សម្លៀកបំពាក់បុរស)"
           value={formData.section}
           onChange={handleChange}
           disabled={isLoading}
@@ -119,7 +119,7 @@ const EditShelf = () => {
         <input
           type="number"
           name="capacity"
-          placeholder="Capacity (e.g., 1000)"
+          placeholder="សមត្ថភាព (ឧ. 1000)"
           value={formData.capacity}
           onChange={handleChange}
           required
@@ -129,11 +129,11 @@ const EditShelf = () => {
           className="shelf-input"
         />
         <button type="submit" disabled={isLoading} className="shelf-button">
-          {isLoading ? 'Updating...' : 'Update Shelf'}
+          {isLoading ? 'កំពុងធ្វើបច្ចុប្បន្នភាព...' : 'ធ្វើបច្ចុប្បន្នភាពធ្នើ'}
         </button>
       </form>
       {message && (
-        <p className={`shelf-message ${message.includes('successfully') ? 'success' : 'error'}`}>
+        <p className={`shelf-message ${message.includes('ជោគជ័យ') ? 'success' : 'error'}`}>
           {message}
         </p>
       )}

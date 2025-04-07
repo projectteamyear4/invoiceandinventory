@@ -1,4 +1,3 @@
-// src/components/invoice/invoice.jsx
 import axios from "axios";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -241,19 +240,20 @@ const InvoiceForm = () => {
         return;
       }
 
+      const unitPrice = parseFloat(variant.selling_price) || 0;
       const updatedProducts = [...formData.products];
       updatedProducts[selectedProductIndex] = {
-        product_id: productId,
-        variant_id: variantId,
+        product_id: productId.toString(), // Store as string for form input
+        variant_id: variantId ? variantId.toString() : "", // Store as string for form input
         barcode: product.barcode || "",
         name: product.name || "",
         size: variant.size || "",
         color: variant.color || "",
-        unitPrice: parseFloat(variant.selling_price) || 0,
+        unitPrice: unitPrice,
         stock: parseInt(variant.stock, 10) || 0,
         quantity: 1,
         discount: 0,
-        total: parseFloat(variant.selling_price) || 0,
+        total: unitPrice, // Initial total based on unit price
       };
 
       setFormData((prev) => ({ ...prev, products: updatedProducts }));
@@ -340,6 +340,7 @@ const InvoiceForm = () => {
     setIsSubmitting(true);
     setError((prev) => ({ ...prev, submit: null }));
 
+    // Validate customer name
     if (!formData.customerName) {
       setError((prev) => ({
         ...prev,
@@ -349,6 +350,7 @@ const InvoiceForm = () => {
       return;
     }
 
+    // Validate due date and payment method
     if (!formData.dueDate || !formData.paymentMethod) {
       setError((prev) => ({
         ...prev,
@@ -360,6 +362,7 @@ const InvoiceForm = () => {
 
     console.log("Raw formData.products:", JSON.stringify(formData.products, null, 2));
 
+    // Filter valid products
     const validProducts = formData.products.filter((p) => p.product_id && !isNaN(parseInt(p.product_id, 10)));
     if (validProducts.length === 0) {
       setError((prev) => ({
@@ -371,6 +374,7 @@ const InvoiceForm = () => {
     }
 
     try {
+      // Fetch the latest variants to check stock
       const fetchedVariants = await fetchVariants();
       const updatedProducts = formData.products.map((product) => {
         if (product.variant_id) {
@@ -386,6 +390,7 @@ const InvoiceForm = () => {
 
       console.log("Updated products before validation:", JSON.stringify(updatedProducts, null, 2));
 
+      // Check for out-of-stock items
       const outOfStockItems = updatedProducts.filter((p) => p.product_id && p.quantity > p.stock);
       if (outOfStockItems.length > 0) {
         const itemNames = outOfStockItems
@@ -396,6 +401,7 @@ const InvoiceForm = () => {
         return;
       }
 
+      // Create or find customer
       const nameParts = formData.customerName.trim().split(" ");
       const customerData = {
         first_name: nameParts[0] || formData.customerName.trim(),
@@ -428,25 +434,35 @@ const InvoiceForm = () => {
 
       console.log("validProducts:", JSON.stringify(validProducts, null, 2));
 
+      // Construct the items array with proper type conversion and validation
       const items = validProducts.map((p, index) => {
         const productId = parseInt(p.product_id, 10);
         const variantId = p.variant_id ? parseInt(p.variant_id, 10) : null;
         const quantity = parseInt(p.quantity, 10);
-        const unitPrice = parseFloat(p.unitPrice);
-        const discountPercentage = parseFloat(p.discount);
+        const unitPrice = parseFloat(p.unitPrice) || 0; // Default to 0 if NaN
+        const discountPercentage = parseFloat(p.discount) || 0; // Default to 0 if NaN
 
+        // Validate product_id
         if (isNaN(productId)) {
           throw new Error(`Invalid product_id at index ${index}: ${JSON.stringify(p.product_id)}`);
         }
+
+        // Validate variant_id
         if (variantId !== null && isNaN(variantId)) {
           throw new Error(`Invalid variant_id at index ${index}: ${JSON.stringify(p.variant_id)}`);
         }
+
+        // Validate quantity
         if (isNaN(quantity) || quantity <= 0) {
           throw new Error(`Invalid quantity at index ${index}: ${p.quantity}`);
         }
+
+        // Validate unit_price
         if (isNaN(unitPrice) || unitPrice < 0) {
           throw new Error(`Invalid unit_price at index ${index}: ${p.unitPrice}`);
         }
+
+        // Validate discount_percentage
         if (isNaN(discountPercentage) || discountPercentage < 0 || discountPercentage > 100) {
           throw new Error(`Invalid discount_percentage at index ${index}: ${p.discount}`);
         }
@@ -455,13 +471,14 @@ const InvoiceForm = () => {
           product_id: productId,
           variant_id: variantId,
           quantity: quantity,
-          unit_price: unitPrice,
-          discount_percentage: discountPercentage,
+          unit_price: Number(unitPrice.toFixed(2)), // Ensure 2 decimal places
+          discount_percentage: Number(discountPercentage.toFixed(2)), // Ensure 2 decimal places
         };
       });
 
       console.log("Items array:", JSON.stringify(items, null, 2));
 
+      // Construct the invoice data payload
       const invoiceData = {
         type: formData.type,
         status: formData.status,
@@ -479,6 +496,7 @@ const InvoiceForm = () => {
 
       console.log("Submitting invoice data:", JSON.stringify(invoiceData, null, 2));
 
+      // Submit the invoice to the backend
       const response = await api.post("/api/invoices/", invoiceData, {
         headers: {
           "Content-Type": "application/json",
@@ -486,20 +504,23 @@ const InvoiceForm = () => {
       });
       alert("វិក្កយបត្របានបង្កើតដោយជោគជ័យ!");
 
+      // Refresh variants after submission
       await fetchVariants();
 
+      // Navigate to the invoice list page
       navigate("/invoicelist", { state: { invoice: response.data } });
       setFormData(initialFormData);
     } catch (err) {
       console.error("Error creating invoice:", err.response?.data || err.message || err);
       let errorMsg = "មានបញ្ហាក្នុងការបង្កើតវិក្កយបត្រ";
 
+      // Improved error handling to avoid [object Object]
       if (err.response?.data) {
         const backendErrors = err.response.data;
         if (typeof backendErrors === "object") {
           errorMsg = Object.entries(backendErrors)
             .map(([field, errors]) => {
-              const errorText = Array.isArray(errors) ? errors.join(", ") : errors;
+              const errorText = Array.isArray(errors) ? errors.join(", ") : String(errors);
               if (field === "items" && errorText.includes("Insufficient stock")) {
                 const variantIdMatch = errorText.match(/variant (\d+)/);
                 const variantId = variantIdMatch ? variantIdMatch[1] : null;
@@ -510,18 +531,16 @@ const InvoiceForm = () => {
                 }
               }
               if (errorText.includes("Insufficient stock for")) {
-                const productMatch = errorText.match(/variant (.+?)\./);
                 const stockMatch = errorText.match(/Requested: (\d+), Available: (\d+)/);
-                const productName = productMatch ? productMatch[1] : "unknown product";
                 const requested = stockMatch ? stockMatch[1] : "unknown";
                 const currentStock = stockMatch ? stockMatch[2] : "unknown";
-                return `បរិមាណលើសស្តុកសម្រាប់៖ ${productName} - ស្តុកបច្ចុប្បន្ន: ${currentStock}, បរិមាណស្នើសុំ: ${requested}`;
+                return `បរិមាណលើសស្តុកសម្រាប់៖ ${field} - ស្តុកបច្ចុប្បន្ន: ${currentStock}, បរិមាណស្នើសុំ: ${requested}`;
               }
               return `${field}: ${errorText}`;
             })
             .join("; ");
         } else {
-          errorMsg = backendErrors.toString();
+          errorMsg = String(backendErrors);
         }
       } else if (err.message) {
         errorMsg = err.message;

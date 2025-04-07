@@ -238,6 +238,7 @@ class CustomerSerializer(serializers.ModelSerializer):
         return data
 
 # InvoiceItem serializer
+# Serializers
 class InvoiceItemSerializer(serializers.ModelSerializer):
     product_id = serializers.PrimaryKeyRelatedField(
         queryset=Product.objects.all(), source='product', write_only=True
@@ -245,28 +246,74 @@ class InvoiceItemSerializer(serializers.ModelSerializer):
     variant_id = serializers.PrimaryKeyRelatedField(
         queryset=ProductVariant.objects.all(), source='variant', write_only=True, allow_null=True
     )
+    product = ProductSerializer(read_only=True)
+    variant = ProductVariantSerializer(read_only=True, allow_null=True)
 
     class Meta:
         model = InvoiceItem
-        fields = ['id', 'product', 'product_id', 'variant', 'variant_id', 'quantity', 'unit_price', 'discount_percentage', 'total_price']
-        read_only_fields = ['id', 'total_price']
+        fields = [
+            'id', 'product', 'product_id', 'variant', 'variant_id',
+            'quantity', 'unit_price', 'discount_percentage'
+        ]
+        read_only_fields = ['id', 'product', 'variant']
 
     def validate(self, data):
-        logger.info(f"Validating InvoiceItem: {data}")
+        logger.info(f"Validating InvoiceItem data: {data}")
+        # Ensure quantity is a positive integer
         quantity = data.get('quantity')
+        if quantity is None or not isinstance(quantity, int) or quantity <= 0:
+            error_msg = {"quantity": "Quantity must be a positive integer."}
+            logger.error(f"Validation failed: {error_msg}")
+            raise serializers.ValidationError(error_msg)
+
+        # Ensure unit_price is a non-negative number
         unit_price = data.get('unit_price')
-        discount_percentage = data.get('discount_percentage', 0.0)
+        logger.info(f"unit_price type: {type(unit_price)}, value: {unit_price}")
+        try:
+            unit_price_decimal = Decimal(str(unit_price)) if unit_price is not None else None
+            if unit_price_decimal is None or unit_price_decimal < 0:
+                error_msg = {"unit_price": "Unit price must be a non-negative number."}
+                logger.error(f"Validation failed: {error_msg}")
+                raise serializers.ValidationError(error_msg)
+        except (ValueError, TypeError, serializers.DecimalException):
+            error_msg = {"unit_price": "Unit price must be a valid number."}
+            logger.error(f"Validation failed: {error_msg}")
+            raise serializers.ValidationError(error_msg)
 
-        if quantity <= 0:
-            raise serializers.ValidationError("Quantity must be greater than 0.")
-        if unit_price < 0:
-            raise serializers.ValidationError("Unit price cannot be negative.")
-        if discount_percentage < 0 or discount_percentage > 100:
-            raise serializers.ValidationError("Discount percentage must be between 0 and 100.")
+        # Ensure discount_percentage is between 0 and 100
+        discount_percentage = data.get('discount_percentage', 0)
+        logger.info(f"discount_percentage type: {type(discount_percentage)}, value: {discount_percentage}")
+        try:
+            discount_percentage_decimal = Decimal(str(discount_percentage)) if discount_percentage is not None else None
+            if discount_percentage_decimal is None or discount_percentage_decimal < 0 or discount_percentage_decimal > 100:
+                error_msg = {"discount_percentage": "Discount percentage must be between 0 and 100."}
+                logger.error(f"Validation failed: {error_msg}")
+                raise serializers.ValidationError(error_msg)
+        except (ValueError, TypeError, serializers.DecimalException):
+            error_msg = {"discount_percentage": "Discount percentage must be a valid number."}
+            logger.error(f"Validation failed: {error_msg}")
+            raise serializers.ValidationError(error_msg)
 
+        # Validate product and variant
+        product = data.get('product')
+        variant = data.get('variant')
+        if variant:
+            if variant.product != product:
+                error_msg = {"variant_id": "The selected variant does not belong to the specified product."}
+                logger.error(f"Validation failed: {error_msg}")
+                raise serializers.ValidationError(error_msg)
+
+            if variant.stock_quantity < quantity:
+                error_msg = {
+                    "quantity": f"Insufficient stock for variant {variant.id}. "
+                                f"Requested: {quantity}, Available: {variant.stock_quantity}"
+                }
+                logger.error(f"Validation failed: {error_msg}")
+                raise serializers.ValidationError(error_msg)
+
+        logger.info("InvoiceItem validation passed")
         return data
 
-# Invoice serializer
 class InvoiceSerializer(serializers.ModelSerializer):
     customer = CustomerSerializer(read_only=True)
     customer_id = serializers.PrimaryKeyRelatedField(
@@ -277,8 +324,8 @@ class InvoiceSerializer(serializers.ModelSerializer):
         queryset=DeliveryMethod.objects.all(), source='delivery_method', write_only=True, allow_null=True, required=False
     )
     items = InvoiceItemSerializer(many=True)
-    date = serializers.DateTimeField(format='%Y-%m-%d')
-    due_date = serializers.DateTimeField(format='%Y-%m-%d')
+    date = serializers.DateField(format='%Y-%m-%d', input_formats=['%Y-%m-%d'])
+    due_date = serializers.DateField(format='%Y-%m-%d', input_formats=['%Y-%m-%d'])
     subtotal = serializers.SerializerMethodField()
     tax = serializers.SerializerMethodField()
     total = serializers.SerializerMethodField()
@@ -321,47 +368,97 @@ class InvoiceSerializer(serializers.ModelSerializer):
 
         if 'due_date' in data and 'date' in data:
             if data['due_date'] < data['date']:
-                raise serializers.ValidationError({"due_date": "Due date cannot be earlier than the invoice date."})
+                error_msg = {"due_date": "Due date cannot be earlier than the invoice date."}
+                logger.error(f"Validation failed: {error_msg}")
+                raise serializers.ValidationError(error_msg)
         if 'shipping_cost' in data and data['shipping_cost'] < 0:
-            raise serializers.ValidationError({"shipping_cost": "Shipping cost cannot be negative."})
+            error_msg = {"shipping_cost": "Shipping cost cannot be negative."}
+            logger.error(f"Validation failed: {error_msg}")
+            raise serializers.ValidationError(error_msg)
         if 'overall_discount' in data and data['overall_discount'] < 0:
-            raise serializers.ValidationError({"overall_discount": "Overall discount cannot be negative."})
+            error_msg = {"overall_discount": "Overall discount cannot be negative."}
+            logger.error(f"Validation failed: {error_msg}")
+            raise serializers.ValidationError(error_msg)
 
+        logger.info("Invoice validation passed")
         return data
 
     def validate_status(self, value):
         valid_statuses = [choice[0] for choice in Invoice.STATUS_CHOICES]
         logger.info(f"Validating status: {value}, allowed: {valid_statuses}")
         if value not in valid_statuses:
-            raise serializers.ValidationError(f"Invalid status. Must be one of: {valid_statuses}")
+            error_msg = f"Invalid status. Must be one of: {valid_statuses}"
+            logger.error(f"Validation failed: {error_msg}")
+            raise serializers.ValidationError(error_msg)
         return value
 
     def create(self, validated_data):
+        logger.info(f"Creating invoice with validated_data: {validated_data}")
         items_data = validated_data.pop('items', [])
         customer = validated_data.pop('customer')
         delivery_method = validated_data.pop('delivery_method', None)
 
         with transaction.atomic():
+            # Create the Invoice instance without calculating totals yet
             invoice = Invoice.objects.create(
                 customer=customer,
                 delivery_method=delivery_method,
                 **validated_data
             )
 
+            # Create the related InvoiceItem objects
             for item_data in items_data:
                 if item_data is None:
+                    logger.warning("Skipping None item_data in items list")
                     continue
                 product = item_data.pop('product')
                 variant = item_data.pop('variant', None)
-                InvoiceItem.objects.create(
+                logger.info(f"Creating InvoiceItem: product={product.id}, variant={variant.id if variant else None}, data={item_data}")
+
+                # Create the InvoiceItem
+                invoice_item = InvoiceItem.objects.create(
                     invoice=invoice,
                     product=product,
                     variant=variant,
                     **item_data
                 )
 
-            # Totals are calculated automatically in the Invoice model's save method
+                # Update stock if variant exists
+                if variant:
+                    variant.stock_quantity -= invoice_item.quantity
+                    if variant.stock_quantity < 0:
+                        error_msg = {
+                            "quantity": f"Stock update failed for variant {variant.id}. "
+                                        f"Requested: {invoice_item.quantity}, Available: {variant.stock_quantity + invoice_item.quantity}"
+                        }
+                        logger.error(f"Stock update failed: {error_msg}")
+                        raise serializers.ValidationError(error_msg)
+                    variant.save()
+
+            # Now calculate the totals after all items are created
+            # 1. Calculate subtotal from items
+            invoice.subtotal = sum(item.total_price for item in invoice.items.all()) if invoice.items.exists() else Decimal('0.00')
+
+            # 2. Apply overall discount
+            discount_amount = invoice.subtotal * (invoice.overall_discount / Decimal('100'))
+            discounted_subtotal = invoice.subtotal - discount_amount
+
+            # 3. Calculate tax (10% if not deducted)
+            tax_rate = Decimal('0.10')  # 10% tax rate
+            invoice.tax = Decimal('0.00') if invoice.deduct_tax else (discounted_subtotal * tax_rate)
+
+            # 4. Calculate total (subtotal after discount + shipping + tax)
+            invoice.total = discounted_subtotal + invoice.shipping_cost + invoice.tax
+
+            # 5. Calculate total_in_riel (assuming 1 USD = 4100 KHR)
+            exchange_rate = Decimal('4100')
+            invoice.total_in_riel = invoice.total * exchange_rate
+
+            # Save the invoice again with the calculated totals
             invoice.save()
+
+            logger.info(f"Created invoice {invoice.id} with {len(items_data)} items, "
+                        f"subtotal={invoice.subtotal}, tax={invoice.tax}, total={invoice.total}, total_in_riel={invoice.total_in_riel}")
             return invoice
 
     def update(self, instance, validated_data):
