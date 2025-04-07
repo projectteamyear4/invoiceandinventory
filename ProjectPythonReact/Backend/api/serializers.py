@@ -98,39 +98,30 @@ class PurchaseSerializer(serializers.ModelSerializer):
         return purchase
 
 class StockMovementSerializer(serializers.ModelSerializer):
-    product_name = serializers.CharField(source='product.name', read_only=True)
-    variant_info = serializers.CharField(source='product_variant.__str__', read_only=True, allow_null=True)
+    product_name = serializers.SerializerMethodField()
+    variant_info = serializers.SerializerMethodField()
     warehouse_name = serializers.SerializerMethodField()
     shelf_name = serializers.SerializerMethodField()
-    invoice_item_id = serializers.PrimaryKeyRelatedField(source='invoice_item', read_only=True)
 
     class Meta:
         model = StockMovement
         fields = [
             'id', 'product', 'product_name', 'product_variant', 'variant_info',
             'warehouse', 'warehouse_name', 'shelf', 'shelf_name', 'movement_type',
-            'quantity', 'movement_date', 'purchase', 'invoice_item', 'invoice_item_id'
+            'quantity', 'movement_date', 'purchase', 'invoice_item'
         ]
+
+    def get_product_name(self, obj):
+        return obj.product.name if obj.product else None
+
+    def get_variant_info(self, obj):
+        return str(obj.product_variant) if obj.product_variant else None
 
     def get_warehouse_name(self, obj):
         return obj.warehouse.name if obj.warehouse else None
 
     def get_shelf_name(self, obj):
         return obj.shelf.shelf_name if obj.shelf else None
-
-    def validate(self, data):
-        if data.get('movement_type') == 'IN' and data.get('quantity', 0) <= 0:
-            raise serializers.ValidationError({"quantity": "Quantity must be positive for IN movements."})
-        if data.get('movement_type') == 'OUT' and data.get('quantity', 0) <= 0:
-            raise serializers.ValidationError({"quantity": "Quantity must be positive for OUT movements."})
-        if data.get('movement_type') == 'OUT' and 'product_variant' in data and data['product_variant']:
-            available_stock = data['product_variant'].stock_quantity
-            if data['quantity'] > available_stock:
-                raise serializers.ValidationError(
-                    f"Insufficient stock for variant {data['product_variant']}. Available: {available_stock}, Requested: {data['quantity']}"
-                )
-        return data
-
 # Updated ProductVariantSerializer with logging
 class ProductVariantSerializer(serializers.ModelSerializer):
     purchases = PurchaseSerializer(source='purchase_set', many=True, read_only=True)

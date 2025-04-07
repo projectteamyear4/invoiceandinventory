@@ -1,3 +1,4 @@
+# api/views.py
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes
@@ -10,6 +11,7 @@ from .serializers import SupplierSerializer, ProductSerializer, ProductVariantSe
 import logging
 
 logger = logging.getLogger(__name__)
+
 @api_view(['POST'])
 @permission_classes([])  # Allow anyone
 def register(request):
@@ -218,7 +220,8 @@ def warehouse_detail(request, pk):
     elif request.method == 'DELETE':
         warehouse.delete()
         return Response({'detail': 'Warehouse deleted'}, status=status.HTTP_204_NO_CONTENT)
-#shef views
+
+# Shelf Views
 @api_view(['GET', 'POST'])
 @permission_classes([IsAuthenticated])
 def shelf_list_create(request):
@@ -253,7 +256,8 @@ def shelf_detail(request, pk):
     elif request.method == 'DELETE':
         shelf.delete()
         return Response({'detail': 'Shelf deleted'}, status=status.HTTP_204_NO_CONTENT)
-    #purchase views
+
+# Purchase Views
 @api_view(['GET', 'POST'])
 def purchase_list(request):
     if request.method == 'GET':
@@ -295,30 +299,47 @@ def purchase_detail(request, pk):
     elif request.method == 'DELETE':
         purchase.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+# Updated Stock Movement Views
 @api_view(['GET'])
+@permission_classes([IsAuthenticated])
 def stock_movement_list(request):
-    movements = StockMovement.objects.all()
-    serializer = StockMovementSerializer(movements, many=True)
-    return Response(serializer.data)
+    try:
+        movements = StockMovement.objects.all()
+        serializer = StockMovementSerializer(movements, many=True)
+        logger.info(f"User {request.user.username} retrieved list of stock movements")
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    except Exception as e:
+        logger.error(f"User {request.user.username} encountered an error while retrieving stock movements: {str(e)}", exc_info=True)
+        return Response({'detail': f'Error retrieving stock movements: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
 @api_view(['GET', 'PATCH'])
+@permission_classes([IsAuthenticated])
 def stock_movement_detail(request, pk):
     try:
         movement = StockMovement.objects.get(pk=pk)
     except StockMovement.DoesNotExist:
-        return Response({'error': 'Stock movement not found'}, status=status.HTTP_404_NOT_FOUND)
+        logger.error(f"User {request.user.username} attempted to access non-existent stock movement {pk}")
+        return Response({'detail': 'Stock movement not found'}, status=status.HTTP_404_NOT_FOUND)
 
     if request.method == 'GET':
         serializer = StockMovementSerializer(movement)
-        return Response(serializer.data)
-    
+        logger.info(f"User {request.user.username} retrieved stock movement {pk}")
+        return Response(serializer.data, status=status.HTTP_200_OK)
     elif request.method == 'PATCH':
-        serializer = StockMovementSerializer(movement, data=request.data, partial=True)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    # Customer Views (New)
-# Customer Views
+        try:
+            serializer = StockMovementSerializer(movement, data=request.data, partial=True)
+            if serializer.is_valid():
+                serializer.save()
+                logger.info(f"User {request.user.username} updated stock movement {pk}")
+                return Response(serializer.data, status=status.HTTP_200_OK)
+            logger.error(f"User {request.user.username} failed to update stock movement {pk}: {serializer.errors}")
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            logger.error(f"User {request.user.username} encountered an error while updating stock movement {pk}: {str(e)}", exc_info=True)
+            return Response({'detail': f'Error updating stock movement: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+# Customer Views (New)
 @api_view(['GET', 'POST'])
 @permission_classes([IsAuthenticated])
 def customer_list_create(request):
@@ -353,7 +374,8 @@ def customer_detail(request, pk):
     elif request.method == 'DELETE':
         customer.delete()
         return Response({'detail': 'Customer deleted'}, status=status.HTTP_204_NO_CONTENT)
-    # Delivery Method Views (New)
+
+# Delivery Method Views (New)
 @api_view(['GET', 'POST'])
 # @permission_classes([IsAuthenticated])
 def delivery_method_list_create(request):
@@ -388,6 +410,7 @@ def delivery_method_detail(request, pk):
     elif request.method == 'DELETE':
         delivery_method.delete()
         return Response({'detail': 'Delivery method deleted'}, status=status.HTTP_204_NO_CONTENT)
+
 # Invoice Views (New)
 @api_view(['GET', 'POST'])
 @permission_classes([IsAuthenticated])
@@ -405,6 +428,7 @@ def invoice_list_create(request):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         logger.error(f"User {request.user.username} failed to create invoice: {serializer.errors}")
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 # InvoiceItem Views (New)
 @api_view(['GET', 'PUT', 'DELETE'])
 @permission_classes([IsAuthenticated])
@@ -431,6 +455,7 @@ def invoice_item_detail(request, pk):
         invoice_item.delete()
         logger.info(f"User {request.user.username} deleted invoice item {pk}")
         return Response({'detail': 'Invoice item deleted'}, status=status.HTTP_204_NO_CONTENT)
+
 # Invoice Views (New)
 @api_view(['GET', 'POST'])
 @permission_classes([IsAuthenticated])
@@ -458,6 +483,7 @@ def invoice_list(request):
         except Exception as e:
             logger.error(f"User {request.user.username} encountered an error while creating invoice: {str(e)}", exc_info=True)
             return Response({'detail': f'Error creating invoice: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
 @api_view(['GET', 'PATCH', 'DELETE'])
 @permission_classes([IsAuthenticated])
 def invoice_detail(request, pk):
@@ -497,25 +523,8 @@ def invoice_detail(request, pk):
         except Exception as e:
             logger.error(f"Error deleting invoice {pk}: {str(e)}", exc_info=True)
             return Response({'detail': f'Error deleting invoice: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
 # InvoiceViewSet (New)
-# Invoice ViewSet
-# class InvoiceViewSet(viewsets.ModelViewSet):
-#     queryset = Invoice.objects.all()
-#     serializer_class = InvoiceSerializer
-#     permission_classes = [IsAuthenticated]
-
-#     def create(self, request, *args, **kwargs):
-#         try:
-#             return super().create(request, *args, **kwargs)
-#         except ValueError as e:
-#             return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
-
-#     def perform_update(self, serializer):
-#         try:
-#             serializer.save()
-#         except ValueError as e:
-#             raise ValueError(str(e))
-# api/views.py
 class InvoiceViewSet(viewsets.ModelViewSet):
     queryset = Invoice.objects.all()
     serializer_class = InvoiceSerializer
