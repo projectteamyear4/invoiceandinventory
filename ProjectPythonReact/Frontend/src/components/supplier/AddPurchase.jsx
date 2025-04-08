@@ -34,7 +34,7 @@ const AddPurchase = () => {
     timeout: 5000,
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
+      Authorization: `Bearer ${localStorage.getItem('access_token')}`,
     },
   });
 
@@ -153,6 +153,10 @@ const AddPurchase = () => {
       const response = await api.post('/api/purchases/bulk/', purchaseDataList);
       setSuccess('បានបន្ថែមការទិញដោយជោគជ័យ! ស្តុកត្រូវបានធ្វើបច្ចុប្បន្នភាព។');
       setIsSuccess(true);
+
+      // Notify Products.jsx to refresh
+      window.dispatchEvent(new Event('purchaseMade'));
+
       setTimeout(() => navigate('/purchases', { replace: true }), 1500);
     } catch (err) {
       const errorMsg =
@@ -172,9 +176,8 @@ const AddPurchase = () => {
     products.forEach((product) => {
       const matchingVariants = productVariants.filter((v) => v.product === product.id);
       
-      // Only include variants that have both size and color
       matchingVariants.forEach((variant) => {
-        if (variant.size && variant.color) { // Ensure both size and color exist
+        if (variant.size && variant.color) {
           const fullName = `${product.name} ${variant.size} ${variant.color}`.trim();
           if (fullName.toLowerCase().includes(term)) {
             allItems.push({ productId: product.id, variantId: variant.id, name: fullName });
@@ -191,7 +194,7 @@ const AddPurchase = () => {
     if (!product) return '';
     
     const variant = productVariants.find((v) => v.id === parseInt(entry.product_variant));
-    if (!variant || !variant.size || !variant.color) return ''; // Return empty if no variant or missing size/color
+    if (!variant || !variant.size || !variant.color) return '';
     
     return `${product.name} ${variant.size} ${variant.color}`.trim();
   };
@@ -361,10 +364,17 @@ const AddPurchase = () => {
                   ) : (
                     filteredItems().map((item) => {
                       const parts = item.name.split(' ');
-                      const productName = parts[0] + (parts[1] && !['M', 'L', 'S', '39', '40'].includes(parts[1]) ? ' ' + parts[1] : '');
-                      const sizeIndex = parts.findIndex(part => ['M', 'L', 'S', '39', '40'].includes(part));
+                      const productName =
+                        parts[0] +
+                        (parts[1] && !['M', 'L', 'S', '39', '40'].includes(parts[1])
+                          ? ' ' + parts[1]
+                          : '');
+                      const sizeIndex = parts.findIndex((part) =>
+                        ['M', 'L', 'S', '39', '40'].includes(part)
+                      );
                       const size = sizeIndex !== -1 ? parts[sizeIndex] : '';
-                      const color = sizeIndex !== -1 && parts[sizeIndex + 1] ? parts[sizeIndex + 1] : '';
+                      const color =
+                        sizeIndex !== -1 && parts[sizeIndex + 1] ? parts[sizeIndex + 1] : '';
                       return (
                         <tr key={`${item.productId}-${item.variantId || 'no-variant'}`}>
                           <td>{productName}</td>
@@ -385,10 +395,7 @@ const AddPurchase = () => {
                 </tbody>
               </table>
             </div>
-            <button
-              className="close-button"
-              onClick={() => setShowProductModal(false)}
-            >
+            <button className="close-button" onClick={() => setShowProductModal(false)}>
               បិទ
             </button>
           </div>

@@ -3,7 +3,7 @@ import axios from 'axios';
 import React, { useContext, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../AuthContext';
-import './Warehouse.css';
+import './AddWarehouse.css';
 
 const AddWarehouse = () => {
   const [formData, setFormData] = useState({
@@ -12,7 +12,7 @@ const AddWarehouse = () => {
     owner: '',
     contact_person: '',
     contact_number: '',
-    capacity: '', // ចំនុះ
+    capacity: '',
   });
   const [message, setMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -46,7 +46,7 @@ const AddWarehouse = () => {
         owner: '',
         contact_person: '',
         contact_number: '',
-        capacity: '', // កែសម្រួល
+        capacity: '',
       });
       setTimeout(() => navigate('/warehouses'), 1000);
     } catch (error) {
@@ -57,9 +57,18 @@ const AddWarehouse = () => {
     }
   };
 
+  const handleBack = () => {
+    navigate('/warehouses');
+  };
+
   return (
     <div className="warehouse-form-container">
-      <h2>បន្ថែមឃ្លាំង</h2>
+      <div className="header-group">
+        <h2>បន្ថែមឃ្លាំង</h2>
+        <button type="button" onClick={handleBack} className="back-button">
+          ត្រឡប់ទៅក្រោយ
+        </button>
+      </div>
       <form onSubmit={handleSubmit} className="warehouse-form">
         <input
           type="text"
@@ -110,11 +119,11 @@ const AddWarehouse = () => {
         />
         <input
           type="number"
-          name="capacity" // ចំនុះ
+          name="capacity"
           placeholder="ចំនុះ (ឧ. 1000.50)"
           value={formData.capacity}
           onChange={handleChange}
-          step="0.01" // អាចបញ្ចូលខ្សែសង្វាក់ទសភាគ
+          step="0.01"
           disabled={isLoading}
           className="warehouse-input"
         />

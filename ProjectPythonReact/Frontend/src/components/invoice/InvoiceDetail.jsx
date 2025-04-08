@@ -145,10 +145,9 @@ const InvoiceDetail = () => {
             <div className="invoice-title">
               <h1>វិក័យប័ត្រ</h1>
               <div className="company-info-header">
-                <p className="company-name">ឈ្មោះក្រុមហ៊ុនរបស់អ្នក</p>
-                <p>១២៣ ផ្លូវអាជីវកម្ម, អគារ ១០០, ទីក្រុង, ខេត្ត ១២៣៤៥, កម្ពុជា</p>
-                <p>អ៊ីមែល: contact@yourcompany.com</p>
-                <p>ទូរស័ព្ទ: +១២៣ ៤៥៦ ៧៨៩០</p>
+                <span>ឈ្មោះក្រុមហ៊ុនរបស់អ្នក <br />១២៣ ផ្លូវអាជីវកម្ម, អគារ ១០០, ទីក្រុង, ខេត្ត ១២៣៤៥, កម្ពុជា</span>
+                <span>អ៊ីមែល: contact@yourcompany.com</span><br />
+                <span>ទូរស័ព្ទ: +១២៣ ៤៥៦ ៧៨៩០</span>
               </div>
             </div>
             <div className="invoice-header-right">
@@ -185,8 +184,8 @@ const InvoiceDetail = () => {
                   <p className="customer-name">{invoice.customer.first_name} {invoice.customer.last_name}</p>
                   <p>{invoice.customer.address || "គ្មានអាសយដ្ឋាន"}</p>
                   {invoice.customer.city && <p>{invoice.customer.city}, {invoice.customer.state} {invoice.customer.zip_code}</p>}
-                  {invoice.customer.country && <p>{invoice.customer.country}</p>}
-                  {invoice.customer.email && <p>អ៊ីមែល: {invoice.customer.email}</p>}
+                  {/* {invoice.customer.country && <p>{invoice.customer.country}</p>} */}
+                  {/* {invoice.customer.email && <p>អ៊ីមែល: {invoice.customer.email}</p>} */}
                   {invoice.customer.phone_number && <p>ទូរស័ព្ទ: {invoice.customer.phone_number}</p>}
                 </div>
               ) : (

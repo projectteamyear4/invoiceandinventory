@@ -93,8 +93,18 @@ class PurchaseSerializer(serializers.ModelSerializer):
         ]
 
     def create(self, validated_data):
-        print(f"Creating purchase with validated_data: {validated_data}")  # Debug
-        purchase = Purchase.objects.create(**validated_data)
+        # Create the purchase instance
+        purchase = Purchase.objects.create(
+            **validated_data,
+            total=validated_data['quantity'] * validated_data['purchase_price']
+        )
+
+        # Increment the variant's stock
+        if purchase.product_variant:
+            variant = purchase.product_variant
+            variant.stock_quantity = (variant.stock_quantity or 0) + purchase.quantity
+            variant.save()
+
         return purchase
 
 class StockMovementSerializer(serializers.ModelSerializer):
@@ -122,6 +132,16 @@ class StockMovementSerializer(serializers.ModelSerializer):
 
     def get_shelf_name(self, obj):
         return obj.shelf.shelf_name if obj.shelf else None
+    def create(self, validated_data):
+        # Create the stock movement
+        stock_movement = StockMovement.objects.create(**validated_data)
+        
+        # Update the variant's stock_quantity by adding the new quantity
+        variant = stock_movement.product_variant
+        variant.stock_quantity = (variant.stock_quantity or 0) + stock_movement.quantity
+        variant.save()
+        
+        return stock_movement
 # Updated ProductVariantSerializer with logging
 class ProductVariantSerializer(serializers.ModelSerializer):
     purchases = PurchaseSerializer(source='purchase_set', many=True, read_only=True)

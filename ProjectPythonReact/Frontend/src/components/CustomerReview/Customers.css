@@ -345,46 +345,70 @@
     text-align: center;
   }
 }
-/* src/components/AddCustomer.css */
+/* Customers.css */
 .add-customer-container {
+  max-width: 1200px;
+  margin: 0 auto;
   padding: 20px;
-  margin-left: 250px; /* Adjust for sidebar width */
-  overflow-x: auto;
+  background-color: #f9fafb;
+  border-radius: 10px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
-.add-customer-container h2 {
+h2 {
   font-size: 24px;
-  color: #333;
+  font-weight: 600;
+  color: #1f2937;
   margin-bottom: 20px;
+  text-align: center;
+}
+
+.success-message {
+  color: #15803d;
+  background-color: #dcfce7;
+  padding: 10px;
+  border-radius: 5px;
+  margin-bottom: 15px;
+  text-align: center;
+}
+
+.error-message {
+  color: #b91c1c;
+  background-color: #fee2e2;
+  padding: 10px;
+  border-radius: 5px;
+  margin-bottom: 15px;
+  text-align: center;
 }
 
 .customer-table {
   width: 100%;
   border-collapse: collapse;
-  background-color: #fff;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-  border-radius: 8px;
-  overflow: hidden;
   margin-bottom: 20px;
 }
 
 .customer-table th,
 .customer-table td {
-  padding: 12px 15px;
+  padding: 12px;
   text-align: left;
-  border-bottom: 1px solid #e0e0e0;
-  white-space: nowrap;
+  border-bottom: 1px solid #e5e7eb;
 }
 
 .customer-table th {
-  background-color: #007bff;
-  color: white;
-  font-weight: 600;
+  background-color: #e5e7eb;
+  color: #374151;
+  font-weight: 500;
+  text-transform: uppercase;
+  font-size: 12px;
 }
 
-.customer-table td {
-  font-size: 14px;
-  color: #333;
+.customer-table tbody tr:nth-child(even) {
+  background-color: #f3f4f6;
+}
+
+.customer-table tbody tr:hover {
+  background-color: #e5e7eb;
+  transition: background-color 0.2s ease;
 }
 
 .customer-table input,
@@ -392,37 +416,39 @@
 .customer-table select {
   width: 100%;
   padding: 8px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
+  border: 1px solid #d1d5db;
+  border-radius: 5px;
   font-size: 14px;
-  color: #333;
-  box-sizing: border-box;
-}
-
-.customer-table textarea {
-  resize: vertical;
-  min-height: 60px;
+  color: #374151;
+  background-color: #fff;
+  transition: border-color 0.2s ease;
 }
 
 .customer-table input:focus,
 .customer-table textarea:focus,
 .customer-table select:focus {
   outline: none;
-  border-color: #007bff;
-  box-shadow: 0 0 5px rgba(0, 123, 255, 0.3);
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
 }
 
-.customer-table .error {
-  color: #dc3545;
-  font-size: 12px;
+.customer-table textarea {
+  min-height: 60px;
+  resize: vertical;
+}
+
+.error {
   display: block;
-  margin-top: 5px;
+  color: #b91c1c;
+  font-size: 12px;
+  margin-top: 4px;
 }
 
 .button-group {
   display: flex;
-  gap: 10px;
   justify-content: center;
+  gap: 15px;
+  margin-top: 20px;
 }
 
 .add-more-btn,
@@ -431,56 +457,46 @@
 .remove-btn {
   padding: 10px 20px;
   border: none;
-  border-radius: 4px;
-  font-size: 16px;
+  border-radius: 5px;
+  font-size: 14px;
+  font-weight: 500;
   cursor: pointer;
-  transition: background-color 0.3s;
+  transition: background-color 0.2s ease;
 }
 
 .add-more-btn {
-  background-color: #28a745;
-  color: white;
+  background-color: #3b82f6;
+  color: #fff;
 }
 
 .add-more-btn:hover {
-  background-color: #218838;
+  background-color: #2563eb;
 }
 
 .cancel-btn {
-  background-color: #6c757d;
-  color: white;
+  background-color: #6b7280;
+  color: #fff;
 }
 
 .cancel-btn:hover {
-  background-color: #5a6268;
+  background-color: #4b5563;
 }
 
 .submit-btn {
-  background-color: #007bff;
-  color: white;
+  background-color: #16a34a;
+  color: #fff;
 }
 
 .submit-btn:hover {
-  background-color: #0056b3;
+  background-color: #15803d;
 }
 
 .remove-btn {
-  background-color: #dc3545;
-  color: white;
+  background-color: #ef4444;
+  color: #fff;
+  padding: 6px 12px;
 }
 
 .remove-btn:hover {
-  background-color: #c82333;
-}
-
-.error-message {
-  color: #dc3545;
-  text-align: center;
-  margin-bottom: 10px;
-}
-
-.success-message {
-  color: #28a745;
-  text-align: center;
-  margin-bottom: 10px;
+  background-color: #dc2626;
 }

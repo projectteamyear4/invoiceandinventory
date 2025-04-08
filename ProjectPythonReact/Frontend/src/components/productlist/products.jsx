@@ -1,4 +1,3 @@
-// src/components/Products.jsx
 import axios from 'axios';
 import { motion } from 'framer-motion';
 import React, { useContext, useEffect, useMemo, useRef, useState } from 'react';
@@ -42,29 +41,42 @@ const Products = () => {
     },
   });
 
-  // Fetch products with nested variants
+  const fetchProducts = async () => {
+    try {
+      setLoading(true);
+      const response = await api.get('/api/products/');
+      console.log('Total products fetched from API:', response.data);
+      setProducts(response.data);
+      setFilteredProducts(response.data);
+    } catch (error) {
+      console.error('កំហុសក្នុងការទាញយកផលិតផល៖', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchProducts = async () => {
-      try {
-        const response = await api.get('/api/products/');
-        console.log('Total products fetched from API:', response.data); // Debug API response
-        setProducts(response.data);
-        setFilteredProducts(response.data);
-      } catch (error) {
-        console.error('កំហុសក្នុងការទាញយកផលិតផល៖', error);
-      } finally {
-        setLoading(false);
-      }
-    };
     fetchProducts();
   }, []);
 
-  // Flatten the product and variant data for the table
+  useEffect(() => {
+    const handlePurchaseUpdate = () => {
+      console.log('Purchase update detected, refetching products...');
+      fetchProducts();
+    };
+
+    window.addEventListener('purchaseMade', handlePurchaseUpdate);
+
+    return () => {
+      window.removeEventListener('purchaseMade', handlePurchaseUpdate);
+    };
+  }, []);
+
   useEffect(() => {
     const flattened = filteredProducts.flatMap((product) => {
       if (product.variants && product.variants.length > 0) {
         return product.variants.map((variant, index) => {
-          console.log(`Flattening product ${product.id}, variant ${variant.id}, stock_quantity: ${variant.stock_quantity}`); // Debug
+          console.log(`Flattening product ${product.id}, variant ${variant.id}, stock_quantity: ${variant.stock}`);
           return {
             ...product,
             variant,
@@ -76,11 +88,10 @@ const Products = () => {
         return [{ ...product, variant: null, isFirstVariant: true, variantCount: 1 }];
       }
     });
-    console.log('Flattened data:', flattened); // Debug
+    console.log('Flattened data:', flattened);
     setFlattenedData(flattened);
   }, [filteredProducts]);
 
-  // Search and filter functionality
   useEffect(() => {
     const filtered = products.filter(
       (product) =>
@@ -90,14 +101,12 @@ const Products = () => {
     setFilteredProducts(filtered);
   }, [searchTerm, products]);
 
-  // Handle clicks outside the dropdown to close it
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
         setIsDropdownOpen(false);
       }
     };
-
     document.addEventListener('mousedown', handleClickOutside);
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
@@ -165,7 +174,10 @@ const Products = () => {
     navigate(`/product-details/${productId}`);
   };
 
-  // Define columns for the DataTable
+  const handleRefresh = () => {
+    fetchProducts();
+  };
+
   const columns = useMemo(
     () => [
       {
@@ -242,8 +254,8 @@ const Products = () => {
       {
         name: 'បរិមាណស្តុក',
         selector: (row) => {
-          const stock = row.variant ? row.variant.stock || null : 'គ្មានវ៉ារីយ៉ង់';
-          console.log(`Displaying stock for variant ${row.variant?.id}: ${stock}`); // Debug
+          const stock = row.variant ? row.variant.stock || 0 : 'គ្មានវ៉ារីយ៉ង់';
+          console.log(`Displaying stock for variant ${row.variant?.id}: ${stock}`);
           return stock;
         },
         sortable: true,
@@ -316,7 +328,6 @@ const Products = () => {
     [visibleColumns]
   );
 
-  // Custom styles for the DataTable to match Product.css
   const customStyles = {
     table: {
       style: {
@@ -398,7 +409,6 @@ const Products = () => {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
     >
-      {/* Header */}
       <motion.div
         className="product-header"
         initial={{ opacity: 0, y: -10 }}
@@ -431,10 +441,17 @@ const Products = () => {
           >
             មើលវិធីសាស្ត្រដឹកជញ្ជូន
           </motion.button>
+          <motion.button
+            className="refresh-button"
+            onClick={handleRefresh}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+          >
+            ធ្វើសមកាលកម្ម
+          </motion.button>
         </div>
       </motion.div>
 
-      {/* Controls (Search Bar and Column Selector) */}
       <motion.div
         className="product-controls"
         initial={{ opacity: 0, y: -10 }}
@@ -499,7 +516,6 @@ const Products = () => {
         </div>
       </motion.div>
 
-      {/* DataTable */}
       <DataTable
         columns={columns}
         data={flattenedData}

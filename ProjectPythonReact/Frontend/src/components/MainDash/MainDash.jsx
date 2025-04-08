@@ -21,13 +21,14 @@ const MainDash = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // Fetch purchases, products, customers, suppliers, and invoices concurrently
-        const [purchasesResponse, productsResponse, customersResponse, suppliersResponse, invoicesResponse] = await Promise.all([
+        // Fetch purchases, products, customers, suppliers, invoices, and warehouses concurrently
+        const [purchasesResponse, productsResponse, customersResponse, suppliersResponse, invoicesResponse, warehousesResponse] = await Promise.all([
           api.get("/api/purchases/"),
           api.get("/api/products/"),
           api.get("/api/invoices/"),
           api.get("/api/customers/"),
           api.get("/api/suppliers/"),
+          api.get("/api/warehouses/"), // Added endpoint for warehouses
         ]);
 
         const purchases = purchasesResponse.data;
@@ -35,6 +36,7 @@ const MainDash = () => {
         const customers = customersResponse.data;
         const suppliers = suppliersResponse.data;
         const invoices = invoicesResponse.data;
+        const warehouses = warehousesResponse.data;
 
         // Get today's date in YYYY-MM-DD format (for today's purchase price)
         const today = new Date().toISOString().split("T")[0];
@@ -65,6 +67,9 @@ const MainDash = () => {
 
         // Calculate total invoices (all time)
         const totalInvoices = invoices.length;
+
+        // Calculate total warehouses (all time)
+        const totalWarehouses = warehouses.length;
 
         // Convert numbers to Khmer numerals
         const khmerNumbers = (num) =>
@@ -154,6 +159,20 @@ const MainDash = () => {
           series: [{ name: "វិក្កយបត្រ", data: [totalInvoices] }],
         };
 
+        // Card for total warehouses (all time)
+        const totalWarehousesCard = {
+          title: "ឃ្លាំងសរុប", // Total Warehouses
+          color: {
+            backGround: "#f5f5f5",
+            border: "1px solid #616161",
+            boxShadow: "0 4px 10px rgba(97, 97, 97, 0.3)",
+          },
+          barValue: Math.min((totalWarehouses / 100) * 100, 100),
+          value: khmerNumbers(totalWarehouses),
+          png: "UilBuilding", // Assuming an icon for buildings/warehouses
+          series: [{ name: "ឃ្លាំង", data: [totalWarehouses] }],
+        };
+
         // Set the cards array with only database-generated cards
         setCards([
           purchaseTodayCard,
@@ -162,9 +181,10 @@ const MainDash = () => {
           totalCustomersCard,
           totalSuppliersCard,
           totalInvoicesCard,
+          totalWarehousesCard, // Added new card
         ]);
       } catch (err) {
-        setError("Failed to load data.");
+        setError("បរាជ័យក្នុងការផ្ទុកទិន្នន័យ។");
         console.error("Fetch error:", err.response?.data || err);
       } finally {
         setLoading(false);
@@ -174,7 +194,7 @@ const MainDash = () => {
     fetchData();
   }, []);
 
-  if (loading) return <p>Loading dashboard...</p>;
+  if (loading) return <p>កំពុងផ្ទុកផ្ទាំងគ្រប់គ្រង...</p>;
   if (error) return <p className="error-message">{error}</p>;
 
   return (

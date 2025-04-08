@@ -747,7 +747,7 @@ const InvoiceForm = () => {
                 onChange={handleChange}
                 disabled={isSubmitting}
               />
-              <input
+              {/* <input
                 className="form-input"
                 placeholder="ប្រទេស"
                 name="shippingCountry"
@@ -762,7 +762,7 @@ const InvoiceForm = () => {
                 value={formData.shippingPostcode}
                 onChange={handleChange}
                 disabled={isSubmitting}
-              />
+              /> */}
             </div>
           </div>
 

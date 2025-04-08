@@ -33,4 +33,5 @@ urlpatterns = [
     path('api/invoices/list/', views.invoice_list, name='invoice-list'),
     # Invoice Item (New)
     path('api/invoice-items/<int:pk>/', views.invoice_item_detail, name='invoice_item_detail'),
+    path('api/purchases/bulk/', views.BulkPurchaseCreateView.as_view(), name='bulk-purchase-create'),
 ]

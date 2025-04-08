@@ -222,10 +222,10 @@ const InvoiceList = () => {
         cell: (row) => (
           <button
             onClick={() => handleView(row)}
-            style={{ padding: "5px", background: "transparent", border: "none", cursor: "pointer" }}
+            className="action-button view"
             title="មើលលម្អិត"
           >
-            <FaEye style={{ color: "#007bff", fontSize: "18px" }} />
+            <FaEye style={{ fontSize: "18px" }} />
           </button>
         ),
         ignoreRowClick: true,
@@ -241,7 +241,7 @@ const InvoiceList = () => {
         cell: (row) => (
           <button
             onClick={() => openStatusModal(row.id, row.status)}
-            style={{ padding: "5px 10px", background: "#007bff", color: "white", borderRadius: "4px", border: "none" }}
+            className={`status-button status-${(row.status || "").toLowerCase()}`}
           >
             {row.status === "DRAFT" ? "ព្រាង" : 
              row.status === "PENDING" ? "មិនទាន់បង់" : 
@@ -277,7 +277,7 @@ const InvoiceList = () => {
         cell: (row) => (
           <button
             onClick={() => handleDelete(row.id)}
-            style={{ padding: "5px 10px", background: "#dc3545", color: "white", borderRadius: "4px", border: "none" }}
+            className="action-button delete"
           >
             លុប
           </button>
@@ -321,95 +321,79 @@ const InvoiceList = () => {
 
   return (
     <div className="invoice-list-container">
-      <h2>បញ្ជីវិក្កយបត្រ</h2>
+      <h2 className="invoice-list-title">បញ្ជីវិក្កយបត្រ <span className="title-highlight"></span></h2>
       {error && <p className="error-message">{error}</p>}
-      <div style={{ marginBottom: "10px", display: "flex", gap: "10px", alignItems: "center", flexWrap: "wrap" }}>
-        <input
-          type="text"
-          placeholder="ស្វែងរក (លេខសម្គាល់, អតិថិជន, ស្ថានភាព, កំណត់សម្គាល់...)"
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          style={{ padding: "8px", width: "300px", borderRadius: "4px", border: "1px solid #ccc" }}
-        />
+      <div className="controls-container">
+        <div className="search-container">
+          <input
+            type="text"
+            placeholder="ស្វែងរក (លេខសម្គាល់, អតិថិជន, ស្ថានភាព, កំណត់សម្គាល់...)"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="search-input"
+          />
+        </div>
         <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
           <label>ចាប់ពីថ្ងៃ: </label>
           <input
             type="date"
             value={startDate}
             onChange={(e) => setStartDate(e.target.value)}
-            style={{ padding: "8px", borderRadius: "4px", border: "1px solid #ccc" }}
+            className="search-input date-input"
           />
           <label>ដល់ថ្ងៃ: </label>
           <input
             type="date"
             value={endDate}
             onChange={(e) => setEndDate(e.target.value)}
-            style={{ padding: "8px", borderRadius: "4px", border: "1px solid #ccc" }}
+            className="search-input date-input"
           />
         </div>
         <CSVLink
           data={csvData}
           filename="វិក្កយបត្រ.csv"
-          style={{ padding: "8px 15px", background: "#28a745", color: "white", borderRadius: "4px", textDecoration: "none" }}
+          className="action-button download csv"
         >
           CSV
         </CSVLink>
         <button
           onClick={exportToPNG}
-          style={{ padding: "8px 15px", background: "#007bff", color: "white", borderRadius: "4px", border: "none" }}
+          className="action-button download png"
         >
           PNG
         </button>
         <button
           onClick={exportToExcel}
-          style={{ padding: "8px 15px", background: "#17a2b8", color: "white", borderRadius: "4px", border: "none" }}
+          className="action-button download excel"
         >
           Excel
         </button>
       </div>
-      <DataTable
-        key={filteredInvoices.length + JSON.stringify(filteredInvoices.map((inv) => inv.status))}
-        columns={columns}
-        data={filteredInvoices}
-        pagination
-        paginationPerPage={rowsPerPage}
-        paginationRowsPerPageOptions={[5, 10, 20, 50]}
-        customStyles={customStyles}
-        noDataComponent={<div className="no-results">គ្មានវិក្កយបត្រណាមួយត្រូវនឹងការស្វែងរកទេ</div>}
-        highlightOnHover
-        responsive
-        progressPending={loading}
-        progressComponent={<div className="loading">កំពុងផ្ទុកវិក្កយបត្រ...</div>}
-      />
+      <div className="invoice-table-card">
+        <DataTable
+          key={filteredInvoices.length + JSON.stringify(filteredInvoices.map((inv) => inv.status))}
+          columns={columns}
+          data={filteredInvoices}
+          pagination
+          paginationPerPage={rowsPerPage}
+          paginationRowsPerPageOptions={[5, 10, 20, 50]}
+          customStyles={customStyles}
+          noDataComponent={<div className="no-results">គ្មានវិក្កយបត្រណាមួយត្រូវនឹងការស្វែងរកទេ</div>}
+          highlightOnHover
+          responsive
+          progressPending={loading}
+          progressComponent={<div className="loading">កំពុងផ្ទុកវិក្កយបត្រ...</div>}
+        />
+      </div>
 
       {showModal && (
-        <div
-          style={{
-            position: "fixed",
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            background: "rgba(0, 0, 0, 0.5)",
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-          }}
-        >
-          <div
-            style={{
-              background: "white",
-              padding: "20px",
-              borderRadius: "8px",
-              width: "300px",
-              boxShadow: "0 2px 10px rgba(0, 0, 0, 0.1)",
-            }}
-          >
+        <div className="modal-overlay">
+          <div className="modal-content">
             <h3>ផ្លាស់ប្តូរស្ថានភាព</h3>
             <select
               value={newStatus || ""}
               onChange={(e) => setNewStatus(e.target.value)}
-              style={{ width: "100%", padding: "8px", marginBottom: "10px", borderRadius: "4px" }}
+              className="modal-select"
             >
               <option value="">ជ្រើសរើសស្ថានភាព</option>
               <option value="DRAFT">ព្រាង</option>
@@ -417,16 +401,16 @@ const InvoiceList = () => {
               <option value="PAID">បានបង់</option>
               <option value="CANCELLED">បានលុប</option>
             </select>
-            <div style={{ display: "flex", gap: "10px" }}>
+            <div className="modal-actions">
               <button
                 onClick={handleStatusChange}
-                style={{ padding: "8px 15px", background: "#28a745", color: "white", borderRadius: "4px", border: "none" }}
+                className="action-button save"
               >
                 រក្សាទុក
               </button>
               <button
                 onClick={() => setShowModal(false)}
-                style={{ padding: "8px 15px", background: "#dc3545", color: "white", borderRadius: "4px", border: "none" }}
+                className="action-button cancel"
               >
                 បោះបង់
               </button>

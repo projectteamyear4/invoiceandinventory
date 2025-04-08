@@ -1,0 +1,113 @@
+/* AddWarehouse.css */
+
+.warehouse-form-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+    background-color: #f9f9f9;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  }
+  
+  .header-group {
+    display: flex;
+    justify-content: space-between; /* Places title and button on opposite ends */
+    align-items: center; /* Vertically centers the title and button */
+    margin-bottom: 20px;
+  }
+  
+  .warehouse-form-container h2 {
+    margin: 0; /* Remove default margin to align properly with button */
+    color: #333;
+    font-size: 24px;
+  }
+  
+  .warehouse-form {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    justify-content: space-between;
+  }
+  
+  .warehouse-input {
+    flex: 1 1 30%;
+    padding: 10px;
+    font-size: 16px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+    min-width: 200px;
+  }
+  
+  .warehouse-input:focus {
+    outline: none;
+    border-color: #007bff;
+    box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+  }
+  
+  .warehouse-input:disabled {
+    background-color: #e9ecef;
+    cursor: not-allowed;
+  }
+  
+  .warehouse-button {
+    flex: 1 1 100%;
+    padding: 12px;
+    font-size: 16px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  
+  .warehouse-button:disabled {
+    background-color: #6c757d;
+    cursor: not-allowed;
+  }
+  
+  .warehouse-button:hover:not(:disabled) {
+    background-color: #0056b3;
+  }
+  
+  .back-button {
+    padding: 8px 16px; /* Smaller padding than the submit button */
+    font-size: 14px; /* Slightly smaller font */
+    background-color: #6c757d; /* Gray color for back button */
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  
+  .back-button:hover {
+    background-color: #5a6268; /* Darker gray on hover */
+  }
+  
+  .warehouse-message {
+    margin-top: 15px;
+    text-align: center;
+    font-size: 16px;
+  }
+  
+  .warehouse-message.success {
+    color: #28a745;
+  }
+  
+  .warehouse-message.error {
+    color: #dc3545;
+  }
+  
+  /* Responsive adjustments */
+  @media (max-width: 768px) {
+    .warehouse-input {
+      flex: 1 1 100%;
+    }
+    .header-group {
+      flex-direction: column; /* Stack title and button on small screens */
+      align-items: flex-start; /* Align items to the left */
+      gap: 10px; /* Add space between title and button */
+    }
+  }

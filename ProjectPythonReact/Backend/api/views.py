@@ -5,6 +5,7 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from .serializers import RegisterSerializer, UserDetailSerializer, LoginSerializer
 from django.contrib.auth.models import User
+from rest_framework.views import APIView
 from rest_framework import viewsets
 from .models import Supplier, Product, ProductVariant, Category, Warehouse,Shelf,Purchase,StockMovement,Customer,DeliveryMethod,Invoice,InvoiceItem
 from .serializers import SupplierSerializer, ProductSerializer, ProductVariantSerializer, CategorySerializer, WarehouseSerializer,ShelfSerializer,PurchaseSerializer,StockMovementSerializer,StockMovementSerializer,CustomerSerializer,DeliveryMethodSerializer,InvoiceSerializer, InvoiceItemSerializer
@@ -531,3 +532,23 @@ class InvoiceViewSet(viewsets.ModelViewSet):
     def create(self, request, *args, **kwargs):
         logger.info(f"Raw request data: {request.data}")
         return super().create(request, *args, **kwargs)
+    
+class StockMovementViewSet(viewsets.ModelViewSet):
+    queryset = StockMovement.objects.all()
+    serializer_class = StockMovementSerializer
+class BulkPurchaseCreateView(APIView):
+    def post(self, request, *args, **kwargs):
+        # Handle bulk purchase creation
+        if not isinstance(request.data, list):
+            return Response({"detail": "Expected a list of purchase data."}, status=status.HTTP_400_BAD_REQUEST)
+
+        created_purchases = []
+        for purchase_data in request.data:
+            serializer = PurchaseSerializer(data=purchase_data)
+            if serializer.is_valid():
+                serializer.save()
+                created_purchases.append(serializer.data)
+            else:
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        return Response(created_purchases, status=status.HTTP_201_CREATED)
