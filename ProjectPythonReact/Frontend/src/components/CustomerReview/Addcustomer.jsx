@@ -102,7 +102,7 @@ export const AddCustomer = () => {
       }
       setFormSuccess("អតិថិជនត្រូវបានបន្ថែមដោយជោគជ័យ! កំពុងប្តូរទិស..."); // Customers added successfully! Redirecting...
       setTimeout(() => {
-        navigate('/customers');
+        navigate('/suppliers'); 
       }, 1500);
     } catch (err) {
       setFormError('បរាជ័យក្នុងការបន្ថែមអតិថិជន។ សូមពិនិត្យទិន្នន័យ។'); // Failed to add customers. Please check the data.
@@ -270,7 +270,7 @@ export const AddCustomer = () => {
           <motion.button
             type="button"
             className="cancel-btn"
-            onClick={() => navigate('/customers')}
+            onClick={() => navigate('/customers')} // Cancel still goes to /customers
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
           >

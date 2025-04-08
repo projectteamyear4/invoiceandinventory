@@ -3,7 +3,7 @@
 
 /* Base styling for the invoice page */
 .invoice-page {
-  max-width: 1000px;
+  max-width: 1500px;
   margin: 10px auto; /* Reduced margin */
   padding: 15px; /* Reduced padding */
   font-family: 'Inter', 'Noto Sans Khmer', sans-serif;
