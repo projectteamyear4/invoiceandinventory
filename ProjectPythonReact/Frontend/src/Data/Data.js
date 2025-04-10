@@ -17,6 +17,7 @@ export const SidebarData = [
   { icon: UilEstate, heading: "ឃ្លាំង", path: "/warehouses" }, // ProductList
   { icon: UilChart, heading: "វិក្កយបត្រ", path: "/invoice" }, // Invoice
   { icon: UilClipboardAlt, heading: "បញ្ជីវិក្កយបត្រ", path: "/invoicelist" }, // InvoiceList
+  { icon: UilClipboardAlt, heading: "បញ្ជី", path: "/invoicetest" }, // InvoiceList
 ];
 
 // export const cardsData = [

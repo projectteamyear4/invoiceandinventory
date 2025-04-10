@@ -36,6 +36,7 @@ import AddSupplier from './components/supplier/AddSupplier.jsx';
 import EditSupplier from './components/supplier/EditSupplier.jsx';
 import Purchases from './components/supplier/Purchases.jsx';
 
+
 import SupplierTable from './components/supplier/SupplierTable.jsx';
 import ProtectedRoute from './ProtectedRoute';
 
@@ -66,6 +67,7 @@ function App() {
               <Route path="/products" element={<ProtectedRoute><Products /></ProtectedRoute>} />
               <Route path="/product-details/:productId" element={<ProtectedRoute><DetailProduct /></ProtectedRoute>} />
               <Route path="/purchases" element={<ProtectedRoute><Purchases /></ProtectedRoute>} />
+            
               <Route path="/add-purchase" element={<ProtectedRoute><AddPurchase /></ProtectedRoute>} />
               <Route path="/category-list" element={<ProtectedRoute><CategoryList /></ProtectedRoute>} />
               <Route path="//delivery-methods" element={<ProtectedRoute><DeliveryMethods /></ProtectedRoute>} />
