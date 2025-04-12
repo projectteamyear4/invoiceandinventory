@@ -1,4 +1,3 @@
-// src/components/AddCustomer.jsx
 import axios from 'axios';
 import { motion } from 'framer-motion';
 import React, { useState } from "react";
@@ -17,8 +16,6 @@ export const AddCustomer = () => {
       address: "",
       city: "",
       country: "",
-      order_history: 0,
-      status: "active",
     },
   ]);
   const [errors, setErrors] = useState([{}]);
@@ -56,8 +53,6 @@ export const AddCustomer = () => {
         address: "",
         city: "",
         country: "",
-        order_history: 0,
-        status: "active",
       },
     ]);
     setErrors([...errors, {}]);
@@ -76,7 +71,6 @@ export const AddCustomer = () => {
     const newErrors = customers.map((customer) => {
       const customerErrors = {};
       if (!customer.first_name.trim()) customerErrors.first_name = "តម្រូវឱ្យបញ្ចូលឈ្មោះ"; // First Name is required
-      if (!customer.last_name.trim()) customerErrors.last_name = "តម្រូវឱ្យបញ្ចូលនាមត្រកូល"; // Last Name is required
       if (!customer.email.trim()) customerErrors.email = "តម្រូវឱ្យបញ្ចូលអ៊ីមែល"; // Email is required
       else if (!/\S+@\S+\.\S+/.test(customer.email)) customerErrors.email = "អ៊ីមែលមិនត្រឹមត្រូវ"; // Invalid email format
       return customerErrors;
@@ -96,17 +90,27 @@ export const AddCustomer = () => {
     }
 
     try {
-      // Send a POST request for each customer
-      for (const customer of customers) {
-        await api.post('/api/customers/', customer);
+      console.log("Submitting customers:", JSON.stringify(customers, null, 2));
+      for (const [index, customer] of customers.entries()) {
+        try {
+          const response = await api.post('/api/customers/', customer);
+          console.log(`Customer ${index + 1} created:`, response.data);
+        } catch (err) {
+          const errorMessage = err.response?.data
+            ? Object.entries(err.response.data)
+                .map(([field, errors]) => `${field}: ${Array.isArray(errors) ? errors.join(", ") : errors}`)
+                .join("; ")
+            : err.message;
+          throw new Error(`Customer ${index + 1}: ${errorMessage}`);
+        }
       }
       setFormSuccess("អតិថិជនត្រូវបានបន្ថែមដោយជោគជ័យ! កំពុងប្តូរទិស..."); // Customers added successfully! Redirecting...
       setTimeout(() => {
-        navigate('/suppliers'); 
+        navigate('/customers');
       }, 1500);
     } catch (err) {
-      setFormError('បរាជ័យក្នុងការបន្ថែមអតិថិជន។ សូមពិនិត្យទិន្នន័យ។'); // Failed to add customers. Please check the data.
-      console.error('Add customer error:', err.response?.data || err);
+      setFormError(`បរាជ័យក្នុងការបន្ថែមអតិថិជន។ ${err.message}`);
+      console.error('Add customer error:', err);
     }
   };
 
@@ -132,8 +136,6 @@ export const AddCustomer = () => {
               <th>អាសយដ្ឋាន</th> {/* Address */}
               <th>ទីក្រុង</th> {/* City */}
               <th>ប្រទេស</th> {/* Country */}
-              <th>ប្រវត្តិការបញ្ជាទិញ</th> {/* Order History */}
-              <th>ស្ថានភាព</th> {/* Status */}
               <th>សកម្មភាព</th> {/* Action */}
             </tr>
           </thead>
@@ -163,7 +165,6 @@ export const AddCustomer = () => {
                     value={customer.last_name}
                     onChange={(e) => handleChange(index, e)}
                   />
-                  {errors[index]?.last_name && <span className="error">{errors[index].last_name}</span>}
                 </td>
                 <td>
                   <input
@@ -220,26 +221,6 @@ export const AddCustomer = () => {
                   />
                 </td>
                 <td>
-                  <input
-                    type="number"
-                    name="order_history"
-                    value={customer.order_history}
-                    onChange={(e) => handleChange(index, e)}
-                    min="0"
-                  />
-                </td>
-                <td>
-                  <select
-                    name="status"
-                    value={customer.status}
-                    onChange={(e) => handleChange(index, e)}
-                  >
-                    <option value="active">Active</option>
-                    <option value="inactive">Inactive</option>
-                    <option value="suspended">Suspended</option>
-                  </select>
-                </td>
-                <td>
                   {customers.length > 1 && (
                     <motion.button
                       type="button"
@@ -270,7 +251,7 @@ export const AddCustomer = () => {
           <motion.button
             type="button"
             className="cancel-btn"
-            onClick={() => navigate('/customers')} // Cancel still goes to /customers
+            onClick={() => navigate('/customers')}
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
           >

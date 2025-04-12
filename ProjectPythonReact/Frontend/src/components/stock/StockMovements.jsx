@@ -343,14 +343,14 @@ const StockMovements = () => {
                     </span>
                   )}
                 </th>
-                <th onClick={() => handleSort('invoice_item_id')}>
+                {/* <th onClick={() => handleSort('invoice_item_id')}>
                   លេខសម្គាល់ធាតុវិក្កយបត្រ
                   {sortConfig.key === 'invoice_item_id' && (
                     <span className="sort-icon">
                       {sortConfig.direction === 'asc' ? '▲' : '▼'}
                     </span>
                   )}
-                </th>
+                </th> */}
                 <th>សកម្មភាព</th>
               </tr>
             </thead>
@@ -372,7 +372,7 @@ const StockMovements = () => {
                     <td>{movement.movement_type || 'មិនមាន'}</td>
                     <td>{movement.quantity || 0}</td>
                     <td>{movement.movement_date ? new Date(movement.movement_date).toLocaleString() : 'មិនមាន'}</td>
-                    <td>{movement.invoice_item_id || 'មិនមាន'}</td>
+                    {/* <td>{movement.invoice_item_id || 'មិនមាន'}</td> */}
                     <td>
                       <motion.button
                         onClick={() => navigate(`/edit-stock-movement/${movement.id}`)}
