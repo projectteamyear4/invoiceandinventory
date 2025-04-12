@@ -5,7 +5,7 @@ import "./InvoiceForm.css";
 
 const initialProduct = {
   product_id: "",
-  variant_id: "",
+  variant_id: null, // Changed to null instead of ""
   barcode: "",
   name: "",
   size: "",
@@ -244,7 +244,7 @@ const InvoiceForm = () => {
       const updatedProducts = [...formData.products];
       updatedProducts[selectedProductIndex] = {
         product_id: productId.toString(), // Store as string for form input
-        variant_id: variantId ? variantId.toString() : "", // Store as string for form input
+        variant_id: variantId, // Store as null if no variant
         barcode: product.barcode || "",
         name: product.name || "",
         size: variant.size || "",
@@ -253,7 +253,7 @@ const InvoiceForm = () => {
         stock: parseInt(variant.stock, 10) || 0,
         quantity: 1,
         discount: 0,
-        total: unitPrice, // Initial total based on unit price
+        total: unitPrice,
       };
 
       setFormData((prev) => ({ ...prev, products: updatedProducts }));
@@ -437,42 +437,37 @@ const InvoiceForm = () => {
       // Construct the items array with proper type conversion and validation
       const items = validProducts.map((p, index) => {
         const productId = parseInt(p.product_id, 10);
-        const variantId = p.variant_id ? parseInt(p.variant_id, 10) : null;
+        const variantId = p.variant_id ? parseInt(p.variant_id, 10) : null; // Ensure null if no variant
         const quantity = parseInt(p.quantity, 10);
-        const unitPrice = parseFloat(p.unitPrice) || 0; // Default to 0 if NaN
-        const discountPercentage = parseFloat(p.discount) || 0; // Default to 0 if NaN
+        const unitPrice = parseFloat(p.unitPrice) || 0;
+        const discountPercentage = parseFloat(p.discount) || 0;
 
-        // Validate product_id
         if (isNaN(productId)) {
           throw new Error(`Invalid product_id at index ${index}: ${JSON.stringify(p.product_id)}`);
         }
 
-        // Validate variant_id
         if (variantId !== null && isNaN(variantId)) {
           throw new Error(`Invalid variant_id at index ${index}: ${JSON.stringify(p.variant_id)}`);
         }
 
-        // Validate quantity
         if (isNaN(quantity) || quantity <= 0) {
           throw new Error(`Invalid quantity at index ${index}: ${p.quantity}`);
         }
 
-        // Validate unit_price
         if (isNaN(unitPrice) || unitPrice < 0) {
           throw new Error(`Invalid unit_price at index ${index}: ${p.unitPrice}`);
         }
 
-        // Validate discount_percentage
         if (isNaN(discountPercentage) || discountPercentage < 0 || discountPercentage > 100) {
           throw new Error(`Invalid discount_percentage at index ${index}: ${p.discount}`);
         }
 
         return {
           product_id: productId,
-          variant_id: variantId,
+          variant_id: variantId, // Correctly sends null
           quantity: quantity,
-          unit_price: Number(unitPrice.toFixed(2)), // Ensure 2 decimal places
-          discount_percentage: Number(discountPercentage.toFixed(2)), // Ensure 2 decimal places
+          unit_price: Number(unitPrice.toFixed(2)),
+          discount_percentage: Number(discountPercentage.toFixed(2)),
         };
       });
 
@@ -514,7 +509,6 @@ const InvoiceForm = () => {
       console.error("Error creating invoice:", err.response?.data || err.message || err);
       let errorMsg = "មានបញ្ហាក្នុងការបង្កើតវិក្កយបត្រ";
 
-      // Improved error handling to avoid [object Object]
       if (err.response?.data) {
         const backendErrors = err.response.data;
         if (typeof backendErrors === "object") {
@@ -747,22 +741,6 @@ const InvoiceForm = () => {
                 onChange={handleChange}
                 disabled={isSubmitting}
               />
-              {/* <input
-                className="form-input"
-                placeholder="ប្រទេស"
-                name="shippingCountry"
-                value={formData.shippingCountry}
-                onChange={handleChange}
-                disabled={isSubmitting}
-              />
-              <input
-                className="form-input"
-                placeholder="លេខកូដប្រៃសណីយ៍"
-                name="shippingPostcode"
-                value={formData.shippingPostcode}
-                onChange={handleChange}
-                disabled={isSubmitting}
-              /> */}
             </div>
           </div>
 

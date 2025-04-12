@@ -77,6 +77,7 @@ function App() {
               <Route path="/edit-variant/:variantId" element={<ProtectedRoute><EditProductVariant /></ProtectedRoute>} />
               <Route path="/edit-product/:productId" element={<ProtectedRoute><EditProduct /></ProtectedRoute>} />
               <Route path="/stock-movements" element={<ProtectedRoute><StockMovements /></ProtectedRoute>} />
+            
               <Route path="/warehouses" element={<ProtectedRoute><Warehouses /></ProtectedRoute>} />
               <Route path="/add-warehouse" element={<ProtectedRoute><AddWarehouse /></ProtectedRoute>} />
               <Route path="/edit-warehouse/:id" element={<ProtectedRoute><EditWarehouse /></ProtectedRoute>} />
