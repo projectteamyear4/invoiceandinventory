@@ -319,22 +319,22 @@ const StockMovements = () => {
                     </span>
                   )}
                 </th>
-                <th onClick={() => handleSort('movement_type')}>
+                {/* <th onClick={() => handleSort('movement_type')}>
                   ប្រភេទ
                   {sortConfig.key === 'movement_type' && (
                     <span className="sort-icon">
                       {sortConfig.direction === 'asc' ? '▲' : '▼'}
                     </span>
                   )}
-                </th>
-                <th onClick={() => handleSort('quantity')}>
+                </th> */}
+                {/* <th onClick={() => handleSort('quantity')}>
                   បរិមាណ
                   {sortConfig.key === 'quantity' && (
                     <span className="sort-icon">
                       {sortConfig.direction === 'asc' ? '▲' : '▼'}
                     </span>
                   )}
-                </th>
+                </th> */}
                 <th onClick={() => handleSort('movement_date')}>
                   កាលបរិច្ឆេទ
                   {sortConfig.key === 'movement_date' && (
@@ -369,8 +369,8 @@ const StockMovements = () => {
                     <td>{movement.variant_info || 'មិនមាន'}</td>
                     <td>{movement.warehouse_name || 'មិនមាន'}</td>
                     <td>{movement.shelf_name || 'មិនមាន'}</td>
-                    <td>{movement.movement_type || 'មិនមាន'}</td>
-                    <td>{movement.quantity || 0}</td>
+                    {/* <td>{movement.movement_type || 'មិនមាន'}</td> */}
+                    {/* <td>{movement.quantity || 0}</td> */}
                     <td>{movement.movement_date ? new Date(movement.movement_date).toLocaleString() : 'មិនមាន'}</td>
                     {/* <td>{movement.invoice_item_id || 'មិនមាន'}</td> */}
                     <td>

@@ -1,5 +1,6 @@
 import axios from 'axios';
 import React, { useContext, useState } from 'react';
+import { useNavigate } from 'react-router-dom'; // Import useNavigate
 import { AuthContext } from '../AuthContext';
 import './Supplier.css';
 
@@ -14,7 +15,9 @@ const AddSupplier = () => {
   });
   const [message, setMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false); // Add state for success animation
   const { user } = useContext(AuthContext);
+  const navigate = useNavigate(); // Initialize useNavigate
 
   const api = axios.create({
     baseURL: 'http://localhost:8000',
@@ -46,6 +49,10 @@ const AddSupplier = () => {
         address: '',
         country: '',
       });
+      setIsSuccess(true); // Trigger success state for animation
+      setTimeout(() => {
+        navigate('/suppliers', { replace: true }); // Redirect to /suppliers after 1.5s
+      }, 1500);
     } catch (error) {
       if (error.response) {
         setMessage(error.response.data.detail || 'បរាជ័យក្នុងការបន្ថែមអ្នកផ្គត់ផ្គង់។'); // "Failed to add supplier."
@@ -62,7 +69,7 @@ const AddSupplier = () => {
   return (
     <div className="supplier-form-container">
       <h2>បន្ថែមអ្នកផ្គត់ផ្គង់</h2> {/* "Add Supplier" */}
-      <form onSubmit={handleSubmit} className="supplier-form">
+      <form onSubmit={handleSubmit} className={`supplier-form ${isSuccess ? 'fade-out' : ''}`}>
         <div className="form-row">
           <input
             type="text"
@@ -133,7 +140,7 @@ const AddSupplier = () => {
       {message && (
         <p
           className={`supplier-message ${
-            message.includes('ជោគជ័យ') ? 'success' : 'error' // Check for "success" in Khmer
+            message.includes('ជោគជ័យ') ? 'success fade-in' : 'error' // Check for "success" in Khmer
           }`}
         >
           {message}

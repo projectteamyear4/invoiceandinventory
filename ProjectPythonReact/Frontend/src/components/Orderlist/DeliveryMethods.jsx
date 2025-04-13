@@ -204,23 +204,23 @@ const DeliveryMethods = () => {
               onChange={handleChange}
               className="delivery-input"
             />
-            <input
+            {/* <input
               type="text"
               name="estimated_delivery_time"
               placeholder="រយៈពេលប៉ាន់ស្មាន (DD:HH:MM:SS)"
               value={formData.estimated_delivery_time}
               onChange={handleChange}
               className="delivery-input"
-            />
+            /> */}
           </div>
           <div className="form-row">
-            <input
+            {/* <input
               type="datetime-local"
               name="date"
               value={formData.date}
               onChange={handleChange}
               className="delivery-input"
-            />
+            /> */}
             <label>
               <input
                 type="checkbox"
@@ -254,8 +254,8 @@ const DeliveryMethods = () => {
                 <th>ឈ្មោះវិធីសាស្ត្រ</th>
                 <th>លេខរថយន្ត</th>
                 <th>លេខដឹកជញ្ជូន</th>
-                <th>រយៈពេលប៉ាន់ស្មាន</th>
-                <th>កាលបរិច្ឆេទ</th> {/* New column for date */}
+                {/* <th>រយៈពេលប៉ាន់ស្មាន</th>
+                <th>កាលបរិច្ឆេទ</th> */}
                 <th>សកម្ម</th>
                 <th>សកម្មភាព</th>
               </tr>
@@ -272,8 +272,8 @@ const DeliveryMethods = () => {
                   <td>{dm.delivery_name}</td>
                   <td>{dm.car_number}</td>
                   <td>{dm.delivery_number || '-'}</td>
-                  <td>{dm.estimated_delivery_time || '-'}</td>
-                  <td>{dm.date ? new Date(dm.date).toLocaleString() : '-'}</td> {/* Display date */}
+                  {/* <td>{dm.estimated_delivery_time || '-'}</td>
+                  <td>{dm.date ? new Date(dm.date).toLocaleString() : '-'}</td> */}
                   <td>{dm.is_active ? 'បាទ/ចាស' : 'ទេ'}</td>
                   <td>
                     <div className="action-buttons">
